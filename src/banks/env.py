@@ -5,9 +5,10 @@ from jinja2 import Environment, PackageLoader
 
 from .filters import lemmatize
 from .extensions import GenerateExtension
+from .loader import MultiLoader
 
 # Init the Jinja env
-env = Environment(loader=PackageLoader("banks", "templates"), extensions=[GenerateExtension])
+env = Environment(loader=MultiLoader(), extensions=[GenerateExtension])
 
 # Setup custom filters
 env.filters["lemmatize"] = lemmatize

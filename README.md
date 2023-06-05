@@ -13,10 +13,10 @@ Banks is a Python library to generate LLM prompts using a template language.
   - [Installation](#installation)
   - [Examples](#examples)
     - [Generate a blog writing prompt](#generate-a-blog-writing-prompt)
-    - [Reuse templates from files](#reuse-templates-from-files)
     - [Generate a summarizer prompt](#generate-a-summarizer-prompt)
     - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
+    - [Reuse templates from files](#reuse-templates-from-files)
   - [License](#license)
 
 ## Installation
@@ -30,7 +30,7 @@ pip install banks
 ### Generate a blog writing prompt
 
 Given a generic template to instruct an LLM to generate a blog article, we
-use Banks to generate the actual prompt on our topic of choice, "Retrogame computing":
+use Banks to generate the actual prompt on our topic of choice, "retrogame computing":
 
 ```py
 from banks import Prompt
@@ -49,21 +49,6 @@ Write a 500-word blog post on retrogame computing.
 Blog post:
 ```
 
-### Reuse templates from files
-
-We can get the same result as the previous example loading the prompt template from file
-instead of hardcoding it into the Python code. For convenience, Banks comes with a few
-default templates distributed the package. We can load those templates from file like this:
-
-```py
-from banks import Prompt
-
-
-p = Prompt.from_template("blog.jinja")
-topic = "retrogame computing"
-print(p.text({"topic": topic}))
-```
-
 ### Generate a summarizer prompt
 
 Instead of hardcoding the content to summarize in the prompt itself, we can generate it
@@ -77,7 +62,7 @@ from banks import Prompt
 prompt_template = """
 Summarize the following documents:
 {% for document in documents %}
-{{document}}
+{{ document }}
 {% endfor %}
 Summary:
 """
@@ -110,7 +95,7 @@ Summary:
 ### Lemmatize text while processing a template
 
 Banks comes with predefined filters you can use to process data before generating the
-prompt. Say you want to use a lemmatizer on a document you want to summarize:
+prompt. Say you want to use a lemmatizer on a document before summarizing it:
 
 ```py
 from banks import Prompt
@@ -118,7 +103,7 @@ from banks import Prompt
 
 prompt_template = """
 Summarize the following document:
-{{document | lemmatize}}
+{{ document | lemmatize }}
 Summary:
 """
 
@@ -180,6 +165,21 @@ Examples:
 If you paste Banks' output into ChatGPT you would get something like this:
 ```txt
 Climate change is a pressing global issue, but together we can create positive change! Let's embrace renewable energy, protect our planet, and build a sustainable future for generations to come. 🌍💚 #ClimateAction #PositiveFuture
+```
+
+### Reuse templates from files
+
+We can get the same result as the previous example loading the prompt template from file
+instead of hardcoding it into the Python code. For convenience, Banks comes with a few
+default templates distributed the package. We can load those templates from file like this:
+
+```py
+from banks import Prompt
+
+
+p = Prompt.from_template("blog.jinja")
+topic = "retrogame computing"
+print(p.text({"topic": topic}))
 ```
 
 ## License

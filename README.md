@@ -3,7 +3,8 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/banks.svg)](https://pypi.org/project/banks)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/banks.svg)](https://pypi.org/project/banks)
 
-Banks is a Python library to generate LLM prompts using a template language.
+Banks is the linguist professor who will help you generate meaningful LLM prompts using a template language that makes sense.
+If you're still using `f-strings` for the job, keep reading.
 
 -----
 

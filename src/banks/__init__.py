@@ -2,3 +2,4 @@
 #
 # SPDX-License-Identifier: MIT
 from .prompt import Prompt
+from .env import env

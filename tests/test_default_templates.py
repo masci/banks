@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 from unittest import mock
 
+import pytest
+
 from banks import Prompt
 
 
@@ -30,6 +32,8 @@ def test_summarize():
 
 
 def test_summarize_lemma():
+    pytest.importorskip("simplemma")
+
     p = Prompt.from_template("summarize_lemma.jinja")
     assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
 

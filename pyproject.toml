@@ -27,7 +27,6 @@ classifiers = [
 dependencies = [
   "jinja2",
   "openai",
-  "simplemma",
 ]
 
 [project.urls]

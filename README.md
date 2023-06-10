@@ -96,7 +96,14 @@ Summary:
 ### Lemmatize text while processing a template
 
 Banks comes with predefined filters you can use to process data before generating the
-prompt. Say you want to use a lemmatizer on a document before summarizing it:
+prompt. Say you want to use a lemmatizer on a document before summarizing it, first
+you need to install `simplemma`:
+
+```sh
+pip install simplemma
+```
+
+then you can use the `lemmatize` filter in your templates like this:
 
 ```py
 from banks import Prompt

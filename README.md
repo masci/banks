@@ -18,6 +18,7 @@ If you're still using `f-strings` for the job, keep reading.
     - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
+    - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
     - [Reuse templates from files](#reuse-templates-from-files)
   - [License](#license)
 
@@ -212,6 +213,38 @@ and will send it to OpenAI using the `generate` extension, eventually returning 
 Climate change is a phenomenon that has been gaining attention in recent years...
 ...
 ```
+
+### Go meta(meta): process a LLM response
+
+When generating a response from a prompt template, we can take a step further and
+post-process the LLM response by assinging it to a variable and applying filters
+to it:
+
+```py
+from banks import Prompt
+
+prompt_template = """
+{% from "banks_macros.jinja" import run_prompt with context %}
+
+{%- set prompt_result %}
+{%- call run_prompt() -%}
+Write a 500-word blog post on {{ topic }}
+
+Blog post:
+{%- endcall -%}
+{%- endset %}
+
+{# nothing is returned at this point: the variable 'prompt_result contains the result #}
+
+{# let's use the prompt_result variable now #}
+{{ prompt_result | upper }}
+"""
+
+p = Prompt(prompt_template)
+print(p.text({"topic": "climate change"}))
+```
+
+The result of the print will be printed, this time all in uppercase.
 
 ### Reuse templates from files
 

@@ -234,7 +234,7 @@ Blog post:
 {%- endcall -%}
 {%- endset %}
 
-{# nothing is returned at this point: the variable 'prompt_result contains the result #}
+{# nothing is returned at this point: the variable 'prompt_result' contains the result #}
 
 {# let's use the prompt_result variable now #}
 {{ prompt_result | upper }}
@@ -244,7 +244,7 @@ p = Prompt(prompt_template)
 print(p.text({"topic": "climate change"}))
 ```
 
-The result of the print will be printed, this time all in uppercase.
+The final answer from the LLM will be printed, this time all in uppercase.
 
 ### Reuse templates from files
 

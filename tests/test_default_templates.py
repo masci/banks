@@ -40,9 +40,6 @@ def test_summarize_lemma():
 
 def test_generate_tweet():
     p = Prompt.from_template("generate_tweet.jinja")
-
-    mocked_generate = mock.MagicMock()
-    mocked_generate._generate.return_value = "foo"
-    p.env.extensions["banks.extensions.generate.GenerateExtension"] = mocked_generate
+    p.env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
 
     assert _get_data("generate_tweet.jinja.out") == p.text({"topic": "climate change"})

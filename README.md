@@ -17,6 +17,7 @@ If you're still using `f-strings` for the job, keep reading.
     - [Generate a summarizer prompt](#generate-a-summarizer-prompt)
     - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
+    - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
     - [Reuse templates from files](#reuse-templates-from-files)
   - [License](#license)
 
@@ -173,6 +174,43 @@ Examples:
 If you paste Banks' output into ChatGPT you would get something like this:
 ```txt
 Climate change is a pressing global issue, but together we can create positive change! Let's embrace renewable energy, protect our planet, and build a sustainable future for generations to come. 🌍💚 #ClimateAction #PositiveFuture
+```
+
+### Go meta: create a prompt and `generate` its response
+
+We can leverage Jinja's macro system to generate a prompt, send the result to OpenAI and get a response.
+Let's bring back the blog writing example:
+
+```py
+from banks import Prompt
+
+prompt_template = """
+{% from "banks_macros.jinja" import run_prompt with context %}
+
+{%- call run_prompt() -%}
+Write a 500-word blog post on {{ topic }}
+
+Blog post:
+{%- endcall -%}
+"""
+
+p = Prompt(prompt_template)
+print(p.text({"topic": "climate change"}))
+```
+
+The snippet above won't print the prompt, instead will generate the prompt text
+
+```
+Write a 500-word blog post on climate change
+
+Blog post:
+```
+
+and will send it to OpenAI using the `generate` extension, eventually returning its response:
+
+```
+Climate change is a phenomenon that has been gaining attention in recent years...
+...
 ```
 
 ### Reuse templates from files

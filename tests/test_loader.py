@@ -21,9 +21,9 @@ def test_add_loader():
     test_loader = MultiLoader()
 
     # add a loader, default priority
-    test_loader = FileSystemLoader("")
-    test_loader.add_loader(test_loader)
-    assert test_loader._loaders[1][0] == test_loader
+    fs_loader = FileSystemLoader("")
+    test_loader.add_loader(fs_loader)
+    assert test_loader._loaders[1][0] == fs_loader
     assert test_loader._loaders[1][1] == 100
 
     # add another one with priority

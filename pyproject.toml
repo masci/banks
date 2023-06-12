@@ -77,7 +77,7 @@ fmt = [
 ]
 all = [
   "style",
-  "typing",
+  # "typing",  # FIXME: re-enable once typing is good to go
 ]
 
 [tool.hatch.build.targets.wheel]

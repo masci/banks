@@ -8,7 +8,7 @@ from banks.filters import lemmatize
 from banks.loader import MultiLoader
 
 # Init the Jinja env
-env = Environment(loader=MultiLoader(), extensions=[GenerateExtension], autoescape=True)
+env = Environment(loader=MultiLoader(), extensions=[GenerateExtension], autoescape=False)
 
 # Setup custom filters
 env.filters["lemmatize"] = lemmatize

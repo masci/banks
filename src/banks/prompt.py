@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
 
-from .env import with_env
+from banks.env import with_env
 
 
 @with_env
@@ -12,7 +12,7 @@ class Prompt:
         self._template = self.env.from_string(text) if text else None
 
     @classmethod
-    def from_template(cls, name: str) -> 'Prompt':
+    def from_template(cls, name: str) -> "Prompt":
         p = cls()
         p._template = cls.env.get_template(name)
         return p

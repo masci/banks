@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from jinja2 import nodes, lexer
-from jinja2.ext import Extension
 import openai
+from jinja2 import nodes
+from jinja2.ext import Extension
 
 CHAT_MODELS = [
     "gpt-4",
@@ -27,7 +27,7 @@ class GenerateExtension(Extension):
         # - (optional) the name of the model use to generate new text
         args = [parser.parse_expression()]
 
-        return nodes.Output([self.call_method('_generate', args)]).set_lineno(lineno)
+        return nodes.Output([self.call_method("_generate", args)]).set_lineno(lineno)
 
     def _generate(self, text, model_name=DEFAULT_MODEL):
         """Helper callback."""

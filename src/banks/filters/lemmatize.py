@@ -13,7 +13,8 @@ except ImportError:
 
 def lemmatize(text: str) -> str:
     if not simplemma_avail:
-        raise MissingDependencyError("simplemma is not available, please install it with 'pip install simplemma'")
+        err_msg = "simplemma is not available, please install it with 'pip install simplemma'"
+        raise MissingDependencyError(err_msg)
 
     words = text_lemmatizer(text, "en")
     return " ".join(words)

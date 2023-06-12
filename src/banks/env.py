@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: MIT
 from jinja2 import Environment
 
-from .filters import lemmatize
-from .extensions import GenerateExtension
-from .loader import MultiLoader
+from banks.extensions import GenerateExtension
+from banks.filters import lemmatize
+from banks.loader import MultiLoader
 
 # Init the Jinja env
-env = Environment(loader=MultiLoader(), extensions=[GenerateExtension])
+env = Environment(loader=MultiLoader(), extensions=[GenerateExtension], autoescape=True)
 
 # Setup custom filters
 env.filters["lemmatize"] = lemmatize
@@ -18,5 +18,5 @@ def with_env(cls):
     """
     A decorator that adds an `env` attribute to the decorated class
     """
-    setattr(cls, "env", env)
+    cls.env = env
     return cls

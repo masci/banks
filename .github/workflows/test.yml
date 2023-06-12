@@ -5,10 +5,8 @@ name: test
 on:
   push:
     branches:
-    - master
+    - main
   pull_request:
-    branches:
-    - master
 
 concurrency:
   group: test-${{ github.head_ref }}

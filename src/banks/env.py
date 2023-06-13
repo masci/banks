@@ -1,14 +1,23 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from jinja2 import Environment
+from jinja2 import Environment, select_autoescape
 
 from banks.extensions import GenerateExtension
 from banks.filters import lemmatize
 from banks.loader import MultiLoader
 
 # Init the Jinja env
-env = Environment(loader=MultiLoader(), extensions=[GenerateExtension], autoescape=False)
+env = Environment(
+    loader=MultiLoader(),
+    extensions=[GenerateExtension],
+    autoescape=select_autoescape(
+        enabled_extensions=("html", "xml"),
+        default_for_string=True,
+    ),
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
 
 # Setup custom filters
 env.filters["lemmatize"] = lemmatize

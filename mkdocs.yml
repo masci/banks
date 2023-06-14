@@ -1,0 +1,11 @@
+site_name: Banks
+
+theme:
+  name: material
+  palette:
+    primary: amber
+    scheme: slate
+
+nav:
+  - introduction.md
+  - filters.md

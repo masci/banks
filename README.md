@@ -14,6 +14,9 @@
 [Banks](https://en.wikipedia.org/wiki/Arrival_(film)) is the linguist professor who will help you generate meaningful LLM prompts using a template language that makes sense.
 If you're still using `f-strings` for the job, keep reading.
 
+> Docs are currently in the pipes and at the moment this README is the best resource for Banks' users, anyways they are
+> available [here](https://masci.github.io/banks/)
+
 -----
 
 **Table of Contents**

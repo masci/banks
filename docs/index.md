@@ -12,7 +12,7 @@ are replaced by actual data provided by the user.
 
 * Banks currently supports all the features from Jinja2, see [Template Designer Documentation](https://jinja.palletsprojects.com/en/3.1.x/templates/#jinja-filters.truncate).
 * [Filters](filters.md): useful to manipulate the text during template rendering.
-* Extensions: useful to support custom functions (e.g. text generation via OpenAI).
+* [Extensions](extensions.md): useful to support custom functions (e.g. text generation via OpenAI).
 * Macros: useful to implement complex logic in the template itself instead of Python code.
 
 ## Installation

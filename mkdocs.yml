@@ -9,6 +9,7 @@ theme:
 nav:
   - Home: 'index.md'
   - filters.md
+  - extensions.md
 
 plugins:
   - search
@@ -21,7 +22,7 @@ plugins:
               show_root_full_path: false
               show_source: false
               show_signature_annotations: true
-
+              show_bases: false
 
 markdown_extensions:
   - pymdownx.highlight:

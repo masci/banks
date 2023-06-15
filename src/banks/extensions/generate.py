@@ -14,6 +14,16 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 
 
 class GenerateExtension(Extension):
+    """
+    `generate` can be used to call the OpenAI API passing the tag text as a prompt and get back some content.
+
+    Example:
+        ```
+        {% generate "write a tweet with positive sentiment" "gpt-3.5-turbo" %}
+        Feeling grateful for all the opportunities that come my way! #positivity #productivity
+        ```
+    """
+
     # a set of names that trigger the extension.
     tags = {"generate"}
 
@@ -30,7 +40,11 @@ class GenerateExtension(Extension):
         return nodes.Output([self.call_method("_generate", args)]).set_lineno(lineno)
 
     def _generate(self, text, model_name=DEFAULT_MODEL):
-        """Helper callback."""
+        """
+        Helper callback.
+
+        To tweak the prompt used to generate content, change the variable `messages` .
+        """
         content = openai.ChatCompletion.create(
             model=model_name,
             messages=[

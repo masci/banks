@@ -12,6 +12,19 @@ except ImportError:
 
 
 def lemmatize(text: str) -> str:
+    """
+    Compute and return the lemmatization of the input. Language is hardcoded
+    to English.
+
+    Example:
+        ```
+        {{ 'The dog is running' | lemmatize }}
+        'the dog be run'
+        ```
+
+    Note:
+        Simplemma must be manually installed to use this filter
+    """
     if not simplemma_avail:
         err_msg = "simplemma is not available, please install it with 'pip install simplemma'"
         raise MissingDependencyError(err_msg)

@@ -7,5 +7,27 @@ theme:
     scheme: slate
 
 nav:
-  - introduction.md
+  - Home: 'index.md'
   - filters.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+              show_root_heading: true
+              show_root_full_path: false
+              show_source: false
+              show_signature_annotations: true
+
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

@@ -1,7 +1,7 @@
 from operator import itemgetter
 from typing import Optional
 
-from jinja2 import BaseLoader, PackageLoader, TemplateNotFound
+from jinja2 import BaseLoader, FileSystemLoader, PackageLoader, TemplateNotFound
 
 
 class MultiLoader(BaseLoader):
@@ -15,8 +15,9 @@ class MultiLoader(BaseLoader):
     def __init__(self) -> None:
         super().__init__()
         self._loaders: list(BaseLoader) = []
-        # add a default loader
-        self.add_loader(PackageLoader("banks", "templates"), 1)
+        # add default loaders
+        self.add_loader(PackageLoader("banks", "templates"), 10)
+        self.add_loader(FileSystemLoader("templates"), 20)
 
     def add_loader(self, loader: BaseLoader, priority: Optional[int] = 100) -> None:
         self._loaders.append((loader, priority))

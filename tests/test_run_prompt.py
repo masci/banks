@@ -3,21 +3,19 @@
 # SPDX-License-Identifier: MIT
 from unittest import mock
 
-from banks import Prompt
+from banks import Prompt, env
 
 
 def test_run_prompt():
     p = Prompt.from_template("run_prompt.jinja")
-    p.env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
+    env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
 
     assert p.text({"topic": "climate change"}) == "\n\nfoo\n"
 
 
 def test_run_prompt_process():
     p = Prompt.from_template("run_prompt_process.jinja")
-    p.env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(
-        return_value="foo bar baz"
-    )
+    env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo bar baz")
 
     # print(p.text({"topic": "climate change"}))
     assert p.text({"topic": "climate change"}) == "FOO BAR BAZ"

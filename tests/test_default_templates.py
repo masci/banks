@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from banks import Prompt
+from banks import Prompt, env
 
 
 def _get_data(name):
@@ -40,6 +40,6 @@ def test_summarize_lemma():
 
 def test_generate_tweet():
     p = Prompt.from_template("generate_tweet.jinja")
-    p.env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
+    env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
 
     assert _get_data("generate_tweet.jinja.out") == p.text({"topic": "climate change"})

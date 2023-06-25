@@ -2,5 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 from banks.extensions.generate import GenerateExtension
+from banks.extensions.inference_endpoint import HFInferenceEndpointsExtension
 
-__all__ = ("GenerateExtension",)
+__all__ = ("GenerateExtension", "HFInferenceEndpointsExtension")

@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: MIT
 from jinja2 import Environment, select_autoescape
 
-from banks.extensions import GenerateExtension
+from banks.extensions import GenerateExtension, HFInferenceEndpointsExtension
 from banks.filters import lemmatize
 from banks.loader import MultiLoader
 
 # Init the Jinja env
 env = Environment(
     loader=MultiLoader(),
-    extensions=[GenerateExtension],
+    extensions=[GenerateExtension, HFInferenceEndpointsExtension],
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
         default_for_string=True,

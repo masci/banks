@@ -15,6 +15,7 @@
 [Banks](https://en.wikipedia.org/wiki/Arrival_(film)) is the linguist professor who will help you generate meaningful LLM prompts using a template language that makes sense.
 If you're still using `f-strings` for the job, keep reading.
 
+> [!NOTE]
 > Docs are currently in the pipes and at the moment this README is the best resource for Banks' users, anyways they are
 > available [here](https://masci.github.io/banks/)
 
@@ -189,8 +190,9 @@ If you paste Banks' output into ChatGPT you would get something like this:
 Climate change is a pressing global issue, but together we can create positive change! Let's embrace renewable energy, protect our planet, and build a sustainable future for generations to come. 🌍💚 #ClimateAction #PositiveFuture
 ```
 
-The `generate` extension uses [LiteLLM](https://github.com/BerriAI/litellm) under the hood, and provided you have the
-proper environment variables set, you can use any model from the supported [model providers](https://docs.litellm.ai/docs/providers).
+> [!TIP]
+> The `generate` extension uses [LiteLLM](https://github.com/BerriAI/litellm) under the hood, and provided you have the
+> proper environment variables set, you can use any model from the supported [model providers](https://docs.litellm.ai/docs/providers).
 
 ### Go meta: create a prompt and `generate` its response
 

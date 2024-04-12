@@ -17,5 +17,4 @@ def test_run_prompt_process():
     p = Prompt.from_template("run_prompt_process.jinja")
     env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo bar baz")
 
-    # print(p.text({"topic": "climate change"}))
     assert p.text({"topic": "climate change"}) == "FOO BAR BAZ"

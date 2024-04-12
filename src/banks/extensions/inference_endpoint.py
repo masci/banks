@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import os
 import html
+import os
+from typing import ClassVar
 
 import requests
 from jinja2 import nodes
@@ -22,7 +23,7 @@ class HFInferenceEndpointsExtension(Extension):
     """
 
     # a set of names that trigger the extension.
-    tags = {"inference_endpoint"}
+    tags: ClassVar[set] = {"inference_endpoint"}
 
     def parse(self, parser):
         # We get the line number of the first token so that we can give
@@ -43,7 +44,9 @@ class HFInferenceEndpointsExtension(Extension):
         Helper callback.
         """
         access_token = os.environ.get("HF_ACCESS_TOKEN")
-        response = requests.post(endpoint, json={"inputs": text}, headers={'Authorization': f'Bearer {access_token}'})
+        response = requests.post(
+            endpoint, json={"inputs": text}, headers={"Authorization": f"Bearer {access_token}"}, timeout=30
+        )
         response_body = response.json()
 
         if response_body:

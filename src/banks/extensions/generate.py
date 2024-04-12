@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import cast
+from typing import ClassVar, cast
 
-from litellm import completion, ModelResponse
 from jinja2 import nodes
 from jinja2.ext import Extension
+from litellm import ModelResponse, completion
 
 DEFAULT_MODEL = "gpt-3.5-turbo"
 
@@ -22,7 +22,7 @@ class GenerateExtension(Extension):
     """
 
     # a set of names that trigger the extension.
-    tags = {"generate"}
+    tags: ClassVar[set] = {"generate"}
 
     def parse(self, parser):
         # We get the line number of the first token so that we can give

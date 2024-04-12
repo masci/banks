@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 import html
 import os
-from typing import ClassVar
 
 import requests
 from jinja2 import nodes
@@ -23,7 +22,7 @@ class HFInferenceEndpointsExtension(Extension):
     """
 
     # a set of names that trigger the extension.
-    tags: ClassVar[set] = {"inference_endpoint"}
+    tags = {"inference_endpoint"}  # noqa
 
     def parse(self, parser):
         # We get the line number of the first token so that we can give

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import ClassVar, cast
+from typing import cast
 
 from jinja2 import nodes
 from jinja2.ext import Extension
@@ -22,7 +22,7 @@ class GenerateExtension(Extension):
     """
 
     # a set of names that trigger the extension.
-    tags: ClassVar[set] = {"generate"}
+    tags = {"generate"}  # noqa
 
     def parse(self, parser):
         # We get the line number of the first token so that we can give

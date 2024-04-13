@@ -12,7 +12,7 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 
 class GenerateExtension(Extension):
     """
-    `generate` can be used to call the OpenAI API passing the tag text as a prompt and get back some content.
+    `generate` can be used to call the LiteLLM API passing the tag text as a prompt and get back some content.
 
     Example:
         ```

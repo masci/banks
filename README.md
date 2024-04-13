@@ -12,12 +12,10 @@
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 [![License - MIT](https://img.shields.io/badge/license-MIT-9400d3.svg)](https://spdx.org/licenses/)
 
-[Banks](https://en.wikipedia.org/wiki/Arrival_(film)) is the linguist professor who will help you generate meaningful LLM prompts using a template language that makes sense.
-If you're still using `f-strings` for the job, keep reading.
+[Banks](https://en.wikipedia.org/wiki/Arrival_(film)) is the linguist professor who will help you generate meaningful
+LLM prompts using a template language that makes sense. If you're still using `f-strings` for the job, keep reading.
 
-> [!NOTE]
-> Docs are currently in the pipes and at the moment this README is the best resource for Banks' users, anyways they are
-> available [here](https://masci.github.io/banks/)
+Docs are available [here](https://masci.github.io/banks/).
 
 -----
 

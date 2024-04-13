@@ -8,10 +8,8 @@ theme:
 
 nav:
   - Home: 'index.md'
-  - filters.md
-  - extensions.md
-  - macros.md
   - Python API: 'python.md'
+  - Prompt API: 'prompt.md'
 
 plugins:
   - search

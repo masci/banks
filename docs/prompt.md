@@ -1,3 +1,39 @@
+## Filters
+
+Filters are Python functions that are called during the rendering of a certain tag. For example, if a prompt template
+contains the tag:
+
+```jinja
+{{ 'hello' | upper }}
+```
+
+a Python function named `upper` (in this case provided by Jinja) will be called passing the string 'hello' as a
+parameter, and its return value will replace the tag in the final text:
+
+```python
+from banks import Prompt
+
+p = Prompt("{{ 'hello' | upper }}")
+p.text()  ## outputs 'HELLO'
+```
+
+In addition to all the [builtin filters](https://jinja.palletsprojects.com/en/3.1.x/templates/#list-of-builtin-filters)
+provided by Jinja, Banks supports the following ones, specific for prompt engineering.
+
+
+::: banks.filters.lemmatize.lemmatize
+
+## Extensions
+
+Extensions are custom functions that can be used to add new tags to the template engine.
+Banks supports the following ones, specific for prompt engineering.
+
+::: banks.extensions.generate
+    options:
+        show_root_heading: false
+
+## Macros
+
 Macros are a way to implement complex logic in the template itself, think about defining functions but using Jinja
 code instead of Python. Banks provides a set of macros out of the box that are useful in prompt engineering,
 for example to generate a prompt and call OpenAI on-the-fly, during the template rendering.

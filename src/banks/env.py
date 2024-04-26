@@ -13,7 +13,7 @@ env = Environment(
     extensions=[GenerateExtension, HFInferenceEndpointsExtension],
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
-        default_for_string=True,
+        default_for_string=False,
     ),
     trim_blocks=True,
     lstrip_blocks=True,

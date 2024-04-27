@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 from banks.env import env
-from banks.prompt import Prompt, AsyncPrompt
+from banks.prompt import AsyncPrompt, Prompt
 
 __all__ = (
     "env",

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
 
-from banks.env import env, async_enabled
+from banks.env import async_enabled, env
 from banks.errors import AsyncError
 
 

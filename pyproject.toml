@@ -172,6 +172,7 @@ exclude_lines = [
 [[tool.mypy.overrides]]
 module = [
   "simplemma.*",
-  "litellm.*"
+  "litellm.*",
+  "distutils.*",
 ]
 ignore_missing_imports = true

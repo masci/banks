@@ -7,22 +7,24 @@ from banks.env import async_enabled, env
 from banks.errors import AsyncError
 
 
-class Prompt:
+class BasePrompt:
     def __init__(self, text: str) -> None:
         self._template = env.from_string(text)
 
     @classmethod
-    def from_template(cls, name: str) -> "Prompt":
+    def from_template(cls, name: str) -> "BasePrompt":
         p = cls("")
         p._template = env.get_template(name)
         return p
 
+
+class Prompt(BasePrompt):
     def text(self, data: Optional[dict] = None) -> str:
         data = data or {}
         return self._template.render(data)
 
 
-class AsyncPrompt(Prompt):
+class AsyncPrompt(BasePrompt):
     def __init__(self, text: str) -> None:
         super().__init__(text)
 
@@ -32,4 +34,5 @@ class AsyncPrompt(Prompt):
 
     async def text(self, data: Optional[dict] = None) -> str:
         data = data or {}
-        return await self._template.render_async(data)
+        result: str = await self._template.render_async(data)
+        return result

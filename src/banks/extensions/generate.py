@@ -34,6 +34,13 @@ class GenerateExtension(Extension):
         # - (optional) the name of the model use to generate new text
         args = [parser.parse_expression()]
 
+        # If there is a comma, the user provided the model name. If not, use
+        # None as the second parameter.
+        if parser.stream.skip_if("comma"):
+            args.append(parser.parse_expression())
+        else:
+            args.append(nodes.Const(None))
+
         return nodes.Output([self.call_method("_generate", args)]).set_lineno(lineno)
 
     def _generate(self, text, model_name=DEFAULT_MODEL):

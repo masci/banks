@@ -173,6 +173,5 @@ exclude_lines = [
 module = [
   "simplemma.*",
   "litellm.*",
-  "distutils.*",
 ]
 ignore_missing_imports = true

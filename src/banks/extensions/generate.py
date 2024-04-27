@@ -5,7 +5,7 @@ from typing import cast
 
 from jinja2 import nodes
 from jinja2.ext import Extension
-from litellm import ModelResponse, completion
+from litellm import ModelResponse, completion, acompletion
 
 DEFAULT_MODEL = "gpt-3.5-turbo"
 
@@ -41,6 +41,8 @@ class GenerateExtension(Extension):
         else:
             args.append(nodes.Const(None))
 
+        if parser.environment.is_async:
+            return nodes.Output([self.call_method("_agenerate", args)]).set_lineno(lineno)
         return nodes.Output([self.call_method("_generate", args)]).set_lineno(lineno)
 
     def _generate(self, text, model_name=DEFAULT_MODEL):
@@ -53,6 +55,20 @@ class GenerateExtension(Extension):
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": text},
         ]
-
         response: ModelResponse = cast(ModelResponse, completion(model=model_name, messages=messages))
+        return response["choices"][0]["message"]["content"]
+
+    async def _agenerate(self, text, model_name=DEFAULT_MODEL):
+        """
+        Helper callback.
+
+        To tweak the prompt used to generate content, change the variable `messages` .
+        """
+        print(f"Running {text} with {model_name}")
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": text},
+        ]
+        response: ModelResponse = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
+        print(f"Done running {model_name}")
         return response["choices"][0]["message"]["content"]

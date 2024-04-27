@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
 
-from banks.env import env
+from banks.env import env, async_enabled
+from banks.errors import AsyncError
 
 
 class Prompt:
@@ -19,3 +20,16 @@ class Prompt:
     def text(self, data: Optional[dict] = None) -> str:
         data = data or {}
         return self._template.render(data)
+
+
+class AsyncPrompt(Prompt):
+    def __init__(self, text: str) -> None:
+        super().__init__(text)
+
+        if not async_enabled:
+            msg = "Async is not enabled. Please set the environment variable 'BANKS_ASYNC_ENABLED=on' and try again."
+            raise AsyncError(msg)
+
+    async def text(self, data: Optional[dict] = None) -> str:
+        data = data or {}
+        return await self._template.render_async(data)

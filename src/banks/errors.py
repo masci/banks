@@ -3,3 +3,7 @@
 # SPDX-License-Identifier: MIT
 class MissingDependencyError(Exception):
     pass
+
+
+class AsyncError(Exception):
+    pass

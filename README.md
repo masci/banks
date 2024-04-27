@@ -31,6 +31,7 @@ Docs are available [here](https://masci.github.io/banks/).
     - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
     - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
     - [Reuse templates from files](#reuse-templates-from-files)
+    - [Async support](#async-support)
   - [License](#license)
 
 ## Installation
@@ -274,6 +275,24 @@ from banks import Prompt
 p = Prompt.from_template("blog.jinja")
 topic = "retrogame computing"
 print(p.text({"topic": topic}))
+```
+
+### Async support
+
+To run banks within an `asyncio` loop you have to do two things:
+1. set the environment variable `BANKS_ASYNC_ENABLED=true`.
+2. use the `AsyncPrompt` class that has an awaitable `run` method.
+
+Example:
+```python
+from banks import AsyncPrompt
+
+async def main():
+    p = AsyncPrompt.from_template("blog.jinja")
+    result = await p.text({"topic": "AI frameworks"})
+    print(result)
+
+asyncio.run(main())
 ```
 
 ## License

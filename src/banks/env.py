@@ -1,38 +1,29 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import os
-
 from jinja2 import Environment, select_autoescape
 
-from banks.extensions import GenerateExtension, HFInferenceEndpointsExtension
-from banks.filters import lemmatize
-from banks.loader import MultiLoader
+
+from .filters import lemmatize
+from .loader import MultiLoader
+from .config import async_enabled
 
 
-def strtobool(val: str) -> bool:
-    """Convert a string representation of truth to True or False.
-
-    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
-    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
-    'val' is anything else.
+def _add_extensions(env):
     """
-    val = val.lower()
-    if val in ("y", "yes", "t", "true", "on", "1"):
-        return True
-    elif val in ("n", "no", "f", "false", "off", "0"):
-        return False
-    else:
-        msg = f"invalid truth value {val}"
-        raise ValueError(msg)
+    We lazily add extensions so that we can use the env in the extensions themselves if needed.
 
+    For example, we use banks to manage the system prompt in `GenerateExtension`
+    """
+    from .extensions import GenerateExtension, HFInferenceEndpointsExtension
 
-async_enabled = strtobool(os.environ.get("BANKS_ASYNC_ENABLED", "false"))
+    env.add_extension(GenerateExtension)
+    env.add_extension(HFInferenceEndpointsExtension)
+
 
 # Init the Jinja env
 env = Environment(
     loader=MultiLoader(),
-    extensions=[GenerateExtension, HFInferenceEndpointsExtension],
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
         default_for_string=False,
@@ -42,8 +33,9 @@ env = Environment(
     enable_async=bool(async_enabled),
 )
 
-# Setup custom filters
+# Setup custom filters and default extensions
 env.filters["lemmatize"] = lemmatize
+_add_extensions(env)
 
 
 def with_env(cls):

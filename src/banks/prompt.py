@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
 
-from .env import env
 from .config import async_enabled
+from .env import env
 from .errors import AsyncError
 from .utils import generate_canary_word
 

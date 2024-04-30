@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: MIT
 from jinja2 import Environment, select_autoescape
 
-
+from .config import async_enabled
 from .filters import lemmatize
 from .loader import MultiLoader
-from .config import async_enabled
 
 
 def _add_extensions(env):

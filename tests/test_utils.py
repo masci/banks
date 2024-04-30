@@ -1,6 +1,5 @@
-import regex as re
-
 import pytest
+import regex as re
 
 from banks.utils import generate_canary_word, strtobool
 

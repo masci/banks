@@ -7,8 +7,8 @@ from jinja2 import nodes
 from jinja2.ext import Extension
 from litellm import ModelResponse, acompletion, completion
 
-from banks.prompt import Prompt
 from banks.errors import CanaryWordError
+from banks.prompt import Prompt
 
 DEFAULT_MODEL = "gpt-3.5-turbo"
 SYSTEM_PROMPT = Prompt("{{canary_word}} You are a helpful assistant.")
@@ -62,7 +62,8 @@ class GenerateExtension(Extension):
         response: ModelResponse = cast(ModelResponse, completion(model=model_name, messages=messages))
         content: str = response["choices"][0]["message"]["content"]
         if SYSTEM_PROMPT.canary_leaked(content):
-            raise CanaryWordError("The system prompt has leaked into the response, possible prompt injection!")
+            msg = "The system prompt has leaked into the response, possible prompt injection!"
+            raise CanaryWordError(msg)
 
     async def _agenerate(self, text, model_name=DEFAULT_MODEL):
         """

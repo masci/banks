@@ -32,6 +32,11 @@ Banks supports the following ones, specific for prompt engineering.
     options:
         show_root_heading: false
 
+### `{{canary_word}}`
+
+Insert into the prompt a canary word that can be checked later with `Prompt.canary_leaked()`
+to ensure the original prompt was not leaked.
+
 ## Macros
 
 Macros are a way to implement complex logic in the template itself, think about defining functions but using Jinja

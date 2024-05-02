@@ -40,6 +40,8 @@ path = "src/banks/__about__.py"
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "mkdocs-material",
+  "mkdocstrings[python]",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -53,6 +55,7 @@ cov = [
   "test-cov",
   "cov-report",
 ]
+docs = "mkdocs build"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.9", "3.10", "3.11", "3.12"]

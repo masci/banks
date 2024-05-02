@@ -22,29 +22,45 @@ provided by Jinja, Banks supports the following ones, specific for prompt engine
 
 
 ::: banks.filters.lemmatize.lemmatize
+    options:
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
 
 ## Extensions
 
 Extensions are custom functions that can be used to add new tags to the template engine.
 Banks supports the following ones, specific for prompt engineering.
 
-::: banks.extensions.generate
+::: banks.extensions.generate.generate
     options:
-        show_root_heading: false
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
 
-### `{{canary_word}}`
+### `canary_word`
 
 Insert into the prompt a canary word that can be checked later with `Prompt.canary_leaked()`
 to ensure the original prompt was not leaked.
+
+Example:
+```python
+from banks import Prompt
+
+p = Prompt("{{canary_word}}Hello, World!")
+p.text()  ## outputs 'BANKS[5f0bbba4]Hello, World!'
+```
 
 ## Macros
 
 Macros are a way to implement complex logic in the template itself, think about defining functions but using Jinja
 code instead of Python. Banks provides a set of macros out of the box that are useful in prompt engineering,
 for example to generate a prompt and call OpenAI on-the-fly, during the template rendering.
-In order to use Banks' macros, you have to import them in your templates, see the examples below.
+Before using Banks' macros, you have to import them in your templates, see the examples below.
 
-<h2 class="doc-heading"><code>run_prompt</code></h2>
+### `run_prompt`
 
 Similar to `generate`, `run_prompt` will call OpenAI passing the whole block content as the input. The block
 content can in turn contain Jinja tags, which makes this macro very powerful. In the example below, during

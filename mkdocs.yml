@@ -10,7 +10,6 @@ nav:
   - Home: 'index.md'
   - Python API: 'python.md'
   - Prompt API: 'prompt.md'
-  - asyncio support: 'async.md'
 
 plugins:
   - search
@@ -19,8 +18,10 @@ plugins:
         python:
           paths: [src]
           options:
+              docstring_style: google
               show_root_heading: true
-              show_root_full_path: false
+              show_root_full_path: true
+              show_symbol_type_heading: true
               show_source: false
               show_signature_annotations: true
               show_bases: false

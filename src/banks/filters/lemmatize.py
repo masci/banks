@@ -17,10 +17,10 @@ def lemmatize(text: str) -> str:
     to English.
 
     Example:
-        ```
-        {{ 'The dog is running' | lemmatize }}
-        'the dog be run'
-        ```
+    ```
+    {{ 'The dog is running' | lemmatize }}
+    'the dog be run'
+    ```
 
     Note:
         Simplemma must be manually installed to use this filter

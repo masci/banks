@@ -14,7 +14,7 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 SYSTEM_PROMPT = Prompt("{{canary_word}} You are a helpful assistant.")
 
 
-class GenerateExtension(Extension):
+def generate(model_name: str):
     """
     `generate` can be used to call the LiteLLM API passing the tag text as a prompt and get back some content.
 
@@ -25,6 +25,8 @@ class GenerateExtension(Extension):
         ```
     """
 
+
+class GenerateExtension(Extension):
     # a set of names that trigger the extension.
     tags = {"generate"}  # noqa
 

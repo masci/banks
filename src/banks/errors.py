@@ -7,3 +7,7 @@ class MissingDependencyError(Exception):
 
 class AsyncError(Exception):
     pass
+
+
+class CanaryWordError(Exception):
+    pass

@@ -47,7 +47,7 @@ class BasePrompt:
         ```
         .
         └── templates
-            └── foo.jinja
+            └── foo.jinja
         ```
 
         The code would be the following:

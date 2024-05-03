@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import Optional
+import pickle
+from typing import Any, Optional
 
 from .config import async_enabled
 from .env import env
@@ -20,8 +21,15 @@ class BasePrompt:
                 generated
 
         """
+        self._cache: dict[bytes, str] = {}
         self._template = env.from_string(text)
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
+
+    def _cache_get(self, data: dict) -> Optional[str]:
+        return self._cache.get(pickle.dumps(data, pickle.HIGHEST_PROTOCOL))
+
+    def _cache_set(self, data: dict, text: str) -> None:
+        self._cache[pickle.dumps(data, pickle.HIGHEST_PROTOCOL)] = text
 
     def _get_context(self, data: Optional[dict]) -> dict:
         if data is None:
@@ -100,7 +108,13 @@ class Prompt(BasePrompt):
             data: A dictionary containing the context variables.
         """
         data = self._get_context(data)
-        return self._template.render(data)
+        cached = self._cache_get(data)
+        if cached:
+            return cached
+
+        rendered: str = self._template.render(data)
+        self._cache_set(data, rendered)
+        return rendered
 
 
 class AsyncPrompt(BasePrompt):
@@ -173,5 +187,10 @@ class AsyncPrompt(BasePrompt):
 
     async def text(self, data: Optional[dict] = None) -> str:
         data = self._get_context(data)
-        result: str = await self._template.render_async(data)
-        return result
+        cached = self._cache_get(data)
+        if cached:
+            return cached
+
+        rendered: str = await self._template.render_async(data)
+        self._cache_set(data, rendered)
+        return rendered

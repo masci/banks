@@ -1,5 +1,6 @@
-import regex as re
 from unittest import mock
+
+import regex as re
 
 from banks import Prompt
 

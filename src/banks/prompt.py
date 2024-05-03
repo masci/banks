@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 import pickle
-from typing import Any, Optional
+from typing import Optional
 
 from .config import async_enabled
 from .env import env

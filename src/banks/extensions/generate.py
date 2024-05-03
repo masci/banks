@@ -62,10 +62,7 @@ class GenerateExtension(Extension):
             {"role": "user", "content": text},
         ]
         response: ModelResponse = cast(ModelResponse, completion(model=model_name, messages=messages))
-        content: str = response["choices"][0]["message"]["content"]
-        if SYSTEM_PROMPT.canary_leaked(content):
-            msg = "The system prompt has leaked into the response, possible prompt injection!"
-            raise CanaryWordError(msg)
+        return self._get_content(response)
 
     async def _agenerate(self, text, model_name=DEFAULT_MODEL):
         """
@@ -78,4 +75,11 @@ class GenerateExtension(Extension):
             {"role": "user", "content": text},
         ]
         response: ModelResponse = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
-        return response["choices"][0]["message"]["content"]
+        return self._get_content(response)
+
+    def _get_content(self, response: ModelResponse) -> str:
+        content = response["choices"][0]["message"]["content"]
+        if SYSTEM_PROMPT.canary_leaked(content):
+            msg = "The system prompt has leaked into the response, possible prompt injection!"
+            raise CanaryWordError(msg)
+        return content

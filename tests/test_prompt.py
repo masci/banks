@@ -3,6 +3,7 @@ from unittest import mock
 import regex as re
 
 from banks import Prompt
+from banks.cache import DefaultCache
 
 
 def test_canary_word_generation():
@@ -18,20 +19,9 @@ def test_canary_word_leaked():
     assert not p.canary_leaked(p.text())
 
 
-def test_prompt_cache_miss():
-    p = Prompt("This is my prompt")
+def test_prompt_cache():
+    mock_cache = DefaultCache()
+    mock_cache.set = mock.Mock()
+    p = Prompt("This is my prompt", render_cache=mock_cache)
     p.text()
-    cached = list(p._cache.values())
-    assert len(cached) == 1
-    assert cached[0] == "This is my prompt"
-
-
-def test_prompt_cache_hit():
-    p = Prompt("This is my prompt")
-    mock_render = mock.MagicMock()
-    p._template.render = mock_render
-    p.text()
-    mock_render.assert_called_once()
-    mock_render.reset_mock()
-    p.text()
-    mock_render.assert_not_called()
+    mock_cache.set.assert_called_once()

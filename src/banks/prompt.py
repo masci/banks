@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import pickle
 from typing import Optional
 
+from .cache import DefaultCache, RenderCache
 from .config import async_enabled
 from .env import env
 from .errors import AsyncError
@@ -11,25 +11,28 @@ from .utils import generate_canary_word
 
 
 class BasePrompt:
-    def __init__(self, text: str, canary_word: Optional[str] = None) -> None:
+    def __init__(
+        self, text: str, canary_word: Optional[str] = None, render_cache: Optional[RenderCache] = None
+    ) -> None:
         """
         Prompt constructor.
 
         Parameters:
-            text: The template text
+            text: The template text.
             canary_word: The string to use for the `{{canary_word}}` extension. If `None`, a default string will be
-                generated
-
+                generated.
+            render_cache: The caching backend to store rendered prompts. If `None`, the default in-memory backend will
+                be used.
         """
-        self._cache: dict[bytes, str] = {}
+        self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
 
     def _cache_get(self, data: dict) -> Optional[str]:
-        return self._cache.get(pickle.dumps(data, pickle.HIGHEST_PROTOCOL))
+        return self._render_cache.get(data)
 
     def _cache_set(self, data: dict, text: str) -> None:
-        self._cache[pickle.dumps(data, pickle.HIGHEST_PROTOCOL)] = text
+        self._render_cache.set(data, text)
 
     def _get_context(self, data: Optional[dict]) -> dict:
         if data is None:

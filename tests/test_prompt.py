@@ -1,6 +1,9 @@
+from unittest import mock
+
 import regex as re
 
 from banks import Prompt
+from banks.cache import DefaultCache
 
 
 def test_canary_word_generation():
@@ -14,3 +17,11 @@ def test_canary_word_leaked():
 
     p = Prompt("This is my prompt")
     assert not p.canary_leaked(p.text())
+
+
+def test_prompt_cache():
+    mock_cache = DefaultCache()
+    mock_cache.set = mock.Mock()
+    p = Prompt("This is my prompt", render_cache=mock_cache)
+    p.text()
+    mock_cache.set.assert_called_once()

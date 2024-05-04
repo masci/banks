@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
 
+from .cache import DefaultCache, RenderCache
 from .config import async_enabled
 from .env import env
 from .errors import AsyncError
@@ -10,18 +11,28 @@ from .utils import generate_canary_word
 
 
 class BasePrompt:
-    def __init__(self, text: str, canary_word: Optional[str] = None) -> None:
+    def __init__(
+        self, text: str, canary_word: Optional[str] = None, render_cache: Optional[RenderCache] = None
+    ) -> None:
         """
         Prompt constructor.
 
         Parameters:
-            text: The template text
+            text: The template text.
             canary_word: The string to use for the `{{canary_word}}` extension. If `None`, a default string will be
-                generated
-
+                generated.
+            render_cache: The caching backend to store rendered prompts. If `None`, the default in-memory backend will
+                be used.
         """
+        self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
+
+    def _cache_get(self, data: dict) -> Optional[str]:
+        return self._render_cache.get(data)
+
+    def _cache_set(self, data: dict, text: str) -> None:
+        self._render_cache.set(data, text)
 
     def _get_context(self, data: Optional[dict]) -> dict:
         if data is None:
@@ -100,7 +111,13 @@ class Prompt(BasePrompt):
             data: A dictionary containing the context variables.
         """
         data = self._get_context(data)
-        return self._template.render(data)
+        cached = self._cache_get(data)
+        if cached:
+            return cached
+
+        rendered: str = self._template.render(data)
+        self._cache_set(data, rendered)
+        return rendered
 
 
 class AsyncPrompt(BasePrompt):
@@ -173,5 +190,10 @@ class AsyncPrompt(BasePrompt):
 
     async def text(self, data: Optional[dict] = None) -> str:
         data = self._get_context(data)
-        result: str = await self._template.render_async(data)
-        return result
+        cached = self._cache_get(data)
+        if cached:
+            return cached
+
+        rendered: str = await self._template.render_async(data)
+        self._cache_set(data, rendered)
+        return rendered

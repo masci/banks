@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "Banks: the linguist professor who will help you generate meaningful Prompts"
+date-released: 2023-06-12
+url: "https://github.com/masci/banks"
+authors:
+- family-names: Pippi
+  given-names: Massimiliano

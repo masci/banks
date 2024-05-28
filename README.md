@@ -24,8 +24,8 @@ Docs are available [here](https://masci.github.io/banks/).
 - [banks](#banks)
   - [Installation](#installation)
   - [Examples](#examples)
-    - [Generate a blog writing prompt](#generate-a-blog-writing-prompt)
-    - [Generate a summarizer prompt](#generate-a-summarizer-prompt)
+    - [Create a blog writing prompt](#create-a-blog-writing-prompt)
+    - [Create a summarizer prompt](#create-a-summarizer-prompt)
     - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
@@ -42,7 +42,7 @@ pip install banks
 
 ## Examples
 
-### Generate a blog writing prompt
+### Create a blog writing prompt
 
 Given a generic template to instruct an LLM to generate a blog article, we
 use Banks to generate the actual prompt on our topic of choice, "retrogame computing":
@@ -64,9 +64,9 @@ Write a 500-word blog post on retrogame computing.
 Blog post:
 ```
 
-### Generate a summarizer prompt
+### Create a summarizer prompt
 
-Instead of hardcoding the content to summarize in the prompt itself, we can generate it
+Instead of hardcoding the content to summarize in the prompt itself, we can inject it
 starting from a generic one:
 
 
@@ -189,9 +189,13 @@ If you paste Banks' output into ChatGPT you would get something like this:
 Climate change is a pressing global issue, but together we can create positive change! Let's embrace renewable energy, protect our planet, and build a sustainable future for generations to come. 🌍💚 #ClimateAction #PositiveFuture
 ```
 
-> [!TIP]
+> [!IMPORTANT]
 > The `generate` extension uses [LiteLLM](https://github.com/BerriAI/litellm) under the hood, and provided you have the
 > proper environment variables set, you can use any model from the supported [model providers](https://docs.litellm.ai/docs/providers).
+
+> [!NOTE]
+> Banks uses a cache to avoid generating text again for the same template with the same context. By default
+> the cache is in-memory but it can be customized.
 
 ### Go meta: create a prompt and `generate` its response
 

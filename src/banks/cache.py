@@ -7,6 +7,13 @@ from typing import Optional, Protocol, runtime_checkable
 
 @runtime_checkable
 class RenderCache(Protocol):
+    """
+    Interface for rendering cache.
+
+    Prompts with the same template and same context are retrieved from the cache directly,
+    instead of going through the rendering process.
+    """
+
     def get(self, context: dict) -> Optional[str]: ...
 
     def set(self, context: dict, prompt: str) -> None: ...
@@ -15,6 +22,10 @@ class RenderCache(Protocol):
 
 
 class DefaultCache:
+    """
+    In-memory, default rendering cache.
+    """
+
     def __init__(self) -> None:
         self._cache: dict[bytes, str] = {}
 

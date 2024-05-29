@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 from jinja2 import Environment, select_autoescape
+from platformdirs import user_data_path
 
 from .config import async_enabled
 from .filters import lemmatize
@@ -35,6 +36,8 @@ env = Environment(
 # Setup custom filters and default extensions
 env.filters["lemmatize"] = lemmatize
 _add_extensions(env)
+
+USER_DATA_PATH = user_data_path("banks")
 
 
 def with_env(cls):

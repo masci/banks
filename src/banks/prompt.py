@@ -46,14 +46,16 @@ class BasePrompt:
         return self.defaults["canary_word"] in text
 
     @classmethod
-    def from_template(cls, name: str) -> "BasePrompt":
+    def from_template(cls, name: str, version: str | None) -> "BasePrompt":
         """
         Create a prompt instance from a template.
 
         Prompt templates can be really long and at some point you might want to store them on files. To avoid the
         boilerplate code to read a file and pass the content as strings to the constructor, `Prompt`s can be
-        initialized by just passing the name of the template file, provided that the file is stored in a folder called
-        `templates` in the current path:
+        initialized by just passing the name of the template file, provided that the file is available to the
+        loaders that were configured (see `Multiloader`).
+
+        One of the default loaders can load templates stored in a folder called `templates` in the current path:
 
         ```
         .

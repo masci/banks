@@ -26,6 +26,7 @@ classifiers = [
 dependencies = [
   "jinja2",
   "litellm",
+  "pydantic",
 ]
 
 [project.urls]

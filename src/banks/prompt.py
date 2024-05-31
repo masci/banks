@@ -46,7 +46,7 @@ class BasePrompt:
         return self.defaults["canary_word"] in text
 
     @classmethod
-    def from_template(cls, name: str, version: str | None) -> "BasePrompt":
+    def from_template(cls, name: str, version: str | None = None) -> "BasePrompt":
         """
         Create a prompt instance from a template.
 

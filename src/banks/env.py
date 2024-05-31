@@ -1,12 +1,19 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import os
+from pathlib import Path
+
 from jinja2 import Environment, select_autoescape
 from platformdirs import user_data_path
 
 from .config import async_enabled
 from .filters import lemmatize
 from .loader import MultiLoader
+from .registries import FileTemplateRegistry
+from .registry import TemplateRegistry
+
+USER_DATA_PATH = user_data_path("banks")
 
 
 def _add_extensions(env):
@@ -19,6 +26,13 @@ def _add_extensions(env):
 
     env.add_extension(GenerateExtension)
     env.add_extension(HFInferenceEndpointsExtension)
+
+
+def _add_default_templates(r: TemplateRegistry):
+    templates_dir = Path(os.path.dirname(__file__)) / "templates"
+    for tpl_file in templates_dir.glob("*.jinja"):
+        r.set(tpl_file.name, tpl_file.read_text())
+    r.save()
 
 
 # Init the Jinja env
@@ -37,12 +51,6 @@ env = Environment(
 env.filters["lemmatize"] = lemmatize
 _add_extensions(env)
 
-USER_DATA_PATH = user_data_path("banks")
-
-
-def with_env(cls):
-    """
-    A decorator that adds an `env` attribute to the decorated class
-    """
-    cls.env = env
-    return cls
+# Template registry
+registry = FileTemplateRegistry(env, USER_DATA_PATH)
+_add_default_templates(registry)

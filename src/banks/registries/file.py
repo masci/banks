@@ -5,7 +5,6 @@ from pathlib import Path
 
 from jinja2 import Environment
 from jinja2.environment import Template
-from pydantic_core import from_json
 
 from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError
 

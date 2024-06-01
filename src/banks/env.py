@@ -5,15 +5,13 @@ import os
 from pathlib import Path
 
 from jinja2 import Environment, select_autoescape
-from platformdirs import user_data_path
 
-from .config import async_enabled
+
+from .config import ASYNC_ENABLED, USER_DATA_PATH
 from .filters import lemmatize
 from .loader import MultiLoader
 from .registries import FileTemplateRegistry
 from .registry import TemplateRegistry
-
-USER_DATA_PATH = user_data_path("banks")
 
 
 def _add_extensions(env):
@@ -44,13 +42,14 @@ env = Environment(
     ),
     trim_blocks=True,
     lstrip_blocks=True,
-    enable_async=bool(async_enabled),
+    enable_async=bool(ASYNC_ENABLED),
 )
 
-# Setup custom filters and default extensions
+# Init the Template registry
+registry = FileTemplateRegistry(env, USER_DATA_PATH)
+
+
+# Setup custom filters and defaults
 env.filters["lemmatize"] = lemmatize
 _add_extensions(env)
-
-# Template registry
-registry = FileTemplateRegistry(env, USER_DATA_PATH)
 _add_default_templates(registry)

@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from .cache import RenderCache
 from .env import env
 from .prompt import AsyncPrompt, Prompt
 
@@ -9,5 +8,4 @@ __all__ = (
     "env",
     "Prompt",
     "AsyncPrompt",
-    "RenderCache",
 )

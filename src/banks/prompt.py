@@ -4,8 +4,9 @@
 from typing import Optional
 
 from .cache import DefaultCache, RenderCache
-from .config import async_enabled
+from .config import ASYNC_ENABLED
 from .env import env
+from .env import registry
 from .errors import AsyncError
 from .utils import generate_canary_word
 
@@ -186,7 +187,7 @@ class AsyncPrompt(BasePrompt):
     def __init__(self, text: str) -> None:
         super().__init__(text)
 
-        if not async_enabled:
+        if not ASYNC_ENABLED:
             msg = "Async is not enabled. Please set the environment variable 'BANKS_ASYNC_ENABLED=on' and try again."
             raise AsyncError(msg)
 

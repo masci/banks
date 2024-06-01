@@ -46,7 +46,7 @@ env = Environment(
 )
 
 # Init the Template registry
-registry = FileTemplateRegistry(env, USER_DATA_PATH)
+registry = FileTemplateRegistry(USER_DATA_PATH)
 
 
 # Setup custom filters and defaults

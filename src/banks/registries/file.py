@@ -3,15 +3,11 @@
 # SPDX-License-Identifier: MIT
 from pathlib import Path
 
-from jinja2 import Environment
-from jinja2.environment import Template
-
 from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError
 
 
 class FileTemplateRegistry:
-    def __init__(self, env: Environment, user_data_path: Path) -> None:
-        self._env: Environment = env
+    def __init__(self, user_data_path: Path) -> None:
         self._index_fpath: Path = user_data_path / "index.json"
         self._index: PromptTemplateIndex = PromptTemplateIndex(templates=[])
         try:
@@ -31,7 +27,7 @@ class FileTemplateRegistry:
         with open(self._index_fpath, "w") as f:
             f.write(self._index.model_dump_json())
 
-    def get(self, name: str, version: str | None) -> "PromptTemplate":
+    def get(self, name: str, version: str | None = None) -> "PromptTemplate":
         tpl_id = self._make_id(name, version)
         for tpl in self._index.templates:
             if tpl_id == tpl.id:
@@ -49,6 +45,5 @@ class FileTemplateRegistry:
                 return
         except TemplateNotFoundError:
             tpl_id = self._make_id(name, version)
-            jinja_tpl = self._env.get_template(tpl_id)
             tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt)
             self._index.templates.append(tpl)

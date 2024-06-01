@@ -139,6 +139,8 @@ ignore = [
   "S105", "S106", "S107",
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  # Avoid conflicts with the formatter
+  "ISC001",
 ]
 unfixable = [
   # Don't touch unused imports

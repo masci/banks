@@ -6,7 +6,6 @@ from pathlib import Path
 
 from jinja2 import Environment, select_autoescape
 
-
 from .config import config
 from .filters import lemmatize
 from .loader import MultiLoader
@@ -29,7 +28,7 @@ def _add_extensions(env):
 def _add_default_templates(r: TemplateRegistry):
     templates_dir = Path(os.path.dirname(__file__)) / "templates"
     for tpl_file in templates_dir.glob("*.jinja"):
-        r.set(tpl_file.name, tpl_file.read_text())
+        r.set(name=tpl_file.name, prompt=tpl_file.read_text())
     r.save()
 
 

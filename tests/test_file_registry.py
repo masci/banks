@@ -1,7 +1,7 @@
 import pytest
 
 from banks.registries.file import FileTemplateRegistry
-from banks.registry import PromptTemplateIndex, PromptTemplate, TemplateNotFoundError
+from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError
 
 
 @pytest.fixture
@@ -51,20 +51,20 @@ def test_get_not_found(populated_index_dir):
 def test_set_existing_no_overwrite(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set("name", new_prompt, "version")  # template already exists, expected to be no-op
+    r.set(name="name", prompt=new_prompt, version="version")  # template already exists, expected to be no-op
     assert r.get("name", "version").prompt == "prompt"
 
 
 def test_set_existing_overwrite(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set("name", new_prompt, "version", overwrite=True)
+    r.set(name="name", prompt=new_prompt, version="version", overwrite=True)
     assert r.get("name", "version").prompt == new_prompt
 
 
 def test_set_new(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set("name", new_prompt, "version2")
+    r.set(name="name", prompt=new_prompt, version="version2")
     assert r.get("name", "version").prompt == "prompt"
     assert r.get("name", "version2").prompt == new_prompt

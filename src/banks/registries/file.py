@@ -36,8 +36,7 @@ class FileTemplateRegistry:
         msg = f"cannot find template '{tpl_id}'"
         raise TemplateNotFoundError(msg)
 
-    def set(self, name: str, prompt: str, version: str | None = None, overwrite: bool = False):
-
+    def set(self, *, name: str, prompt: str, version: str | None = None, overwrite: bool = False):
         try:
             tpl = self.get(name, version)
             if overwrite:

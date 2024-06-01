@@ -14,8 +14,7 @@ class FileTemplateRegistry:
             self._index = PromptTemplateIndex.model_validate_json(self._index_fpath.read_text())
         except FileNotFoundError:
             # init the user data folder
-            if not user_data_path.exists():
-                user_data_path.mkdir()
+            user_data_path.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _make_id(name: str, version: str | None):

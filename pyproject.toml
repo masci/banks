@@ -50,7 +50,7 @@ test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
   "- coverage combine",
-  "coverage report",
+  "coverage report -m",
 ]
 cov = [
   "test-cov",

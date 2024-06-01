@@ -7,7 +7,7 @@ from pathlib import Path
 from jinja2 import Environment, select_autoescape
 
 
-from .config import ASYNC_ENABLED, USER_DATA_PATH
+from .config import config
 from .filters import lemmatize
 from .loader import MultiLoader
 from .registries import FileTemplateRegistry
@@ -42,11 +42,11 @@ env = Environment(
     ),
     trim_blocks=True,
     lstrip_blocks=True,
-    enable_async=bool(ASYNC_ENABLED),
+    enable_async=bool(config.ASYNC_ENABLED),
 )
 
 # Init the Template registry
-registry = FileTemplateRegistry(USER_DATA_PATH)
+registry = FileTemplateRegistry(config.USER_DATA_PATH)
 
 
 # Setup custom filters and defaults

@@ -1,11 +1,16 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import os
+from pathlib import Path
+
 from jinja2 import Environment, select_autoescape
 
-from .config import async_enabled
+from .config import config
 from .filters import lemmatize
 from .loader import MultiLoader
+from .registries import FileTemplateRegistry
+from .registry import TemplateRegistry
 
 
 def _add_extensions(env):
@@ -20,6 +25,13 @@ def _add_extensions(env):
     env.add_extension(HFInferenceEndpointsExtension)
 
 
+def _add_default_templates(r: TemplateRegistry):
+    templates_dir = Path(os.path.dirname(__file__)) / "templates"
+    for tpl_file in templates_dir.glob("*.jinja"):
+        r.set(name=tpl_file.name, prompt=tpl_file.read_text())
+    r.save()
+
+
 # Init the Jinja env
 env = Environment(
     loader=MultiLoader(),
@@ -29,17 +41,14 @@ env = Environment(
     ),
     trim_blocks=True,
     lstrip_blocks=True,
-    enable_async=bool(async_enabled),
+    enable_async=bool(config.ASYNC_ENABLED),
 )
 
-# Setup custom filters and default extensions
+# Init the Template registry
+registry = FileTemplateRegistry(config.USER_DATA_PATH)
+
+
+# Setup custom filters and defaults
 env.filters["lemmatize"] = lemmatize
 _add_extensions(env)
-
-
-def with_env(cls):
-    """
-    A decorator that adds an `env` attribute to the decorated class
-    """
-    cls.env = env
-    return cls
+_add_default_templates(registry)

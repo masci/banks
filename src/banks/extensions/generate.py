@@ -14,7 +14,7 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 SYSTEM_PROMPT = Prompt("{{canary_word}} You are a helpful assistant.")
 
 
-def generate(model_name: str):  # noqa
+def generate(model_name: str):  # noqa  # This function exists for documentation purpose.
     """
     `generate` can be used to call the LiteLLM API passing the tag text as a prompt and get back some content.
 

@@ -4,8 +4,8 @@
 from typing import Optional
 
 from .cache import DefaultCache, RenderCache
-from .config import async_enabled
-from .env import env
+from .config import config
+from .env import env, registry
 from .errors import AsyncError
 from .utils import generate_canary_word
 
@@ -46,14 +46,16 @@ class BasePrompt:
         return self.defaults["canary_word"] in text
 
     @classmethod
-    def from_template(cls, name: str) -> "BasePrompt":
+    def from_template(cls, name: str, version: str | None = None) -> "BasePrompt":
         """
         Create a prompt instance from a template.
 
         Prompt templates can be really long and at some point you might want to store them on files. To avoid the
         boilerplate code to read a file and pass the content as strings to the constructor, `Prompt`s can be
-        initialized by just passing the name of the template file, provided that the file is stored in a folder called
-        `templates` in the current path:
+        initialized by just passing the name of the template file, provided that the file is available to the
+        loaders that were configured (see `Multiloader`).
+
+        One of the default loaders can load templates stored in a folder called `templates` in the current path:
 
         ```
         .
@@ -81,9 +83,8 @@ class BasePrompt:
         Returns:
             A new `Prompt` instance.
         """
-        p = cls("")
-        p._template = env.get_template(name)
-        return p
+        tpl = registry.get(name, version)
+        return cls(tpl.prompt)
 
 
 class Prompt(BasePrompt):
@@ -184,7 +185,7 @@ class AsyncPrompt(BasePrompt):
     def __init__(self, text: str) -> None:
         super().__init__(text)
 
-        if not async_enabled:
+        if not config.ASYNC_ENABLED:
             msg = "Async is not enabled. Please set the environment variable 'BANKS_ASYNC_ENABLED=on' and try again."
             raise AsyncError(msg)
 

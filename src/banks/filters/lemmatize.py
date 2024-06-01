@@ -18,8 +18,8 @@ def lemmatize(text: str) -> str:
 
     Example:
     ```
-    {{ 'The dog is running' | lemmatize }}
-    'the dog be run'
+    {{"The dog is running" | lemmatize}}
+    "the dog be run"
     ```
 
     Note:

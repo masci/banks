@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 from typing import Protocol
 
-from jinja2.environment import Template
 from pydantic import BaseModel
 
 
@@ -13,7 +12,7 @@ class TemplateNotFoundError(Exception): ...
 class PromptTemplate(BaseModel):
     id: str
     name: str
-    version: int
+    version: str
     prompt: str
 
 
@@ -24,6 +23,6 @@ class PromptTemplateIndex(BaseModel):
 class TemplateRegistry(Protocol):
     def save(self) -> None: ...
 
-    def get(self, name: str, version: int | None) -> "Template": ...
+    def get(self, name: str, version: str | None) -> "PromptTemplate": ...
 
-    def set(self, name: str, prompt: str, version: int | None = None): ...
+    def set(self, name: str, prompt: str, version: str | None = None): ...

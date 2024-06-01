@@ -21,24 +21,34 @@ class FileTemplateRegistry:
             if not self._index_fpath.parent.exists():
                 self._index_fpath.parent.mkdir()
 
+    @staticmethod
+    def _make_id(name: str, version: str | None):
+        if version:
+            return f"{name}:{version}"
+        return name
+
     def save(self) -> None:
         with open(self._index_fpath, "w") as f:
             f.write(self._index.model_dump_json())
 
-    def get(self, name: str, version: int | None) -> "Template":
-        version = version or 1
+    def get(self, name: str, version: str | None) -> "PromptTemplate":
+        tpl_id = self._make_id(name, version)
         for tpl in self._index.templates:
-            if tpl.name == name and tpl.version == version:
-                return self._env.get_template(tpl.id)
-        raise TemplateNotFoundError()
+            if tpl_id == tpl.id:
+                return tpl
 
-    def set(self, name: str, prompt: str, version: int | None = None):
-        if version is not None:
-            for tpl in self._index.templates:
-                if tpl.name == name and tpl.version == version:
-                    return
+        msg = f"cannot find template '{tpl_id}'"
+        raise TemplateNotFoundError(msg)
 
-        version = version or 1
-        tpl_id = f"{name}:{version}"
-        tpl = PromptTemplate(id=tpl_id, name=name, version=version, prompt=prompt)
-        self._index.templates.append(tpl)
+    def set(self, name: str, prompt: str, version: str | None = None, overwrite: bool = False):
+
+        try:
+            tpl = self.get(name, version)
+            if overwrite:
+                tpl.prompt = prompt
+                return
+        except TemplateNotFoundError:
+            tpl_id = self._make_id(name, version)
+            jinja_tpl = self._env.get_template(tpl_id)
+            tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt)
+            self._index.templates.append(tpl)

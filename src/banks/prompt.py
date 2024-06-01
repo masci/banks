@@ -84,9 +84,8 @@ class BasePrompt:
         Returns:
             A new `Prompt` instance.
         """
-        p = cls("")
-        p._template = env.get_template(name)
-        return p
+        tpl = registry.get(name, version)
+        return cls(tpl.prompt)
 
 
 class Prompt(BasePrompt):

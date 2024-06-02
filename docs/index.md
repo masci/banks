@@ -14,6 +14,7 @@ are replaced by actual data provided by the user.
 * [Filters](prompt.md#filters): useful to manipulate the text during template rendering.
 * [Extensions](prompt.md#extensions): useful to support custom functions (e.g. text generation via OpenAI).
 * [Macros](prompt.md#macros): useful to implement complex logic in the template itself instead of Python code.
+* [Configuration](config.md): how to configure the library.
 
 ## Installation
 

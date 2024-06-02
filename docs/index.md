@@ -10,11 +10,15 @@ are replaced by actual data provided by the user.
 
 ## Features
 
-* Banks currently supports all the features from Jinja2, see [Template Designer Documentation](https://jinja.palletsprojects.com/en/3.1.x/templates/#jinja-filters.truncate).
-* [Filters](prompt.md#filters): useful to manipulate the text during template rendering.
-* [Extensions](prompt.md#extensions): useful to support custom functions (e.g. text generation via OpenAI).
+Banks currently supports all the [features from Jinja2](https://jinja.palletsprojects.com/en/3.1.x/templates/#jinja-filters.truncate)
+along with some additions specifically designed to help developers with LLM prompts:
+* [Filters](prompt.md#filters): useful to manipulate the prompt text during template rendering.
+* [Extensions](prompt.md#extensions): useful to support custom functions (e.g. text generation via LiteLLM).
 * [Macros](prompt.md#macros): useful to implement complex logic in the template itself instead of Python code.
-* [Configuration](config.md): how to configure the library.
+
+The library comes with its own set of features:
+* [Template registry](registry.md): storage API for versioned prompts.
+* [Configuration](config.md): useful to integrate the library with existing applications.
 
 ## Installation
 

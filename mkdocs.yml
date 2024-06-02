@@ -10,6 +10,8 @@ nav:
   - Home: 'index.md'
   - Python API: 'python.md'
   - Prompt API: 'prompt.md'
+  - Configuration: 'config.md'
+  - Prompt Registry: 'registry.md'
 
 plugins:
   - search

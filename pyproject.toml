@@ -7,7 +7,7 @@ name = "banks"
 dynamic = ["version"]
 description = 'A prompt programming language'
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [

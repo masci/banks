@@ -40,8 +40,9 @@ class FileTemplateRegistry:
             tpl = self.get(name, version)
             if overwrite:
                 tpl.prompt = prompt
-                return
+                self.save()
         except TemplateNotFoundError:
             tpl_id = self._make_id(name, version)
             tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt)
             self._index.templates.append(tpl)
+            self.save()

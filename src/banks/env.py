@@ -29,7 +29,6 @@ def _add_default_templates(r: TemplateRegistry):
     templates_dir = Path(os.path.dirname(__file__)) / "templates"
     for tpl_file in templates_dir.glob("*.jinja"):
         r.set(name=tpl_file.name, prompt=tpl_file.read_text())
-    r.save()
 
 
 # Init the Jinja env

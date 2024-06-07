@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from typing import Protocol
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TemplateNotFoundError(Exception): ...
@@ -12,11 +12,17 @@ class TemplateNotFoundError(Exception): ...
 class InvalidTemplateError(Exception): ...
 
 
+class PromptTemplateMeta(BaseModel):
+    key: str
+    value: str | int | float
+
+
 class PromptTemplate(BaseModel):
     id: str
     name: str
-    version: str
     prompt: str
+    version: str = Field(default="")
+    meta: list[PromptTemplateMeta] = Field(default=[])
 
 
 class PromptTemplateIndex(BaseModel):

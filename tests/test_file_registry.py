@@ -1,7 +1,7 @@
 import pytest
 
 from banks.registries.file import FileTemplateRegistry
-from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError
+from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError, InvalidTemplateError
 
 
 @pytest.fixture
@@ -31,9 +31,11 @@ def test_init_from_existing_index(populated_index_dir):
     r.get("name", "version")
 
 
-def test__make_id():
+def test_make_id():
     assert FileTemplateRegistry._make_id("name", "version") == "name:version"
     assert FileTemplateRegistry._make_id("name", None) == "name"
+    with pytest.raises(InvalidTemplateError, match="Template name cannot contain ':'"):
+        _ = FileTemplateRegistry._make_id("name:version", None)
 
 
 def test_get(populated_index_dir):

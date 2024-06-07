@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from pathlib import Path
 
-from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError
+from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError, InvalidTemplateError
 
 
 class FileTemplateRegistry:
@@ -18,6 +18,8 @@ class FileTemplateRegistry:
 
     @staticmethod
     def _make_id(name: str, version: str | None):
+        if ":" in name:
+            raise InvalidTemplateError("Template name cannot contain ':'")
         if version:
             return f"{name}:{version}"
         return name

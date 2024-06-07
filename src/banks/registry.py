@@ -9,6 +9,9 @@ from pydantic import BaseModel
 class TemplateNotFoundError(Exception): ...
 
 
+class InvalidTemplateError(Exception): ...
+
+
 class PromptTemplate(BaseModel):
     id: str
     name: str

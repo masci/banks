@@ -48,8 +48,9 @@ def test_summarize_lemma(registry):
     assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
 
 
-# def test_generate_tweet():
-#     p = Prompt.from_template("generate_tweet.jinja")
-#     env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
+def test_generate_tweet(registry):
+    p = registry.get(name="generate_tweet")
+    ext_name = "banks.extensions.generate.GenerateExtension"
+    env.extensions[ext_name]._generate = mock.MagicMock(return_value="foo")  # type:ignore
 
-#     assert _get_data("generate_tweet.jinja.out") == p.text({"topic": "climate change"})
+    assert _get_data("generate_tweet.jinja.out") == p.text({"topic": "climate change"})

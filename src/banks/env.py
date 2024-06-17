@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from jinja2 import Environment, select_autoescape
+from jinja2 import Environment, select_autoescape, PackageLoader
 
 from .config import config
 from .filters import lemmatize
@@ -22,7 +22,7 @@ def _add_extensions(env):
 
 # Init the Jinja env
 env = Environment(
-    loader=MultiLoader(),
+    loader=PackageLoader("banks", "templates"),
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
         default_for_string=False,

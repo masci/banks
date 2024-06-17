@@ -1,0 +1,12 @@
+{% from "banks_macros.jinja" import run_prompt with context %}
+
+{%- set prompt_result %}
+{%- call run_prompt() %}
+Write a 500-word blog post on {{ topic }}
+
+Blog post:
+{%- endcall %}
+{%- endset %}
+
+
+{{- prompt_result | trim | upper }}

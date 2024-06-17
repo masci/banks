@@ -1,0 +1,11 @@
+Generate a tweet about the topic {{ topic }} with a positive sentiment.
+
+{#
+    This is for illustration purposes only, there are better and cheaper ways
+    to generate examples for a few-shots prompt.
+#}
+Examples:
+{% for number in range(3) %}
+- {% generate "write a tweet with positive sentiment", "gpt-3.5-turbo" %}
+
+{% endfor %}

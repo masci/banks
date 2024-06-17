@@ -5,7 +5,7 @@ from typing import Optional
 
 from .cache import DefaultCache, RenderCache
 from .config import config
-from .env import env, registry
+from .env import env
 from .errors import AsyncError
 from .utils import generate_canary_word
 
@@ -25,6 +25,7 @@ class BasePrompt:
                 be used.
         """
         self._render_cache = render_cache or DefaultCache()
+        self._raw: str = text
         self._template = env.from_string(text)
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
 
@@ -39,52 +40,15 @@ class BasePrompt:
             return self.defaults
         return data | self.defaults
 
+    @property
+    def raw(self) -> str:
+        return self._raw
+
     def canary_leaked(self, text: str) -> bool:
         """
         Returns whether the canary word is present in `text`, signalling the prompt might have leaked.
         """
         return self.defaults["canary_word"] in text
-
-    @classmethod
-    def from_template(cls, name: str, version: str | None = None) -> "BasePrompt":
-        """
-        Create a prompt instance from a template.
-
-        Prompt templates can be really long and at some point you might want to store them on files. To avoid the
-        boilerplate code to read a file and pass the content as strings to the constructor, `Prompt`s can be
-        initialized by just passing the name of the template file, provided that the file is available to the
-        loaders that were configured (see `Multiloader`).
-
-        One of the default loaders can load templates stored in a folder called `templates` in the current path:
-
-        ```
-        .
-        └── templates
-            └── foo.jinja
-        ```
-
-        The code would be the following:
-
-        ```py
-        from banks import Prompt
-
-        p = Prompt.from_template("foo.jinja")
-        prompt_text = p.text(data={"foo": "bar"})
-        ```
-
-        !!! warning
-            Banks comes with its own set of default templates (see below) which takes precedence over the
-            ones loaded from the filesystem, so be sure to use different names for your custom
-            templates
-
-        Parameters:
-            name: The name of the template.
-
-        Returns:
-            A new `Prompt` instance.
-        """
-        tpl = registry.get(name, version)
-        return cls(tpl.prompt)
 
 
 class Prompt(BasePrompt):

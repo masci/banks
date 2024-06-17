@@ -8,34 +8,44 @@ from unittest import mock
 import pytest
 
 from banks import Prompt, env
+from banks.registries import DirectoryTemplateRegistry
 
 
-# def _get_data(name):
-#     here = Path(os.path.dirname(os.path.abspath(__file__)))
-#     with open(here / "test_default_templates" / name) as f:
-#         return f.read()
+@pytest.fixture
+def registry(tmp_path):
+    for fp in (Path(__file__).parent / "templates").iterdir():
+        with open(tmp_path / fp.name, "w") as f:
+            f.write(fp.read_text())
+
+    return DirectoryTemplateRegistry(tmp_path)
 
 
-# def test_blog():
-#     p = Prompt.from_template("blog.jinja")
-#     assert _get_data("blog.jinja.out") == p.text({"topic": "climate change"})
+def _get_data(name):
+    here = Path(os.path.dirname(os.path.abspath(__file__)))
+    with open(here / "test_default_templates" / name) as f:
+        return f.read()
 
 
-# def test_summarize():
-#     p = Prompt.from_template("summarize.jinja")
-#     documents = [
-#         "A first paragraph talking about AI",
-#         "A second paragraph talking about climate change",
-#         "A third paragraph talking about retrogaming",
-#     ]
-#     assert _get_data("summarize.jinja.out") == p.text({"documents": documents})
+def test_blog(registry):
+    p = registry.get(name="blog")
+    assert _get_data("blog.jinja.out") == p.text({"topic": "climate change"})
 
 
-# def test_summarize_lemma():
-#     pytest.importorskip("simplemma")
+def test_summarize(registry):
+    p = registry.get(name="summarize")
+    documents = [
+        "A first paragraph talking about AI",
+        "A second paragraph talking about climate change",
+        "A third paragraph talking about retrogaming",
+    ]
+    assert _get_data("summarize.jinja.out") == p.text({"documents": documents})
 
-#     p = Prompt.from_template("summarize_lemma.jinja")
-#     assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
+
+def test_summarize_lemma(registry):
+    pytest.importorskip("simplemma")
+
+    p = registry.get(name="summarize_lemma")
+    assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
 
 
 # def test_generate_tweet():

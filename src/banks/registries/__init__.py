@@ -2,5 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 from .file import FileTemplateRegistry
+from .directory import DirectoryTemplateRegistry
 
-__all__ = ("FileTemplateRegistry",)
+__all__ = ("FileTemplateRegistry", "DirectoryTemplateRegistry")

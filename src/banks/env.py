@@ -7,16 +7,17 @@ from .config import config
 from .filters import lemmatize
 
 
-def _add_extensions(env):
+def _add_extensions(_env):
     """
     We lazily add extensions so that we can use the env in the extensions themselves if needed.
 
     For example, we use banks to manage the system prompt in `GenerateExtension`
     """
-    from .extensions import GenerateExtension, HFInferenceEndpointsExtension
+    from .extensions.generate import GenerateExtension  # pylint: disable=import-outside-toplevel
+    from .extensions.inference_endpoint import HFInferenceEndpointsExtension  # pylint: disable=import-outside-toplevel
 
-    env.add_extension(GenerateExtension)
-    env.add_extension(HFInferenceEndpointsExtension)
+    _env.add_extension(GenerateExtension)
+    _env.add_extension(HFInferenceEndpointsExtension)
 
 
 # Init the Jinja env

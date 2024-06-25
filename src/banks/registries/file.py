@@ -3,7 +3,21 @@
 # SPDX-License-Identifier: MIT
 from pathlib import Path
 
-from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError, InvalidTemplateError
+from pydantic import BaseModel
+
+from banks.prompt import Prompt
+from banks.registry import InvalidTemplateError, TemplateNotFoundError
+
+
+class PromptTemplate(BaseModel):
+    id: str | None
+    name: str
+    version: str
+    prompt: str
+
+
+class PromptTemplateIndex(BaseModel):
+    templates: list[PromptTemplate]
 
 
 class FileTemplateRegistry:
@@ -19,7 +33,8 @@ class FileTemplateRegistry:
     @staticmethod
     def _make_id(name: str, version: str | None):
         if ":" in name:
-            raise InvalidTemplateError("Template name cannot contain ':'")
+            msg = "Template name cannot contain ':'"
+            raise InvalidTemplateError(msg)
         if version:
             return f"{name}:{version}"
         return name
@@ -28,23 +43,27 @@ class FileTemplateRegistry:
         with open(self._index_fpath, "w") as f:
             f.write(self._index.model_dump_json())
 
-    def get(self, name: str, version: str | None = None) -> "PromptTemplate":
+    def get(self, name: str, version: str | None = None) -> "Prompt":
         tpl_id = self._make_id(name, version)
+        tpl = self._get_template(tpl_id)
+        return Prompt(tpl.prompt)
+
+    def _get_template(self, tpl_id: str) -> "PromptTemplate":
         for tpl in self._index.templates:
             if tpl_id == tpl.id:
                 return tpl
 
-        msg = f"cannot find template '{tpl_id}'"
+        msg = f"cannot find template '{id}'"
         raise TemplateNotFoundError(msg)
 
-    def set(self, *, name: str, prompt: str, version: str | None = None, overwrite: bool = False):
+    def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False):
+        tpl_id = self._make_id(name, version)
         try:
-            tpl = self.get(name, version)
+            tpl = self._get_template(tpl_id)
             if overwrite:
-                tpl.prompt = prompt
+                tpl.prompt = prompt.raw
                 self.save()
         except TemplateNotFoundError:
-            tpl_id = self._make_id(name, version)
-            tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt)
+            tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt.raw)
             self._index.templates.append(tpl)
             self.save()

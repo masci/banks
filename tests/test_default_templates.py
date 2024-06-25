@@ -7,7 +7,17 @@ from unittest import mock
 
 import pytest
 
-from banks import Prompt, env
+from banks import env
+from banks.registries import DirectoryTemplateRegistry
+
+
+@pytest.fixture
+def registry(tmp_path):
+    for fp in (Path(__file__).parent / "templates").iterdir():
+        with open(tmp_path / fp.name, "w") as f:
+            f.write(fp.read_text())
+
+    return DirectoryTemplateRegistry(tmp_path)
 
 
 def _get_data(name):
@@ -16,13 +26,13 @@ def _get_data(name):
         return f.read()
 
 
-def test_blog():
-    p = Prompt.from_template("blog.jinja")
+def test_blog(registry):
+    p = registry.get(name="blog")
     assert _get_data("blog.jinja.out") == p.text({"topic": "climate change"})
 
 
-def test_summarize():
-    p = Prompt.from_template("summarize.jinja")
+def test_summarize(registry):
+    p = registry.get(name="summarize")
     documents = [
         "A first paragraph talking about AI",
         "A second paragraph talking about climate change",
@@ -31,15 +41,16 @@ def test_summarize():
     assert _get_data("summarize.jinja.out") == p.text({"documents": documents})
 
 
-def test_summarize_lemma():
+def test_summarize_lemma(registry):
     pytest.importorskip("simplemma")
 
-    p = Prompt.from_template("summarize_lemma.jinja")
+    p = registry.get(name="summarize_lemma")
     assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
 
 
-def test_generate_tweet():
-    p = Prompt.from_template("generate_tweet.jinja")
-    env.extensions["banks.extensions.generate.GenerateExtension"]._generate = mock.MagicMock(return_value="foo")
+def test_generate_tweet(registry):
+    p = registry.get(name="generate_tweet")
+    ext_name = "banks.extensions.generate.GenerateExtension"
+    env.extensions[ext_name]._generate = mock.MagicMock(return_value="foo")  # type:ignore
 
     assert _get_data("generate_tweet.jinja.out") == p.text({"topic": "climate change"})

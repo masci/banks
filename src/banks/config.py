@@ -1,4 +1,6 @@
-import json
+# SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
+#
+# SPDX-License-Identifier: MIT
 import os
 from pathlib import Path
 from typing import Any

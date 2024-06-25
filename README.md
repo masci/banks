@@ -30,7 +30,7 @@ Docs are available [here](https://masci.github.io/banks/).
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
     - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
-    - [Reuse templates from files](#reuse-templates-from-files)
+    - [Reuse templates from registries](#reuse-templates-from-registries)
     - [Async support](#async-support)
   - [License](#license)
 
@@ -266,19 +266,22 @@ print(p.text({"topic": "climate change"}))
 
 The final answer from the LLM will be printed, this time all in uppercase.
 
-### Reuse templates from files
+### Reuse templates from registries
 
-We can get the same result as the previous example loading the prompt template from file
-instead of hardcoding it into the Python code. For convenience, Banks comes with a few
-default templates distributed the package. We can load those templates from file like this:
+We can get the same result as the previous example loading the prompt template from a registry
+instead of hardcoding it into the Python code. For convenience, Banks comes with a few registry types
+you can use to store your templates. For example, the `DirectoryTemplateRegistry` can load templates
+from a directory in the file system. Suppose you have a folder called `templates` in the current path,
+and the folder contains a file called `blog.jinja`. You can load the prompt template like this:
 
 ```py
 from banks import Prompt
+from banks.registries import DirectoryTemplateRegistry
 
+registry = DirectoryTemplateRegistry(populated_dir)
+prompt = registry.get(name="blog")
 
-p = Prompt.from_template("blog.jinja")
-topic = "retrogame computing"
-print(p.text({"topic": topic}))
+print(prompt.text({"topic": "retrogame computing"}))
 ```
 
 ### Async support
@@ -292,7 +295,7 @@ Example:
 from banks import AsyncPrompt
 
 async def main():
-    p = AsyncPrompt.from_template("blog.jinja")
+    p = AsyncPrompt("Write a blog article about the topic {{ topic }}")
     result = await p.text({"topic": "AI frameworks"})
     print(result)
 

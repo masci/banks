@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 from typing import Protocol
 
-from pydantic import BaseModel
+from .prompt import Prompt
 
 
 class TemplateNotFoundError(Exception): ...
@@ -12,18 +12,7 @@ class TemplateNotFoundError(Exception): ...
 class InvalidTemplateError(Exception): ...
 
 
-class PromptTemplate(BaseModel):
-    id: str
-    name: str
-    version: str
-    prompt: str
-
-
-class PromptTemplateIndex(BaseModel):
-    templates: list[PromptTemplate]
-
-
 class TemplateRegistry(Protocol):
-    def get(self, *, name: str, version: str | None = None) -> "PromptTemplate": ...
+    def get(self, *, name: str, version: str | None = None) -> "Prompt": ...
 
-    def set(self, *, name: str, prompt: str, version: str | None = None, overwrite: bool = False): ...
+    def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False): ...

@@ -1,7 +1,8 @@
 import pytest
 
-from banks.registries.file import FileTemplateRegistry
-from banks.registry import PromptTemplate, PromptTemplateIndex, TemplateNotFoundError, InvalidTemplateError
+from banks.prompt import Prompt
+from banks.registries.file import FileTemplateRegistry, PromptTemplate, PromptTemplateIndex
+from banks.registry import InvalidTemplateError, TemplateNotFoundError
 
 
 @pytest.fixture
@@ -40,7 +41,7 @@ def test_make_id():
 
 def test_get(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
-    tpl = r.get("name", "version")
+    tpl = r._get_template(FileTemplateRegistry._make_id("name", "version"))
     assert tpl.id == "name:version"
 
 
@@ -53,20 +54,20 @@ def test_get_not_found(populated_index_dir):
 def test_set_existing_no_overwrite(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set(name="name", prompt=new_prompt, version="version")  # template already exists, expected to be no-op
-    assert r.get("name", "version").prompt == "prompt"
+    r.set(name="name", prompt=Prompt(new_prompt), version="version")  # template already exists, expected to be no-op
+    assert r.get("name", "version").raw == "prompt"
 
 
 def test_set_existing_overwrite(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set(name="name", prompt=new_prompt, version="version", overwrite=True)
-    assert r.get("name", "version").prompt == new_prompt
+    r.set(name="name", prompt=Prompt(new_prompt), version="version", overwrite=True)
+    assert r.get("name", "version").raw == new_prompt
 
 
 def test_set_new(populated_index_dir):
     r = FileTemplateRegistry(populated_index_dir)
     new_prompt = "a new prompt!"
-    r.set(name="name", prompt=new_prompt, version="version2")
-    assert r.get("name", "version").prompt == "prompt"
-    assert r.get("name", "version2").prompt == new_prompt
+    r.set(name="name", prompt=Prompt(new_prompt), version="version2")
+    assert r.get("name", "version").raw == "prompt"
+    assert r.get("name", "version2").raw == new_prompt

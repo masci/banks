@@ -42,6 +42,7 @@ dependencies = [
   "pytest",
   "mkdocs-material",
   "mkdocstrings[python]",
+  "simplemma",
 ]
 
 [tool.hatch.envs.default.scripts]

@@ -1,8 +1,8 @@
 import pytest
 
-from banks.registries.file import FileTemplateRegistry, PromptTemplate, PromptTemplateIndex
-from banks.registry import TemplateNotFoundError, InvalidTemplateError
 from banks.prompt import Prompt
+from banks.registries.file import FileTemplateRegistry, PromptTemplate, PromptTemplateIndex
+from banks.registry import InvalidTemplateError, TemplateNotFoundError
 
 
 @pytest.fixture

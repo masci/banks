@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 from typing import Protocol
 
-
 from .prompt import Prompt
 
 

@@ -7,16 +7,16 @@ from banks.config import _BanksConfig
 
 def test_config_defaults():
     c = _BanksConfig()
-    assert c.ASYNC_ENABLED == False
+    assert c.ASYNC_ENABLED is False
     assert c.USER_DATA_PATH == user_data_path("banks")
 
 
 def test_config_env_override(monkeypatch):
     c = _BanksConfig()
     monkeypatch.setenv("BANKS_ASYNC_ENABLED", "true")
-    assert c.ASYNC_ENABLED == True
+    assert c.ASYNC_ENABLED is True
     monkeypatch.setenv("BANKS_ASYNC_ENABLED", "false")
-    assert c.ASYNC_ENABLED == False
+    assert c.ASYNC_ENABLED is False
     monkeypatch.setenv("BANKS_USER_DATA_PATH", "/")
     assert c.USER_DATA_PATH == Path("/")
 
@@ -32,6 +32,6 @@ def test_config_env_override(monkeypatch):
 def test_config_env_prefix(monkeypatch):
     c = _BanksConfig("BANKS_TEST_")
     monkeypatch.setenv("BANKS_ASYNC_ENABLED", "true")
-    assert c.ASYNC_ENABLED == False
+    assert c.ASYNC_ENABLED is False
     monkeypatch.setenv("BANKS_TEST_ASYNC_ENABLED", "true")
-    assert c.ASYNC_ENABLED == True
+    assert c.ASYNC_ENABLED is True

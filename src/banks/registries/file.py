@@ -5,8 +5,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from banks.registry import TemplateNotFoundError, InvalidTemplateError
 from banks.prompt import Prompt
+from banks.registry import InvalidTemplateError, TemplateNotFoundError
 
 
 class PromptTemplate(BaseModel):
@@ -33,7 +33,8 @@ class FileTemplateRegistry:
     @staticmethod
     def _make_id(name: str, version: str | None):
         if ":" in name:
-            raise InvalidTemplateError("Template name cannot contain ':'")
+            msg = "Template name cannot contain ':'"
+            raise InvalidTemplateError(msg)
         if version:
             return f"{name}:{version}"
         return name
@@ -47,9 +48,9 @@ class FileTemplateRegistry:
         tpl = self._get_template(tpl_id)
         return Prompt(tpl.prompt)
 
-    def _get_template(self, id: str) -> "PromptTemplate":
+    def _get_template(self, tpl_id: str) -> "PromptTemplate":
         for tpl in self._index.templates:
-            if id == tpl.id:
+            if tpl_id == tpl.id:
                 return tpl
 
         msg = f"cannot find template '{id}'"

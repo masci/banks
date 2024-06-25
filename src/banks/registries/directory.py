@@ -20,7 +20,7 @@ class PromptFileIndex(BaseModel):
 
 
 class DirectoryTemplateRegistry:
-    def __init__(self, directory_path: Path, force_reindex: bool = False):
+    def __init__(self, directory_path: Path, *, force_reindex: bool = False):
         if not directory_path.is_dir():
             msg = "{directory_path} must be a directory."
             raise ValueError(msg)

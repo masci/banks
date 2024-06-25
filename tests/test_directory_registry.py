@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from banks.registries.directory import DirectoryTemplateRegistry
-from banks.registry import TemplateNotFoundError, InvalidTemplateError
 from banks.prompt import Prompt
+from banks.registries.directory import DirectoryTemplateRegistry
+from banks.registry import TemplateNotFoundError
 
 
 @pytest.fixture

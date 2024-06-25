@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from banks import Prompt, env
+from banks import env
 from banks.registries import DirectoryTemplateRegistry
 
 

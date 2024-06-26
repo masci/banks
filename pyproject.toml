@@ -64,26 +64,24 @@ python = ["3.10", "3.11", "3.12"]
 [tool.hatch.envs.lint]
 detached = false  # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
 dependencies = [
-  "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "pylint",
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/banks}"
-style = [
+check = [
+  "ruff format --check {args}",
   "ruff check {args:.}",
-  "black --check --diff {args:.}",
 ]
-fmt = [
-  "black {args:.}",
-  "ruff check --fix {args:.}",
-  "style",
-]
+lint = "pylint {args:src/banks}"
+typing = "mypy --install-types --non-interactive {args:src/banks}"
 all = [
-  "style",
+  "check",
   "typing",
+  "lint",
 ]
+fmt = "ruff format {args}"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/banks", "src/templates"]
@@ -91,11 +89,6 @@ only-include = ["src/banks", "src/templates"]
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""
 "templates" = "banks/templates"
-
-[tool.black]
-target-version = ["py39"]
-line-length = 120
-skip-string-normalization = true
 
 [tool.ruff]
 target-version = "py39"
@@ -157,6 +150,7 @@ ban-relative-imports = "parents"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
+
 [tool.coverage.run]
 source_pkgs = ["banks", "tests"]
 branch = true
@@ -182,3 +176,13 @@ module = [
   "litellm.*",
 ]
 ignore_missing_imports = true
+
+[tool.pylint]
+disable = [
+  "line-too-long",
+  "too-few-public-methods",
+  "missing-module-docstring",
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "cyclic-import",
+]

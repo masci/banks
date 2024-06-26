@@ -12,11 +12,12 @@ def strtobool(val: str) -> bool:
     val = val.lower()
     if val in ("y", "yes", "t", "true", "on", "1"):
         return True
-    elif val in ("n", "no", "f", "false", "off", "0"):
+
+    if val in ("n", "no", "f", "false", "off", "0"):
         return False
-    else:
-        msg = f"invalid truth value {val}"
-        raise ValueError(msg)
+
+    msg = f"invalid truth value {val}"
+    raise ValueError(msg)
 
 
 def generate_canary_word(prefix: str = "BANKS[", suffix: str = "]", token_length: int = 8) -> str:

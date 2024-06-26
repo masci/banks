@@ -40,7 +40,7 @@ class FileTemplateRegistry:
         return name
 
     def save(self) -> None:
-        with open(self._index_fpath, "w") as f:
+        with open(self._index_fpath, "w", encoding="locale") as f:
             f.write(self._index.model_dump_json())
 
     def get(self, name: str, version: str | None = None) -> "Prompt":

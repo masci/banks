@@ -6,9 +6,9 @@ from banks.errors import MissingDependencyError
 try:
     from simplemma import text_lemmatizer
 
-    simplemma_avail = True
+    SIMPLEMMA_AVAIL = True
 except ImportError:
-    simplemma_avail = False
+    SIMPLEMMA_AVAIL = False
 
 
 def lemmatize(text: str) -> str:
@@ -25,7 +25,7 @@ def lemmatize(text: str) -> str:
     Note:
         Simplemma must be manually installed to use this filter
     """
-    if not simplemma_avail:
+    if not SIMPLEMMA_AVAIL:
         err_msg = "simplemma is not available, please install it with 'pip install simplemma'"
         raise MissingDependencyError(err_msg)
 

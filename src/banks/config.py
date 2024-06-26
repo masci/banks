@@ -23,18 +23,16 @@ class _BanksConfig:
 
         # Env var takes precedence
         prefix = super().__getattribute__("_env_var_prefix")
-        value = os.environ.get(f"{prefix}{name}")
-        if value is None:
+        read_value = os.environ.get(f"{prefix}{name}")
+        if read_value is None:
             return original_value
 
         # Convert string from env var to the actual type
         t = super().__getattribute__("__annotations__")[name]
         if t == bool:
-            value = strtobool(value)
-        else:
-            value = t(value)
+            return strtobool(read_value)
 
-        return value
+        return t(read_value)
 
 
 config = _BanksConfig()

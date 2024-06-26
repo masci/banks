@@ -50,9 +50,7 @@ class GenerateExtension(Extension):
             args.append(nodes.Const(None))
 
         if parser.environment.is_async:
-            return nodes.Output([self.call_method("_agenerate", args)]).set_lineno(
-                lineno
-            )
+            return nodes.Output([self.call_method("_agenerate", args)]).set_lineno(lineno)
         return nodes.Output([self.call_method("_generate", args)]).set_lineno(lineno)
 
     def _generate(self, text, model_name=DEFAULT_MODEL):
@@ -65,9 +63,7 @@ class GenerateExtension(Extension):
             {"role": "system", "content": SYSTEM_PROMPT.text()},
             {"role": "user", "content": text},
         ]
-        response: ModelResponse = cast(
-            ModelResponse, completion(model=model_name, messages=messages)
-        )
+        response: ModelResponse = cast(ModelResponse, completion(model=model_name, messages=messages))
         return self._get_content(response)
 
     async def _agenerate(self, text, model_name=DEFAULT_MODEL):
@@ -80,9 +76,7 @@ class GenerateExtension(Extension):
             {"role": "system", "content": SYSTEM_PROMPT.text()},
             {"role": "user", "content": text},
         ]
-        response: ModelResponse = cast(
-            ModelResponse, await acompletion(model=model_name, messages=messages)
-        )
+        response: ModelResponse = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
         return self._get_content(response)
 
     def _get_content(self, response: ModelResponse) -> str:

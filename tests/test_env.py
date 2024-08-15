@@ -7,4 +7,4 @@ from banks import env
 
 
 def test_default_loader():
-    assert type(env.loader) == PackageLoader
+    assert type(env.loader) is PackageLoader

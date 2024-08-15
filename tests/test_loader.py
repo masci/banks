@@ -13,10 +13,10 @@ def test_defaults():
     test_loader = MultiLoader()
     assert len(test_loader._loaders) == 2
     loader, prio = test_loader._loaders[0]
-    assert type(loader) == PackageLoader
+    assert type(loader) is PackageLoader
     assert prio == 10
     loader, prio = test_loader._loaders[1]
-    assert type(loader) == FileSystemLoader
+    assert type(loader) is FileSystemLoader
     assert prio == 20
 
 

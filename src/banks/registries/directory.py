@@ -73,6 +73,9 @@ class DirectoryTemplateRegistry:
         version = version or DEFAULT_VERSION
         if not self._meta_path.exists():
             self._meta_path.mkdir()
+        if Path(self._path / f"{name}.{version}.jinja") not in [pf.path for pf in self._index.files]:
+            raise ValueError(f"Prompt {name}.{version}.jinja not found in the index. "
+                             f"Cannot set meta for a non-existing prompt.")
 
         if f"{name}:{version}.json" in self._meta_path.glob("*.json"):
             if not overwrite:

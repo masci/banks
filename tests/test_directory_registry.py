@@ -86,5 +86,10 @@ def test_empty_meta(populated_dir):
 
 def test_set_meta(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
-    r.set_meta(name="new", version="2", meta={"accuracy": 91.2, "last_updated": time.ctime()})
-    assert r.get_meta(name="new", version="2") == {"accuracy": 91.2, "last_updated": time.ctime()}
+    new_prompt = Prompt("a very new prompt!")
+    r.set(name="new", version="3", prompt=new_prompt)
+    r.set_meta(name="new", version="3", meta={"accuracy": 91.2, "last_updated": time.ctime()})
+    assert r.get_meta(name="new", version="3") == {"accuracy": 91.2, "last_updated": time.ctime()}
+    with pytest.raises(ValueError):
+        r.set_meta(name="foo", version="bar", meta={"accuracy": 91.2, "last_updated": time.ctime()}, overwrite=False)
+

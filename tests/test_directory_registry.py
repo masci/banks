@@ -69,7 +69,7 @@ def test_set_existing_overwrite(populated_dir):
 
 
 def test_set_multiple_templates(populated_dir):
-    r = DirectoryTemplateRegistry(Path("/tmp/banks/templates"))
+    r = DirectoryTemplateRegistry(Path(populated_dir))
     new_prompt = Prompt("a very new prompt!")
     old_prompt = Prompt("an old prompt!")
     r.set(name="new", version="2", prompt=new_prompt)

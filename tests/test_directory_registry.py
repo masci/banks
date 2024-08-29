@@ -33,7 +33,7 @@ def test_init_from_existing_index(populated_dir):
 
 
 def test_init_from_existing_index_force(populated_dir):
-    r = DirectoryTemplateRegistry(populated_dir)  # creates the index
+    _ = DirectoryTemplateRegistry(populated_dir)  # creates the index
     # change the directory structure
     f = populated_dir / "blog.jinja"
     os.remove(f)
@@ -92,4 +92,3 @@ def test_set_meta(populated_dir):
     assert r.get_meta(name="new", version="3") == {"accuracy": 91.2, "last_updated": time.ctime()}
     with pytest.raises(ValueError):
         r.set_meta(name="foo", version="bar", meta={"accuracy": 91.2, "last_updated": time.ctime()}, overwrite=False)
-

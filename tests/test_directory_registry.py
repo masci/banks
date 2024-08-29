@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -65,3 +66,25 @@ def test_set_existing_overwrite(populated_dir):
     new_prompt = Prompt("a new prompt!")
     r.set(name="blog", prompt=new_prompt, overwrite=True)
     assert r.get(name="blog").raw.startswith("a new prompt!")
+
+
+def test_set_multiple_templates(populated_dir):
+    r = DirectoryTemplateRegistry(Path("/tmp/banks/templates"))
+    new_prompt = Prompt("a very new prompt!")
+    old_prompt = Prompt("an old prompt!")
+    r.set(name="new", version="2", prompt=new_prompt)
+    r.set(name="old", version="1", prompt=old_prompt)
+    assert r.get(name="old", version="1").raw == "an old prompt!"
+    assert r.get(name="new", version="2").raw == "a very new prompt!"
+
+
+def test_empty_meta(populated_dir):
+    r = DirectoryTemplateRegistry(populated_dir)
+    with pytest.raises(FileNotFoundError):
+        r.get_meta(name="blog")
+
+
+def test_set_meta(populated_dir):
+    r = DirectoryTemplateRegistry(populated_dir)
+    r.set_meta(name="new", version="2", meta={"accuracy": 91.2, "last_updated": time.ctime()})
+    assert r.get_meta(name="new", version="2") == {"accuracy": 91.2, "last_updated": time.ctime()}

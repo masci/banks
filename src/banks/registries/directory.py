@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import json
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from banks import Prompt
+from banks import Prompt, DEFAULT_VERSION, INDEX_NAME, META_PATH
 from banks.registry import TemplateNotFoundError
 
 
@@ -26,11 +27,12 @@ class DirectoryTemplateRegistry:
             raise ValueError(msg)
 
         self._path = directory_path
-        self._index_path = self._path / "index.json"
+        self._index_path = self._path / INDEX_NAME
         if not self._index_path.exists() or force_reindex:
             self._scan()
         else:
             self._load()
+        self._meta_path = self._path / META_PATH
 
     def _load(self):
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
@@ -43,19 +45,38 @@ class DirectoryTemplateRegistry:
         self._index_path.write_text(self._index.model_dump_json())
 
     def get(self, *, name: str, version: str | None = None) -> "Prompt":
-        version = version or "0"
+        version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
                 return Prompt(pf.path.read_text())
         raise TemplateNotFoundError
 
     def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False):
-        version = version or "0"
+        version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and overwrite:
                 pf.path.write_text(prompt.raw)
                 return
-        new_prompt_file = self._path / "{name}.{version}.jinja"
+        new_prompt_file = self._path / f"{name}.{version}.jinja"
         new_prompt_file.write_text(prompt.raw)
         pf = PromptFile(name=name, version=version, path=new_prompt_file)
         self._index.files.append(pf)
+
+    def get_meta(self, *, name: str, version: str | None = None) -> dict:
+        version = version or DEFAULT_VERSION
+        meta_path = self._meta_path / f"{name}.{version}.json"
+        if not meta_path.exists():
+            raise FileNotFoundError(f"Meta directory or file for prompt {name}:{version}.jinja not found.")
+        return json.loads(open(meta_path, "r").read())
+
+    def set_meta(self, *, meta: dict, name: str, version: str | None = None, overwrite: bool = False):
+        version = version or DEFAULT_VERSION
+        if not self._meta_path.exists():
+            self._meta_path.mkdir()
+
+        if f"{name}:{version}.json" in self._meta_path.glob("*.json"):
+            if not overwrite:
+                raise ValueError(f"Meta file for prompt {name}:{version} already exists. "
+                                 f"Use overwrite=True to overwrite.")
+        meta_path = self._meta_path / f"{name}.{version}.json"
+        meta_path.write_text(json.dumps(meta))

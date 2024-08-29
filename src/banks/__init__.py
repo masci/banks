@@ -11,3 +11,8 @@ __all__ = (
     "AsyncPrompt",
     "config",
 )
+
+# Constants
+DEFAULT_VERSION = "0"
+INDEX_NAME = "index.json"
+META_PATH = "meta"

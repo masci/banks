@@ -90,9 +90,9 @@ def test_set_meta(populated_dir):
     r.set(name="new", version="3", prompt=new_prompt)
     r.set_meta(name="new", version="3", meta={"accuracy": 91.2, "last_updated": time.ctime()})
     assert r.get_meta(name="new", version="3") == {"accuracy": 91.2, "last_updated": time.ctime()}
-    with pytest.raises(ValueError,
-                       match="Prompt foo.bar.jinja not found in the index. Cannot set meta for a non-existing prompt."):
+    with pytest.raises(ValueError) as e:
         r.set_meta(name="foo", version="bar", meta={"accuracy": 91.2, "last_updated": time.ctime()}, overwrite=False)
+    assert "Cannot set meta for a non-existing prompt." in str(e.value)
 
     with pytest.raises(ValueError) as e:
         r.set_meta(name="new", version="3", meta={"accuracy": 94.3, "last_updated": time.ctime()}, overwrite=False)

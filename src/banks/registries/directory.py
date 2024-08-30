@@ -10,9 +10,9 @@ from banks import Prompt
 from banks.registry import TemplateNotFoundError
 
 # Constants
-default_version = "0"
-default_index_name = "index.json"
-default_meta_path = "meta"
+DEFAULT_VERSION = "0"
+DEFAULT_INDEX_NAME = "index.json"
+DEFAULT_META_PATH = "meta"
 
 
 class PromptFile(BaseModel):
@@ -32,12 +32,12 @@ class DirectoryTemplateRegistry:
             raise ValueError(msg)
 
         self._path = directory_path
-        self._index_path = self._path / default_index_name
+        self._index_path = self._path / DEFAULT_INDEX_NAME
         if not self._index_path.exists() or force_reindex:
             self._scan()
         else:
             self._load()
-        self._meta_path = self._path / default_meta_path
+        self._meta_path = self._path / DEFAULT_META_PATH
 
     def _load(self):
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
@@ -50,14 +50,14 @@ class DirectoryTemplateRegistry:
         self._index_path.write_text(self._index.model_dump_json())
 
     def get(self, *, name: str, version: str | None = None) -> "Prompt":
-        version = version or default_version
+        version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
                 return Prompt(pf.path.read_text())
         raise TemplateNotFoundError
 
     def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False):
-        version = version or default_version
+        version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and overwrite:
                 pf.path.write_text(prompt.raw)
@@ -68,15 +68,15 @@ class DirectoryTemplateRegistry:
         self._index.files.append(pf)
 
     def get_meta(self, *, name: str, version: str | None = None) -> dict:
-        version = version or default_version
+        version = version or DEFAULT_VERSION
         meta_path = self._meta_path / f"{name}.{version}.json"
         if not meta_path.exists():
             msg = f"Meta directory or file for prompt {name}:{version}.jinja not found."
             raise FileNotFoundError(msg)
-        return json.loads(open(meta_path).read())
+        return json.loads(open(meta_path, encoding="utf-8").read())
 
     def set_meta(self, *, meta: dict, name: str, version: str | None = None, overwrite: bool = False):
-        version = version or default_version
+        version = version or DEFAULT_VERSION
         if not self._meta_path.exists():
             self._meta_path.mkdir()
         if Path(self._path / f"{name}.{version}.jinja") not in [pf.path for pf in self._index.files]:

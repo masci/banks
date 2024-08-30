@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field
 from banks import Prompt
 from banks.registry import TemplateNotFoundError
 
-
 # Constants
 default_version = "0"
 default_index_name = "index.json"
@@ -72,22 +71,21 @@ class DirectoryTemplateRegistry:
         version = version or default_version
         meta_path = self._meta_path / f"{name}.{version}.json"
         if not meta_path.exists():
-            raise FileNotFoundError(f"Meta directory or file for prompt {name}:{version}.jinja not found.")
-        return json.loads(open(meta_path, "r").read())
+            msg = f"Meta directory or file for prompt {name}:{version}.jinja not found."
+            raise FileNotFoundError(msg)
+        return json.loads(open(meta_path).read())
 
     def set_meta(self, *, meta: dict, name: str, version: str | None = None, overwrite: bool = False):
         version = version or default_version
         if not self._meta_path.exists():
             self._meta_path.mkdir()
         if Path(self._path / f"{name}.{version}.jinja") not in [pf.path for pf in self._index.files]:
-            raise ValueError(
-                f"Prompt {name}.{version}.jinja not found in the index. Cannot set meta for a non-existing prompt."
-            )
+            msg = f"Prompt {name}.{version}.jinja not found in the index. Cannot set meta for a non-existing prompt."
+            raise ValueError(msg)
 
         if Path(self._meta_path / f"{name}.{version}.json") in list(self._meta_path.glob("*.json")):
             if not overwrite:
-                raise ValueError(
-                    f"Meta file for prompt {name}:{version} already exists. Use overwrite=True to overwrite."
-                )
+                msg = f"Meta file for prompt {name}:{version} already exists. Use overwrite=True to overwrite."
+                raise ValueError(msg)
         meta_path = self._meta_path / f"{name}.{version}.json"
         meta_path.write_text(json.dumps(meta))

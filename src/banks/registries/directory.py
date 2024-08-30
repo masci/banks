@@ -84,7 +84,7 @@ class DirectoryTemplateRegistry:
                 f"Prompt {name}.{version}.jinja not found in the index. Cannot set meta for a non-existing prompt."
             )
 
-        if f"{name}:{version}.json" in self._meta_path.glob("*.json"):
+        if Path(self._meta_path / f"{name}.{version}.json") in list(self._meta_path.glob("*.json")):
             if not overwrite:
                 raise ValueError(
                     f"Meta file for prompt {name}:{version} already exists. Use overwrite=True to overwrite."

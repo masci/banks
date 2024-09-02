@@ -67,7 +67,7 @@ class DirectoryTemplateRegistry:
         new_meta_file.write_text(json.dumps({**meta, "created_at": time.ctime()}))
         return new_prompt_file, new_meta_file
 
-    def _set_prompt_and_meta(
+    def _set_prompt_and_meta(  # pylint: disable=too-many-arguments
         self, *, name: str, prompt: Prompt, meta: dict, version: str | None = None, overwrite: bool = False
     ):
         for pf in self._index.files:
@@ -81,7 +81,7 @@ class DirectoryTemplateRegistry:
                 return pf.path, pf.meta_path
         return self._create_new_prompt_and_meta(name=name, prompt=prompt, meta=meta, version=version)
 
-    def set(
+    def set(  # pylint: disable=too-many-arguments
         self,
         *,
         name: str,
@@ -114,4 +114,5 @@ class DirectoryTemplateRegistry:
                 current_meta = self.get_meta(name=name, version=version)
                 pf.meta_path.write_text(json.dumps({**current_meta, **meta}))
                 return pf.meta_path
-        raise ValueError(f"Unknown prompt {name}.{version}, Cannot set meta for a non-existing prompt.")
+        unk_err = f"Unknown prompt {name}.{version}.jinja, Cannot set meta for a non-existing prompt."
+        raise ValueError(unk_err)

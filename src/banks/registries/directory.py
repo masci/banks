@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 import json
+import os
+import time
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -19,6 +21,7 @@ class PromptFile(BaseModel):
     name: str
     version: str
     path: Path
+    meta_path: Path
 
 
 class PromptFileIndex(BaseModel):
@@ -32,12 +35,12 @@ class DirectoryTemplateRegistry:
             raise ValueError(msg)
 
         self._path = directory_path
+        os.makedirs(self._path / DEFAULT_META_PATH, exist_ok=True)
         self._index_path = self._path / DEFAULT_INDEX_NAME
         if not self._index_path.exists() or force_reindex:
             self._scan()
         else:
             self._load()
-        self._meta_path = self._path / DEFAULT_META_PATH
 
     def _load(self):
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
@@ -45,7 +48,8 @@ class DirectoryTemplateRegistry:
     def _scan(self):
         self._index: PromptFileIndex = PromptFileIndex()
         for path in self._path.glob("*.jinja*"):
-            pf = PromptFile(name=path.stem, version="0", path=path)
+            meta_file = self._path / DEFAULT_META_PATH / f"{path.stem}.json"
+            pf = PromptFile(name=path.stem, version="0", path=path, meta_path=meta_file)
             self._index.files.append(pf)
         self._index_path.write_text(self._index.model_dump_json())
 
@@ -56,36 +60,58 @@ class DirectoryTemplateRegistry:
                 return Prompt(pf.path.read_text())
         raise TemplateNotFoundError
 
-    def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False):
-        version = version or DEFAULT_VERSION
-        for pf in self._index.files:
-            if pf.name == name and pf.version == version and overwrite:
-                pf.path.write_text(prompt.raw)
-                return
+    def _create_new_prompt_and_meta(self, *, name: str, prompt: Prompt, meta: dict, version: str | None = None):
         new_prompt_file = self._path / f"{name}.{version}.jinja"
         new_prompt_file.write_text(prompt.raw)
-        pf = PromptFile(name=name, version=version, path=new_prompt_file)
-        self._index.files.append(pf)
+        new_meta_file = self._path / DEFAULT_META_PATH / f"{name}.{version}.json"
+        new_meta_file.write_text(json.dumps({**meta, "created_at": time.ctime()}))
+        return new_prompt_file, new_meta_file
+
+    def _set_prompt_and_meta(
+        self, *, name: str, prompt: Prompt, meta: dict, version: str | None = None, overwrite: bool = False
+    ):
+        for pf in self._index.files:
+            if pf.name == name and pf.version == version:
+                if not overwrite:
+                    msg = f"Prompt {name}.{version}.jinja already exists. Use overwrite=True to overwrite."
+                    raise ValueError(msg)
+                pf.path.write_text(prompt.raw)
+                current_meta = json.loads(pf.meta_path.read_text())
+                pf.meta_path.write_text(json.dumps({**current_meta, **meta}))
+                return pf.path, pf.meta_path
+        return self._create_new_prompt_and_meta(name=name, prompt=prompt, meta=meta, version=version)
+
+    def set(
+        self,
+        *,
+        name: str,
+        prompt: Prompt,
+        meta: dict | None = None,
+        version: str | None = None,
+        overwrite: bool = False,
+    ):
+        version = version or DEFAULT_VERSION
+        meta = {**(meta or {}), "created_at": time.ctime()}
+
+        prompt_file, meta_file = self._set_prompt_and_meta(
+            name=name, prompt=prompt, meta=meta, version=version, overwrite=overwrite
+        )
+        pf = PromptFile(name=name, version=version, path=prompt_file, meta_path=meta_file)
+        if pf not in self._index.files:
+            self._index.files.append(pf)
 
     def get_meta(self, *, name: str, version: str | None = None) -> dict:
         version = version or DEFAULT_VERSION
-        meta_path = self._meta_path / f"{name}.{version}.json"
-        if not meta_path.exists():
-            msg = f"Meta directory or file for prompt {name}:{version}.jinja not found."
-            raise FileNotFoundError(msg)
-        return json.loads(open(meta_path, encoding="utf-8").read())
+        for pf in self._index.files:
+            if pf.name == name and pf.version == version and pf.meta_path.exists():
+                return json.loads(open(pf.meta_path, encoding="utf-8").read())
+        return {}
 
-    def set_meta(self, *, meta: dict, name: str, version: str | None = None, overwrite: bool = False):
+    def update_meta(self, *, meta: dict, name: str, version: str | None = None):
         version = version or DEFAULT_VERSION
-        if not self._meta_path.exists():
-            self._meta_path.mkdir()
-        if Path(self._path / f"{name}.{version}.jinja") not in [pf.path for pf in self._index.files]:
-            msg = f"Prompt {name}.{version}.jinja not found in the index. Cannot set meta for a non-existing prompt."
-            raise ValueError(msg)
-
-        if Path(self._meta_path / f"{name}.{version}.json") in list(self._meta_path.glob("*.json")):
-            if not overwrite:
-                msg = f"Meta file for prompt {name}:{version} already exists. Use overwrite=True to overwrite."
-                raise ValueError(msg)
-        meta_path = self._meta_path / f"{name}.{version}.json"
-        meta_path.write_text(json.dumps(meta))
+        for pf in self._index.files:
+            if pf.name == name and pf.version == version and pf.meta_path.exists():
+                current_meta = self.get_meta(name=name, version=version)
+                pf.meta_path.write_text(json.dumps({**current_meta, **meta}))
+                return pf.meta_path
+        raise ValueError(f"Unknown prompt {name}.{version}, Cannot set meta for a non-existing prompt.")

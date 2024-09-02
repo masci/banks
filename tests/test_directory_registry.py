@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from pathlib import Path
@@ -12,10 +13,15 @@ from banks.registry import TemplateNotFoundError
 @pytest.fixture
 def populated_dir(tmp_path):
     d = tmp_path / "templates"
+    m = d / "meta"
     d.mkdir()
+    m.mkdir()
     for fp in (Path(__file__).parent / "templates").iterdir():
         with open(d / fp.name, "w") as f:
             f.write(fp.read_text())
+        with open(m / f"{fp.stem}.json", "w") as f:
+            meta = {"created_at": time.ctime()}
+            f.write(json.dumps(meta))
     return d
 
 
@@ -57,46 +63,47 @@ def test_get_not_found(populated_dir):
 def test_set_existing_no_overwrite(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
     new_prompt = Prompt("a new prompt!")
-    r.set(name="blog", prompt=new_prompt)  # template already exists, expected to be no-op
-    assert r.get(name="blog").raw.startswith("{# Zero-shot, this is already enough for most topics in english -#}")
+    with pytest.raises(ValueError) as e:
+        r.set(name="blog", prompt=new_prompt)
+    assert "already exists. Use overwrite=True to overwrite." in str(e.value)
 
 
 def test_set_existing_overwrite(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
     new_prompt = Prompt("a new prompt!")
+    current_time = time.ctime()
     r.set(name="blog", prompt=new_prompt, overwrite=True)
     assert r.get(name="blog").raw.startswith("a new prompt!")
+    assert r.get_meta(name="blog") == {"created_at": current_time}  # created_at changes because it's overwritten
 
 
 def test_set_multiple_templates(populated_dir):
     r = DirectoryTemplateRegistry(Path(populated_dir))
+    current_time = time.ctime()
     new_prompt = Prompt("a very new prompt!")
     old_prompt = Prompt("an old prompt!")
     r.set(name="new", version="2", prompt=new_prompt)
     r.set(name="old", version="1", prompt=old_prompt)
     assert r.get(name="old", version="1").raw == "an old prompt!"
+    assert r.get_meta(name="old", version="1") == {"created_at": current_time}
     assert r.get(name="new", version="2").raw == "a very new prompt!"
+    assert r.get_meta(name="new", version="2") == {"created_at": current_time}
 
 
-def test_empty_meta(populated_dir):
+def test_update_meta(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
-    with pytest.raises(FileNotFoundError):
-        r.get_meta(name="blog")
 
-
-def test_set_meta(populated_dir):
-    r = DirectoryTemplateRegistry(populated_dir)
+    # test metadata for initial set
     new_prompt = Prompt("a very new prompt!")
-    r.set(name="new", version="3", prompt=new_prompt)
-    r.set_meta(name="new", version="3", meta={"accuracy": 91.2, "last_updated": time.ctime()})
-    assert r.get_meta(name="new", version="3") == {"accuracy": 91.2, "last_updated": time.ctime()}
+    current_time = time.ctime()
+    r.set(name="new", version="3", prompt=new_prompt, meta={"accuracy": 91.2})
+    assert r.get_meta(name="new", version="3") == {"accuracy": 91.2, "created_at": current_time}
+
+    # test metadata error update for non-existing prompt
     with pytest.raises(ValueError) as e:
-        r.set_meta(name="foo", version="bar", meta={"accuracy": 91.2, "last_updated": time.ctime()}, overwrite=False)
+        _ = r.update_meta(name="foo", version="bar", meta={"accuracy": 91.2, "created_at": current_time})
     assert "Cannot set meta for a non-existing prompt." in str(e.value)
 
-    with pytest.raises(ValueError) as e:
-        r.set_meta(name="new", version="3", meta={"accuracy": 94.3, "last_updated": time.ctime()}, overwrite=False)
-    assert "Use overwrite=True to overwrite." in str(e.value)
-
-    r.set_meta(name="new", version="3", meta={"accuracy": 94.3, "last_updated": time.ctime()}, overwrite=True)
-    assert r.get_meta(name="new", version="3") == {"accuracy": 94.3, "last_updated": time.ctime()}
+    # test metadata update for existing prompt
+    _ = r.update_meta(name="new", version="3", meta={"accuracy": 94.3})
+    assert r.get_meta(name="new", version="3") == {"accuracy": 94.3, "created_at": current_time}

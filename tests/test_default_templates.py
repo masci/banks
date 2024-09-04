@@ -27,12 +27,12 @@ def _get_data(name):
 
 
 def test_blog(registry):
-    p = registry.get(name="blog")
+    p = registry.get_prompt(name="blog")
     assert _get_data("blog.jinja.out") == p.text({"topic": "climate change"})
 
 
 def test_summarize(registry):
-    p = registry.get(name="summarize")
+    p = registry.get_prompt(name="summarize")
     documents = [
         "A first paragraph talking about AI",
         "A second paragraph talking about climate change",
@@ -44,12 +44,12 @@ def test_summarize(registry):
 def test_summarize_lemma(registry):
     pytest.importorskip("simplemma")
 
-    p = registry.get(name="summarize_lemma")
+    p = registry.get_prompt(name="summarize_lemma")
     assert _get_data("summarize_lemma.jinja.out") == p.text({"document": "The cats are running"})
 
 
 def test_generate_tweet(registry):
-    p = registry.get(name="generate_tweet")
+    p = registry.get_prompt(name="generate_tweet")
     ext_name = "banks.extensions.generate.GenerateExtension"
     env.extensions[ext_name]._generate = mock.MagicMock(return_value="foo")  # type:ignore
 

@@ -1,4 +1,3 @@
-import json
 import os
 import time
 from pathlib import Path
@@ -7,27 +6,22 @@ import pytest
 
 from banks.prompt import Prompt
 from banks.registries.directory import DirectoryTemplateRegistry
-from banks.registry import TemplateNotFoundError
+from banks.registry import MetaNotFoundError, TemplateNotFoundError
 
 
 @pytest.fixture
 def populated_dir(tmp_path):
     d = tmp_path / "templates"
-    m = d / "meta"
     d.mkdir()
-    m.mkdir()
     for fp in (Path(__file__).parent / "templates").iterdir():
         with open(d / fp.name, "w") as f:
             f.write(fp.read_text())
-        with open(m / f"{fp.stem}.json", "w") as f:
-            meta = {"created_at": time.ctime()}
-            f.write(json.dumps(meta))
     return d
 
 
 def test_init_from_scratch(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
-    p = r.get(name="blog")
+    p = r.get_prompt(name="blog")
     assert p.raw.startswith("{# Zero-shot, this is already enough for most topics in english -#}")
 
 
@@ -46,7 +40,7 @@ def test_init_from_existing_index_force(populated_dir):
     # force recreation, the renamed file should be updated in the index
     r = DirectoryTemplateRegistry(populated_dir, force_reindex=True)
     with pytest.raises(TemplateNotFoundError):
-        r.get(name="blog")
+        r.get_prompt(name="blog")
 
 
 def test_init_invalid_dir():
@@ -57,7 +51,9 @@ def test_init_invalid_dir():
 def test_get_not_found(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
     with pytest.raises(TemplateNotFoundError):
-        r.get(name="FOO")
+        r.get_prompt(name="FOO")
+    with pytest.raises(MetaNotFoundError):
+        r.get_meta(name="FOO")
 
 
 def test_set_existing_no_overwrite(populated_dir):
@@ -73,7 +69,7 @@ def test_set_existing_overwrite(populated_dir):
     new_prompt = Prompt("a new prompt!")
     current_time = time.ctime()
     r.set(name="blog", prompt=new_prompt, overwrite=True)
-    assert r.get(name="blog").raw.startswith("a new prompt!")
+    assert r.get_prompt(name="blog").raw.startswith("a new prompt!")
     assert r.get_meta(name="blog") == {"created_at": current_time}  # created_at changes because it's overwritten
 
 
@@ -84,9 +80,9 @@ def test_set_multiple_templates(populated_dir):
     old_prompt = Prompt("an old prompt!")
     r.set(name="new", version="2", prompt=new_prompt)
     r.set(name="old", version="1", prompt=old_prompt)
-    assert r.get(name="old", version="1").raw == "an old prompt!"
+    assert r.get_prompt(name="old", version="1").raw == "an old prompt!"
     assert r.get_meta(name="old", version="1") == {"created_at": current_time}
-    assert r.get(name="new", version="2").raw == "a very new prompt!"
+    assert r.get_prompt(name="new", version="2").raw == "a very new prompt!"
     assert r.get_meta(name="new", version="2") == {"created_at": current_time}
 
 
@@ -105,5 +101,6 @@ def test_update_meta(populated_dir):
     assert "Cannot set meta for a non-existing prompt." in str(e.value)
 
     # test metadata update for existing prompt
-    _ = r.update_meta(name="new", version="3", meta={"accuracy": 94.3})
-    assert r.get_meta(name="new", version="3") == {"accuracy": 94.3, "created_at": current_time}
+    created_time = r.get_meta(name="new", version="3")["created_at"]
+    _ = r.update_meta(name="new", version="3", meta={"accuracy": 94.3, "created_at": created_time})
+    assert r.get_meta(name="new", version="3") == {"accuracy": 94.3, "created_at": created_time}

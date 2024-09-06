@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from banks import Prompt
-from banks.registry import MetaNotFoundError, TemplateNotFoundError
+from banks.registry import TemplateNotFoundError
 
 # Constants
 DEFAULT_VERSION = "0"
@@ -49,12 +49,14 @@ class DirectoryTemplateRegistry:
             self._index.files.append(pf)
         self._index_path.write_text(self._index.model_dump_json())
 
-    def get_prompt(self, *, name: str, version: str | None = None) -> "Prompt":
-        version = version or DEFAULT_VERSION
+    def get(self, *, name: str, version: str = DEFAULT_VERSION) -> "PromptFile":
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
-                return Prompt(pf.path.read_text())
+                return pf
         raise TemplateNotFoundError
+
+    def get_prompt(self, *, name: str, version: str = DEFAULT_VERSION) -> Prompt:
+        return Prompt(self.get(name=name, version=version).path.read_text())
 
     def _get_prompt_file(self, *, name: str, version: str) -> PromptFile | None:
         for pf in self._index.files:
@@ -62,9 +64,7 @@ class DirectoryTemplateRegistry:
                 return pf
         return None
 
-    def _create_pf(  # pylint: disable=too-many-arguments
-        self, *, name: str, prompt: Prompt, version: str, overwrite: bool, meta: dict
-    ) -> "PromptFile":
+    def _create_pf(self, *, name: str, prompt: Prompt, version: str, overwrite: bool, meta: dict) -> "PromptFile":
         pf = self._get_prompt_file(name=name, version=version)
         if pf:
             if not overwrite:
@@ -78,16 +78,15 @@ class DirectoryTemplateRegistry:
         pf = PromptFile(name=name, version=version, path=new_prompt_file, meta=meta)
         return pf
 
-    def set(  # pylint: disable=too-many-arguments
+    def set(
         self,
         *,
         name: str,
         prompt: Prompt,
         meta: dict | None = None,
-        version: str | None = None,
+        version: str = DEFAULT_VERSION,
         overwrite: bool = False,
     ):
-        version = version or DEFAULT_VERSION
         meta = {**(meta or {}), "created_at": time.ctime()}
 
         pf = self._create_pf(name=name, prompt=prompt, version=version, overwrite=overwrite, meta=meta)
@@ -95,15 +94,10 @@ class DirectoryTemplateRegistry:
             self._index.files.append(pf)
         self._index_path.write_text(self._index.model_dump_json())
 
-    def get_meta(self, *, name: str, version: str | None = None) -> dict:
-        version = version or DEFAULT_VERSION
-        for pf in self._index.files:
-            if pf.name == name and pf.version == version:
-                return pf.meta
-        raise MetaNotFoundError
+    def get_meta(self, *, name: str, version: str = DEFAULT_VERSION) -> dict:
+        return self.get(name=name, version=version).meta
 
-    def update_meta(self, *, meta: dict, name: str, version: str | None = None):
-        version = version or DEFAULT_VERSION
+    def update_meta(self, *, meta: dict, name: str, version: str = DEFAULT_VERSION):
         pf = self._get_prompt_file(name=name, version=version)
         if not pf:
             unk_err = f"Prompt {name}.{version} not found in the index. Cannot set meta for a non-existing prompt."

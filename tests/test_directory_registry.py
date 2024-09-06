@@ -6,7 +6,7 @@ import pytest
 
 from banks.prompt import Prompt
 from banks.registries.directory import DirectoryTemplateRegistry
-from banks.registry import MetaNotFoundError, TemplateNotFoundError
+from banks.registry import TemplateNotFoundError
 
 
 @pytest.fixture
@@ -23,6 +23,7 @@ def test_init_from_scratch(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
     p = r.get_prompt(name="blog")
     assert p.raw.startswith("{# Zero-shot, this is already enough for most topics in english -#}")
+    assert r.get_meta(name="blog") == {}
 
 
 def test_init_from_existing_index(populated_dir):
@@ -41,6 +42,8 @@ def test_init_from_existing_index_force(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir, force_reindex=True)
     with pytest.raises(TemplateNotFoundError):
         r.get_prompt(name="blog")
+    with pytest.raises(TemplateNotFoundError):
+        r.get(name="blog")
 
 
 def test_init_invalid_dir():
@@ -52,7 +55,7 @@ def test_get_not_found(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
     with pytest.raises(TemplateNotFoundError):
         r.get_prompt(name="FOO")
-    with pytest.raises(MetaNotFoundError):
+    with pytest.raises(TemplateNotFoundError):
         r.get_meta(name="FOO")
 
 
@@ -69,7 +72,9 @@ def test_set_existing_overwrite(populated_dir):
     new_prompt = Prompt("a new prompt!")
     current_time = time.ctime()
     r.set(name="blog", prompt=new_prompt, overwrite=True)
+    assert r.get(name="blog").path.read_text() == "a new prompt!"
     assert r.get_prompt(name="blog").raw.startswith("a new prompt!")
+    assert r.get(name="blog").meta == {"created_at": current_time}
     assert r.get_meta(name="blog") == {"created_at": current_time}  # created_at changes because it's overwritten
 
 

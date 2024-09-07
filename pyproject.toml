@@ -186,3 +186,4 @@ disable = [
   "missing-function-docstring",
   "cyclic-import",
 ]
+max-args = 10

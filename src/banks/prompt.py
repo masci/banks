@@ -14,6 +14,7 @@ class BasePrompt:
     def __init__(
         self,
         text: str,
+        *,
         version: str | None = None,
         metadata: dict[str, Any] | None = None,
         canary_word: str | None = None,

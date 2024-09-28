@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from banks import Prompt
-from banks.registry import TemplateNotFoundError
+from banks.errors import PromptNotFoundError
 
 # Constants
 DEFAULT_VERSION = "0"
@@ -54,7 +54,7 @@ class DirectoryTemplateRegistry:
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
                 return pf
-        raise TemplateNotFoundError
+        raise PromptNotFoundError
 
     def get_prompt(self, *, name: str, version: str = DEFAULT_VERSION) -> Prompt:
         return Prompt(self.get(name=name, version=version).path.read_text())

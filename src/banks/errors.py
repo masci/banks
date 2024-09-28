@@ -2,12 +2,20 @@
 #
 # SPDX-License-Identifier: MIT
 class MissingDependencyError(Exception):
-    pass
+    """Some optional dependencies are missing."""
 
 
 class AsyncError(Exception):
-    pass
+    """An error related to asyncio support."""
 
 
 class CanaryWordError(Exception):
-    pass
+    """The canary word has leaked."""
+
+
+class PromptNotFoundError(Exception):
+    """The prompt was now found in the registry."""
+
+
+class InvalidPromptError(Exception):
+    """The prompt is not valid."""

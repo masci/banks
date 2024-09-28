@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
+from banks.errors import PromptNotFoundError
 from banks.prompt import Prompt
 from banks.registries.directory import DirectoryTemplateRegistry
-from banks.registry import TemplateNotFoundError
 
 
 @pytest.fixture
@@ -40,9 +40,9 @@ def test_init_from_existing_index_force(populated_dir):
     os.remove(f)
     # force recreation, the renamed file should be updated in the index
     r = DirectoryTemplateRegistry(populated_dir, force_reindex=True)
-    with pytest.raises(TemplateNotFoundError):
+    with pytest.raises(PromptNotFoundError):
         r.get_prompt(name="blog")
-    with pytest.raises(TemplateNotFoundError):
+    with pytest.raises(PromptNotFoundError):
         r.get(name="blog")
 
 
@@ -53,9 +53,9 @@ def test_init_invalid_dir():
 
 def test_get_not_found(populated_dir):
     r = DirectoryTemplateRegistry(populated_dir)
-    with pytest.raises(TemplateNotFoundError):
+    with pytest.raises(PromptNotFoundError):
         r.get_prompt(name="FOO")
-    with pytest.raises(TemplateNotFoundError):
+    with pytest.raises(PromptNotFoundError):
         r.get_meta(name="FOO")
 
 

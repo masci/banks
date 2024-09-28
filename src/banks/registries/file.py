@@ -5,65 +5,55 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
-from banks.registry import InvalidTemplateError, TemplateNotFoundError
+from banks.types import PromptModel
 
 
-class PromptTemplate(BaseModel):
-    id: str | None
-    name: str
-    version: str
-    prompt: str
+class PromptRegistryIndex(BaseModel):
+    prompts: list[PromptModel] = []
 
 
-class PromptTemplateIndex(BaseModel):
-    templates: list[PromptTemplate]
+class FilePromptRegistry:
+    """A prompt registry storing all the prompt data in a single JSON file."""
 
+    def __init__(self, registry_index: Path) -> None:
+        """Creates an instance of the File Prompt Registry.
 
-class FileTemplateRegistry:
-    def __init__(self, user_data_path: Path) -> None:
-        self._index_fpath: Path = user_data_path / "index.json"
-        self._index: PromptTemplateIndex = PromptTemplateIndex(templates=[])
+        Args:
+            registry_index: The path to the index file.
+        """
+        self._index_fpath: Path = registry_index
+        self._index: PromptRegistryIndex = PromptRegistryIndex(prompts=[])
         try:
-            self._index = PromptTemplateIndex.model_validate_json(self._index_fpath.read_text())
+            self._index = PromptRegistryIndex.model_validate_json(self._index_fpath.read_text())
         except FileNotFoundError:
             # init the user data folder
-            user_data_path.mkdir(parents=True, exist_ok=True)
+            self._index_fpath.parent.mkdir(parents=True, exist_ok=True)
 
-    @staticmethod
-    def _make_id(name: str, version: str | None):
-        if ":" in name:
-            msg = "Template name cannot contain ':'"
-            raise InvalidTemplateError(msg)
-        if version:
-            return f"{name}:{version}"
-        return name
+    def get(self, *, name: str, version: str | None = None) -> Prompt:
+        _, model = self._get_prompt_model(name, version)
+        return Prompt(**model.model_dump())
 
-    def save(self) -> None:
+    def set(self, *, prompt: Prompt, overwrite: bool = False) -> None:
+        try:
+            idx, p_model = self._get_prompt_model(prompt.name, prompt.version)
+            if overwrite:
+                self._index.prompts[idx] = PromptModel.from_prompt(prompt)
+                self._save()
+        except PromptNotFoundError:
+            p_model = PromptModel.from_prompt(prompt)
+            self._index.prompts.append(p_model)
+            self._save()
+
+    def _save(self) -> None:
         with open(self._index_fpath, "w", encoding="locale") as f:
             f.write(self._index.model_dump_json())
 
-    def get(self, name: str, version: str | None = None) -> "Prompt":
-        tpl_id = self._make_id(name, version)
-        tpl = self._get_template(tpl_id)
-        return Prompt(tpl.prompt)
+    def _get_prompt_model(self, name: str | None, version: str | None) -> tuple[int, PromptModel]:
+        for i, model in enumerate(self._index.prompts):
+            if model.name == name and model.version == version:
+                return i, model
 
-    def _get_template(self, tpl_id: str) -> "PromptTemplate":
-        for tpl in self._index.templates:
-            if tpl_id == tpl.id:
-                return tpl
-
-        msg = f"cannot find template '{id}'"
-        raise TemplateNotFoundError(msg)
-
-    def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False):
-        tpl_id = self._make_id(name, version)
-        try:
-            tpl = self._get_template(tpl_id)
-            if overwrite:
-                tpl.prompt = prompt.raw
-                self.save()
-        except TemplateNotFoundError:
-            tpl = PromptTemplate(id=tpl_id, name=name, version=version or "", prompt=prompt.raw)
-            self._index.templates.append(tpl)
-            self.save()
+        msg = f"cannot find template with name '{name}' and version '{version}'"
+        raise PromptNotFoundError(msg)

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import Optional
+from typing import Any
 
 from .cache import DefaultCache, RenderCache
 from .config import config
@@ -12,7 +12,13 @@ from .utils import generate_canary_word
 
 class BasePrompt:
     def __init__(
-        self, text: str, canary_word: Optional[str] = None, render_cache: Optional[RenderCache] = None
+        self,
+        text: str,
+        *,
+        version: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        canary_word: str | None = None,
+        render_cache: RenderCache | None = None,
     ) -> None:
         """
         Prompt constructor.
@@ -24,30 +30,34 @@ class BasePrompt:
             render_cache: The caching backend to store rendered prompts. If `None`, the default in-memory backend will
                 be used.
         """
-        self._render_cache = render_cache or DefaultCache()
+        self._metadata = metadata or {}
         self._raw: str = text
+        self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
+        self._version = version
+
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
 
-    def _cache_get(self, data: dict) -> Optional[str]:
-        return self._render_cache.get(data)
-
-    def _cache_set(self, data: dict, text: str) -> None:
-        self._render_cache.set(data, text)
-
-    def _get_context(self, data: Optional[dict]) -> dict:
+    def _get_context(self, data: dict | None) -> dict:
         if data is None:
             return self.defaults
         return data | self.defaults
 
     @property
+    def metadata(self) -> dict[str, Any]:
+        return self._metadata
+
+    @property
     def raw(self) -> str:
+        """Returns the raw text of the prompt."""
         return self._raw
 
+    @property
+    def version(self) -> str | None:
+        return self._version
+
     def canary_leaked(self, text: str) -> bool:
-        """
-        Returns whether the canary word is present in `text`, signalling the prompt might have leaked.
-        """
+        """Returns whether the canary word is present in `text`, signalling the prompt might have leaked."""
         return self.defaults["canary_word"] in text
 
 
@@ -68,7 +78,7 @@ class Prompt(BasePrompt):
     ```
     """
 
-    def text(self, data: Optional[dict] = None) -> str:
+    def text(self, data: dict[str, Any] | None = None) -> str:
         """
         Render the prompt using variables present in `data`
 
@@ -76,12 +86,12 @@ class Prompt(BasePrompt):
             data: A dictionary containing the context variables.
         """
         data = self._get_context(data)
-        cached = self._cache_get(data)
+        cached = self._render_cache.get(data)
         if cached:
             return cached
 
         rendered: str = self._template.render(data)
-        self._cache_set(data, rendered)
+        self._render_cache.set(data, rendered)
         return rendered
 
 
@@ -146,19 +156,25 @@ class AsyncPrompt(BasePrompt):
     ```
     """
 
-    def __init__(self, text: str) -> None:
-        super().__init__(text)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
         if not config.ASYNC_ENABLED:
             msg = "Async is not enabled. Please set the environment variable 'BANKS_ASYNC_ENABLED=on' and try again."
             raise AsyncError(msg)
 
-    async def text(self, data: Optional[dict] = None) -> str:
+    async def text(self, data: dict[str, Any] | None = None) -> str:
+        """
+        Render the prompt using variables present in `data`
+
+        Parameters:
+            data: A dictionary containing the context variables.
+        """
         data = self._get_context(data)
-        cached = self._cache_get(data)
+        cached = self._render_cache.get(data)
         if cached:
             return cached
 
         rendered: str = await self._template.render_async(data)
-        self._cache_set(data, rendered)
+        self._render_cache.set(data, rendered)
         return rendered

@@ -20,7 +20,6 @@ class TemplateRegistry(Protocol):
         *,
         name: str,
         prompt: Prompt,
-        meta: dict | None = None,
         version: str | None = None,
         overwrite: bool = False,
     ): ...

@@ -41,6 +41,7 @@ dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
   "pytest-cov",
+  "pytest-asyncio",
   "mkdocs-material",
   "mkdocstrings[python]",
   "simplemma",

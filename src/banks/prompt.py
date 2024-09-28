@@ -15,6 +15,7 @@ class BasePrompt:
         self,
         text: str,
         *,
+        name: str | None = None,
         version: str | None = None,
         metadata: dict[str, Any] | None = None,
         canary_word: str | None = None,
@@ -31,6 +32,7 @@ class BasePrompt:
                 be used.
         """
         self._metadata = metadata or {}
+        self._name = name
         self._raw: str = text
         self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
@@ -46,6 +48,10 @@ class BasePrompt:
     @property
     def metadata(self) -> dict[str, Any]:
         return self._metadata
+
+    @property
+    def name(self) -> str | None:
+        return self._name
 
     @property
     def raw(self) -> str:

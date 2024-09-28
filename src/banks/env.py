@@ -22,7 +22,7 @@ def _add_extensions(_env):
 
 # Init the Jinja env
 env = Environment(
-    loader=PackageLoader("banks", "templates"),
+    loader=PackageLoader("banks", "internal"),
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
         default_for_string=False,

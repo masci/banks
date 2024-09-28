@@ -40,6 +40,7 @@ path = "src/banks/__about__.py"
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "pytest-cov",
   "mkdocs-material",
   "mkdocstrings[python]",
   "simplemma",

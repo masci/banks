@@ -15,4 +15,12 @@ class InvalidTemplateError(Exception): ...
 class TemplateRegistry(Protocol):
     def get(self, *, name: str, version: str | None = None) -> "Prompt": ...
 
-    def set(self, *, name: str, prompt: Prompt, version: str | None = None, overwrite: bool = False): ...
+    def set(
+        self,
+        *,
+        name: str,
+        prompt: Prompt,
+        meta: dict | None = None,
+        version: str | None = None,
+        overwrite: bool = False,
+    ): ...

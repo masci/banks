@@ -49,7 +49,8 @@ class DirectoryTemplateRegistry:
             self._index.files.append(pf)
         self._index_path.write_text(self._index.model_dump_json())
 
-    def get(self, *, name: str, version: str = DEFAULT_VERSION) -> "PromptFile":
+    def get(self, *, name: str, version: str | None = None) -> "PromptFile":
+        version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
                 return pf
@@ -84,9 +85,10 @@ class DirectoryTemplateRegistry:
         name: str,
         prompt: Prompt,
         meta: dict | None = None,
-        version: str = DEFAULT_VERSION,
+        version: str | None = None,
         overwrite: bool = False,
     ):
+        version = version or DEFAULT_VERSION
         meta = {**(meta or {}), "created_at": time.ctime()}
 
         pf = self._create_pf(name=name, prompt=prompt, version=version, overwrite=overwrite, meta=meta)

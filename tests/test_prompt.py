@@ -35,12 +35,14 @@ def test_ctor():
         text="This is raw text",
         version="1.0",
         metadata={"LLM": "GPT-3.5"},
+        name="test_prompt",
         canary_word="FOO",
         render_cache=DefaultCache(),
     )
     assert p.raw == "This is raw text"
     assert p.version == "1.0"
     assert p.metadata == {"LLM": "GPT-3.5"}
+    assert p.name == "test_prompt"
     assert p.canary_leaked("The message is FOO")
     assert p.text() == "This is raw text"
     assert p.text() == "This is raw text"

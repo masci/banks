@@ -40,6 +40,15 @@ Docs are available [here](https://masci.github.io/banks/).
 pip install banks
 ```
 
+## Features
+
+Prompts are instrumental for the success of any LLM application, and Banks focuses around specific areas of their
+lifecycle:
+- **Templating**: Banks provides tools and functions to build prompts text from generic blueprints.
+- **Versioning and metadata**: Banks supports attaching metadata to prompts to ease their management, and versioning is
+first-class citizen.
+- **Management**: Banks provides ways to store prompts on disk along with their metadata.
+
 ## Examples
 
 ### Create a blog writing prompt

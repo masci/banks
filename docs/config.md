@@ -21,7 +21,7 @@ config.ASYNC_ENABLED = True
 | Default value: | `False`                 |
 | Env var:       | `BANKS_ASYNC_ENABLED`   |
 
-Whether or not to use `asyncio` for template rendering and LLM generation. This setting won't speed up your
+Whether or not to use `asyncio` for prompt rendering and LLM generation. This setting won't speed up your
 application, only set it to `True` if you need to integrate Banks into an async codebase.
 
 

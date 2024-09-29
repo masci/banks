@@ -55,5 +55,5 @@ class FilePromptRegistry:
             if model.name == name and model.version == version:
                 return i, model
 
-        msg = f"cannot find template with name '{name}' and version '{version}'"
+        msg = f"cannot find prompt with name '{name}' and version '{version}'"
         raise PromptNotFoundError(msg)

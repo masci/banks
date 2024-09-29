@@ -6,7 +6,7 @@ import pytest
 
 from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
-from banks.registries.directory import DirectoryTemplateRegistry
+from banks.registries.directory import DirectoryPromptRegistry
 
 
 @pytest.fixture
@@ -16,41 +16,41 @@ def registry(tmp_path: Path):
     for fp in (Path(__file__).parent / "templates").iterdir():
         with open(d / fp.name, "w") as f:
             f.write(fp.read_text())
-    return DirectoryTemplateRegistry(d, force_reindex=True)
+    return DirectoryPromptRegistry(d, force_reindex=True)
 
 
-def test_init_from_scratch(registry: DirectoryTemplateRegistry):
+def test_init_from_scratch(registry: DirectoryPromptRegistry):
     p = registry.get(name="blog")
     assert p.raw.startswith("{# Zero-shot, this is already enough for most topics in english -#}")
     assert p.metadata == {}
 
 
-def test_init_from_existing_index(registry: DirectoryTemplateRegistry):
+def test_init_from_existing_index(registry: DirectoryPromptRegistry):
     # at this point, the index has been created
     assert len(registry._index.files) == 6
 
 
-def test_init_from_existing_index_force(registry: DirectoryTemplateRegistry):
+def test_init_from_existing_index_force(registry: DirectoryPromptRegistry):
     # change the directory structure
     f = registry.path / "blog.jinja"
     os.remove(f)
     # force recreation, the renamed file should be updated in the index
-    r = DirectoryTemplateRegistry(registry.path, force_reindex=True)
+    r = DirectoryPromptRegistry(registry.path, force_reindex=True)
     with pytest.raises(PromptNotFoundError):
         r.get(name="blog")
 
 
 def test_init_invalid_dir():
     with pytest.raises(ValueError):
-        DirectoryTemplateRegistry(Path("does/not/exists"))
+        DirectoryPromptRegistry(Path("does/not/exists"))
 
 
-def test_get_not_found(registry: DirectoryTemplateRegistry):
+def test_get_not_found(registry: DirectoryPromptRegistry):
     with pytest.raises(PromptNotFoundError):
         registry.get(name="FOO")
 
 
-def test_set_existing_no_overwrite(registry: DirectoryTemplateRegistry):
+def test_set_existing_no_overwrite(registry: DirectoryPromptRegistry):
     new_prompt = Prompt("a new prompt!", name="blog")
     with pytest.raises(
         InvalidPromptError, match="Prompt with name 'blog' already exists. Use overwrite=True to overwrite"
@@ -58,7 +58,7 @@ def test_set_existing_no_overwrite(registry: DirectoryTemplateRegistry):
         registry.set(prompt=new_prompt)
 
 
-def test_set_existing_overwrite(registry: DirectoryTemplateRegistry):
+def test_set_existing_overwrite(registry: DirectoryPromptRegistry):
     new_prompt = Prompt("a new prompt!", name="blog")
     current_time = time.ctime()
     registry.set(prompt=new_prompt, overwrite=True)
@@ -68,7 +68,7 @@ def test_set_existing_overwrite(registry: DirectoryTemplateRegistry):
     }  # created_at changes because it's overwritten
 
 
-def test_set_multiple_templates(registry: DirectoryTemplateRegistry):
+def test_set_multiple_templates(registry: DirectoryPromptRegistry):
     current_time = time.ctime()
 
     new_prompt = Prompt("a very new prompt!", name="new", version="2")
@@ -85,7 +85,7 @@ def test_set_multiple_templates(registry: DirectoryTemplateRegistry):
     assert p.metadata == {"created_at": current_time}
 
 
-def test_update_meta(registry: DirectoryTemplateRegistry):
+def test_update_meta(registry: DirectoryPromptRegistry):
     # test metadata for initial set
     new_prompt = Prompt("a very new prompt!", name="new", version="3", metadata={"accuracy": 91.2})
     current_time = time.ctime()

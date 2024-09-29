@@ -28,6 +28,9 @@ class BasePrompt:
 
         Parameters:
             text: The template text.
+            name: The name to identify this prompt.
+            version: The version string attached to this prompt.
+            metadata: A key-value set of metadata pairs attached to this prompt.
             canary_word: The string to use for the `{{canary_word}}` extension. If `None`, a default string will be
                 generated.
             render_cache: The caching backend to store rendered prompts. If `None`, the default in-memory backend will

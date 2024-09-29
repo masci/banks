@@ -32,7 +32,7 @@ class PromptFileIndex(BaseModel):
     files: list[PromptFile] = Field(default=[])
 
 
-class DirectoryTemplateRegistry:
+class DirectoryPromptRegistry:
     def __init__(self, directory_path: Path, *, force_reindex: bool = False):
         if not directory_path.is_dir():
             msg = "{directory_path} must be a directory."
@@ -93,5 +93,5 @@ class DirectoryTemplateRegistry:
             if pf.name == name and pf.version == version:
                 return i, pf
 
-        msg = f"cannot find template with name '{name}' and version '{version}'"
+        msg = f"cannot find prompt with name '{name}' and version '{version}'"
         raise PromptNotFoundError(msg)

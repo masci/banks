@@ -9,6 +9,8 @@ from .env import env
 from .errors import AsyncError
 from .utils import generate_canary_word
 
+DEFAULT_VERSION = "0"
+
 
 class BasePrompt:
     def __init__(
@@ -36,7 +38,7 @@ class BasePrompt:
         self._raw: str = text
         self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
-        self._version = version
+        self._version = version or DEFAULT_VERSION
 
         self.defaults = {"canary_word": canary_word or generate_canary_word()}
 

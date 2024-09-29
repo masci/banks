@@ -37,12 +37,13 @@ jobs:
     - name: Install Hatch
       run: pip install --upgrade hatch
 
-    - if: matrix.python-version == '3.10' && runner.os == 'Linux'
+    - if: matrix.python-version == '3.12' && runner.os == 'Linux'
       name: Lint
       run: hatch run lint:all
 
     - name: Run tests
       run: hatch run cov
 
-    - name: Report Coveralls
+    - if: matrix.python-version == '3.12' && runner.os == 'Linux'
+      name: Report Coveralls
       uses: coverallsapp/github-action@v2

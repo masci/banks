@@ -3,22 +3,29 @@
 # SPDX-License-Identifier: MIT
 import time
 from pathlib import Path
+from typing import Self
 
 from pydantic import BaseModel, Field
 
 from banks import Prompt
-from banks.registry import TemplateNotFoundError
+from banks.errors import InvalidPromptError, PromptNotFoundError
+from banks.prompt import DEFAULT_VERSION
+from banks.types import PromptModel
 
 # Constants
-DEFAULT_VERSION = "0"
 DEFAULT_INDEX_NAME = "index.json"
 
 
-class PromptFile(BaseModel):
-    name: str
-    version: str
-    path: Path
-    meta: dict
+class PromptFile(PromptModel):
+    path: Path = Field(exclude=True)
+
+    @classmethod
+    def from_prompt(cls: type[Self], prompt: Prompt, path: Path) -> Self:
+        prompt_file = path / f"{prompt.name}.{prompt.version}.jinja"
+        prompt_file.write_text(prompt.raw)
+        return cls(
+            text=prompt.raw, name=prompt.name, version=prompt.version, metadata=prompt.metadata, path=prompt_file
+        )
 
 
 class PromptFileIndex(BaseModel):
@@ -38,71 +45,53 @@ class DirectoryTemplateRegistry:
         else:
             self._load()
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    def get(self, *, name: str, version: str | None = None) -> Prompt:
+        version = version or DEFAULT_VERSION
+        for pf in self._index.files:
+            if pf.name == name and pf.version == version and pf.path.exists():
+                return Prompt(**pf.model_dump())
+        raise PromptNotFoundError
+
+    def set(self, *, prompt: Prompt, overwrite: bool = False):
+        try:
+            version = prompt.version or DEFAULT_VERSION
+            idx, pf = self._get_prompt_file(name=prompt.name, version=version)
+            if overwrite:
+                prompt.metadata["created_at"] = time.ctime()
+                self._index.files[idx] = PromptFile.from_prompt(prompt, self._path)
+                self._save()
+            else:
+                msg = f"Prompt with name '{prompt.name}' already exists. Use overwrite=True to overwrite"
+                raise InvalidPromptError(msg)
+        except PromptNotFoundError:
+            prompt.metadata["created_at"] = time.ctime()
+            pf = PromptFile.from_prompt(prompt, self._path)
+            self._index.files.append(pf)
+            self._save()
+
     def _load(self):
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
+
+    def _save(self):
+        self._index_path.write_text(self._index.model_dump_json())
 
     def _scan(self):
         self._index: PromptFileIndex = PromptFileIndex()
         for path in self._path.glob("*.jinja*"):
             name, version = path.stem.rsplit(".", 1) if "." in path.stem else (path.stem, DEFAULT_VERSION)
-            pf = PromptFile(name=name, version=version, path=path, meta={})
-            self._index.files.append(pf)
+            with path.open("r") as f:
+                pf = PromptFile(text=f.read(), name=name, version=version, path=path, metadata={})
+                self._index.files.append(pf)
         self._index_path.write_text(self._index.model_dump_json())
 
-    def get(self, *, name: str, version: str | None = None) -> "PromptFile":
-        version = version or DEFAULT_VERSION
-        for pf in self._index.files:
-            if pf.name == name and pf.version == version and pf.path.exists():
-                return pf
-        raise TemplateNotFoundError
-
-    def get_prompt(self, *, name: str, version: str = DEFAULT_VERSION) -> Prompt:
-        return Prompt(self.get(name=name, version=version).path.read_text())
-
-    def _get_prompt_file(self, *, name: str, version: str) -> PromptFile | None:
-        for pf in self._index.files:
+    def _get_prompt_file(self, *, name: str | None, version: str) -> tuple[int, PromptFile]:
+        for i, pf in enumerate(self._index.files):
             if pf.name == name and pf.version == version:
-                return pf
-        return None
+                return i, pf
 
-    def _create_pf(self, *, name: str, prompt: Prompt, version: str, overwrite: bool, meta: dict) -> "PromptFile":
-        pf = self._get_prompt_file(name=name, version=version)
-        if pf:
-            if not overwrite:
-                msg = f"Prompt {name}.{version}.jinja already exists. Use overwrite=True to overwrite."
-                raise ValueError(msg)
-            pf.path.write_text(prompt.raw)
-            pf.meta = meta
-            return pf
-        new_prompt_file = self._path / f"{name}.{version}.jinja"
-        new_prompt_file.write_text(prompt.raw)
-        pf = PromptFile(name=name, version=version, path=new_prompt_file, meta=meta)
-        return pf
-
-    def set(
-        self,
-        *,
-        name: str,
-        prompt: Prompt,
-        meta: dict | None = None,
-        version: str | None = None,
-        overwrite: bool = False,
-    ):
-        version = version or DEFAULT_VERSION
-        meta = {**(meta or {}), "created_at": time.ctime()}
-
-        pf = self._create_pf(name=name, prompt=prompt, version=version, overwrite=overwrite, meta=meta)
-        if pf not in self._index.files:
-            self._index.files.append(pf)
-        self._index_path.write_text(self._index.model_dump_json())
-
-    def get_meta(self, *, name: str, version: str = DEFAULT_VERSION) -> dict:
-        return self.get(name=name, version=version).meta
-
-    def update_meta(self, *, meta: dict, name: str, version: str = DEFAULT_VERSION):
-        pf = self._get_prompt_file(name=name, version=version)
-        if not pf:
-            unk_err = f"Prompt {name}.{version} not found in the index. Cannot set meta for a non-existing prompt."
-            raise ValueError(unk_err)
-        pf.meta = meta
-        self._index_path.write_text(self._index.model_dump_json())
+        msg = f"cannot find template with name '{name}' and version '{version}'"
+        raise PromptNotFoundError(msg)

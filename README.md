@@ -2,6 +2,7 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/banks.svg)](https://pypi.org/project/banks)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/banks.svg)](https://pypi.org/project/banks)
+[![Coverage Status](https://coveralls.io/repos/github/masci/banks/badge.svg?branch=main)](https://coveralls.io/github/masci/banks?branch=main)
 
 [![PyPI Release](https://github.com/masci/banks/actions/workflows/release.yml/badge.svg)](https://github.com/masci/banks/actions/workflows/release.yml)
 [![test](https://github.com/masci/banks/actions/workflows/test.yml/badge.svg)](https://github.com/masci/banks/actions/workflows/test.yml)

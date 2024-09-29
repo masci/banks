@@ -20,7 +20,7 @@ class PromptFile(PromptModel):
     path: Path = Field(exclude=True)
 
     @classmethod
-    def from_prompt(cls: type[Self], prompt: Prompt, path: Path) -> Self:
+    def from_prompt_path(cls: type[Self], prompt: Prompt, path: Path) -> Self:
         prompt_file = path / f"{prompt.name}.{prompt.version}.jinja"
         prompt_file.write_text(prompt.raw)
         return cls(
@@ -62,14 +62,14 @@ class DirectoryPromptRegistry:
             idx, pf = self._get_prompt_file(name=prompt.name, version=version)
             if overwrite:
                 prompt.metadata["created_at"] = time.ctime()
-                self._index.files[idx] = PromptFile.from_prompt(prompt, self._path)
+                self._index.files[idx] = PromptFile.from_prompt_path(prompt, self._path)
                 self._save()
-            else:
+            else:  # pylint: disable=duplicate-code
                 msg = f"Prompt with name '{prompt.name}' already exists. Use overwrite=True to overwrite"
                 raise InvalidPromptError(msg)
         except PromptNotFoundError:
             prompt.metadata["created_at"] = time.ctime()
-            pf = PromptFile.from_prompt(prompt, self._path)
+            pf = PromptFile.from_prompt_path(prompt, self._path)
             self._index.files.append(pf)
             self._save()
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from banks.errors import PromptNotFoundError
+from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
 from banks.types import PromptModel
 
@@ -41,6 +41,9 @@ class FilePromptRegistry:
             if overwrite:
                 self._index.prompts[idx] = PromptModel.from_prompt(prompt)
                 self._save()
+            else:
+                msg = f"Prompt with name '{prompt.name}' already exists. Use overwrite=True to overwrite"
+                raise InvalidPromptError(msg)
         except PromptNotFoundError:
             p_model = PromptModel.from_prompt(prompt)
             self._index.prompts.append(p_model)

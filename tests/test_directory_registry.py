@@ -6,7 +6,7 @@ import pytest
 
 from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
-from banks.registries.directory import DirectoryPromptRegistry
+from banks.registries.directory import DEFAULT_INDEX_NAME, DirectoryPromptRegistry, PromptFileIndex
 
 
 @pytest.fixture
@@ -25,9 +25,12 @@ def test_init_from_scratch(registry: DirectoryPromptRegistry):
     assert p.metadata == {}
 
 
-def test_init_from_existing_index(registry: DirectoryPromptRegistry):
-    # at this point, the index has been created
-    assert len(registry._index.files) == 6
+def test_init_from_existing_index(tmp_path: Path):
+    pi = PromptFileIndex()
+    idx = tmp_path / DEFAULT_INDEX_NAME
+    idx.write_text(pi.model_dump_json())
+    r = DirectoryPromptRegistry(tmp_path)
+    assert len(r._index.files) == 0
 
 
 def test_init_from_existing_index_force(registry: DirectoryPromptRegistry):

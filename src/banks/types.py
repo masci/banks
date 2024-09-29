@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from .prompt import Prompt
 
 
-class PromptRegistry(Protocol):
+class PromptRegistry(Protocol):  # pragma: no cover
     """Interface to be implemented by concrete prompt registries."""
 
     def get(self, *, name: str, version: str | None = None) -> Prompt: ...

@@ -71,3 +71,10 @@ async def test_ctor_async():
         assert p.canary_leaked("The message is FOO")
         assert await p.text() == "This is raw text"
         assert await p.text() == "This is raw text"
+
+
+def test__get_context():
+    p = Prompt(text="This is raw text")
+    assert p._get_context(None) == p.defaults
+    data = {"foo": 42}
+    assert p._get_context(data) == data | p.defaults

@@ -159,11 +159,11 @@ branch = true
 parallel = true
 omit = [
   "src/banks/__about__.py",
+  "tests/*",
 ]
 
 [tool.coverage.paths]
 banks = ["src/banks", "*/banks/src/banks"]
-tests = ["tests", "*/banks/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -171,6 +171,7 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
 
 [[tool.mypy.overrides]]
 module = [

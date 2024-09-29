@@ -6,7 +6,7 @@ from typing import Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable
-class RenderCache(Protocol):
+class RenderCache(Protocol):  # pragma: no cover
     """
     Interface for rendering cache.
 

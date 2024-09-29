@@ -1,6 +1,6 @@
 import pytest
 
-from banks.errors import PromptNotFoundError
+from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
 from banks.registries.file import FilePromptRegistry, PromptRegistryIndex
 from banks.types import PromptModel
@@ -38,9 +38,9 @@ def test_get_not_found(populated_registry):
 
 
 def test_set_existing_no_overwrite(populated_registry):
-    new_prompt = "a new prompt!"
-    populated_registry.set(prompt=Prompt(new_prompt))  # template already exists, expected to be no-op
-    assert populated_registry.get(name="name", version="version").raw == "prompt"
+    populated_registry.set(prompt=Prompt("a new prompt!", name="foo"))
+    with pytest.raises(InvalidPromptError):
+        populated_registry.set(prompt=Prompt("a new prompt!", name="foo"))
 
 
 def test_set_existing_overwrite(populated_registry):

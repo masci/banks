@@ -15,9 +15,11 @@ def _add_extensions(_env):
     """
     from .extensions.generate import GenerateExtension  # pylint: disable=import-outside-toplevel
     from .extensions.inference_endpoint import HFInferenceEndpointsExtension  # pylint: disable=import-outside-toplevel
+    from .extensions.chat import ChatMessage
 
     _env.add_extension(GenerateExtension)
     _env.add_extension(HFInferenceEndpointsExtension)
+    _env.add_extension(ChatMessage)
 
 
 # Init the Jinja env

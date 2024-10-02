@@ -40,7 +40,7 @@ class ChatMessage(Extension):
         # Anything else is a parse error
         error_msg = f"Invalid syntax for chat attribute, got '{gathered}', expected role=\"value\""
         try:
-            attr_name, attr_assign, attr_value = gathered
+            attr_name, attr_assign, attr_value = gathered  # pylint: disable=unbalanced-tuple-unpacking
         except ValueError:
             raise TemplateSyntaxError(error_msg, lineno) from None
 

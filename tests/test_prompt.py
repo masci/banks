@@ -5,7 +5,7 @@ import pytest
 import regex as re
 from jinja2 import Environment
 
-from banks import AsyncPrompt, Prompt, ChatMessage
+from banks import AsyncPrompt, ChatMessage, Prompt
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
 

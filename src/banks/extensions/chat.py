@@ -49,7 +49,8 @@ class ChatMessage(Extension):
             raise TemplateSyntaxError(error_msg, lineno)
 
         if attr_value.value not in SUPPORTED_TYPES:
-            msg = f"Unknown role type '{attr_value}', use one of ({",".join(SUPPORTED_TYPES)})"
+            types = ",".join(SUPPORTED_TYPES)
+            msg = f"Unknown role type '{attr_value}', use one of ({types})"
             raise TemplateSyntaxError(msg, lineno)
 
         # Pass the role name to the CallBlock node

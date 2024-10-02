@@ -9,6 +9,25 @@ from jinja2.ext import Extension
 SUPPORTED_TYPES = ("system", "user")
 
 
+# This function exists for documentation purpose.
+def chat(role: str):  # pylint: disable=W0613
+    """
+    Text inside `chat` tags will be rendered as JSON strings representing chat messages. Calling `Prompt.chat_messages`
+    will return a list of `ChatMessage` instances.
+
+    Example:
+        ```
+        {% chat role="system" %}
+        You are a helpful assistant.
+        {% endchat %}
+
+        {% chat role="user" %}
+        Hello, how are you?
+        {% endchat %}
+        ```
+    """
+
+
 class ChatMessage(Extension):
     """
     `chat` can be used to render prompt text as structured ChatMessage objects.

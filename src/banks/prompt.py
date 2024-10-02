@@ -1,7 +1,10 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import uuid
 from typing import Any
+
+from pydantic import BaseModel, ValidationError
 
 from .cache import DefaultCache, RenderCache
 from .config import config
@@ -10,6 +13,11 @@ from .errors import AsyncError
 from .utils import generate_canary_word
 
 DEFAULT_VERSION = "0"
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
 
 
 class BasePrompt:
@@ -37,7 +45,7 @@ class BasePrompt:
                 be used.
         """
         self._metadata = metadata or {}
-        self._name = name
+        self._name = name or str(uuid.uuid4())
         self._raw: str = text
         self._render_cache = render_cache or DefaultCache()
         self._template = env.from_string(text)
@@ -55,7 +63,7 @@ class BasePrompt:
         return self._metadata
 
     @property
-    def name(self) -> str | None:
+    def name(self) -> str:
         return self._name
 
     @property
@@ -104,6 +112,28 @@ class Prompt(BasePrompt):
         rendered: str = self._template.render(data)
         self._render_cache.set(data, rendered)
         return rendered
+
+    def chat_messages(self, data: dict[str, Any] | None = None) -> list[ChatMessage]:
+        """
+        Render the prompt using variables present in `data`
+
+        Parameters:
+            data: A dictionary containing the context variables.
+        """
+        data = self._get_context(data)
+        rendered = self._render_cache.get(data)
+        if not rendered:
+            rendered = self._template.render(data)
+            self._render_cache.set(data, rendered)
+
+        messages: list[ChatMessage] = []
+        for line in rendered.strip().split("\n"):
+            try:
+                messages.append(ChatMessage.model_validate_json(line))
+            except ValidationError:
+                # Ignore lines that are not a message
+                pass
+        return messages
 
 
 class AsyncPrompt(BasePrompt):

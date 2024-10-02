@@ -13,11 +13,13 @@ def _add_extensions(_env):
 
     For example, we use banks to manage the system prompt in `GenerateExtension`
     """
+    from .extensions.chat import ChatMessage  # pylint: disable=import-outside-toplevel
     from .extensions.generate import GenerateExtension  # pylint: disable=import-outside-toplevel
     from .extensions.inference_endpoint import HFInferenceEndpointsExtension  # pylint: disable=import-outside-toplevel
 
     _env.add_extension(GenerateExtension)
     _env.add_extension(HFInferenceEndpointsExtension)
+    _env.add_extension(ChatMessage)
 
 
 # Init the Jinja env

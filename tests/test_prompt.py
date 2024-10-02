@@ -1,10 +1,11 @@
+from pathlib import Path
 from unittest import mock
 
 import pytest
 import regex as re
 from jinja2 import Environment
 
-from banks import AsyncPrompt, Prompt
+from banks import AsyncPrompt, Prompt, ChatMessage
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
 
@@ -78,3 +79,35 @@ def test__get_context():
     assert p._get_context(None) == p.defaults
     data = {"foo": 42}
     assert p._get_context(data) == data | p.defaults
+
+
+def test_chat_messages():
+    p_file = Path(__file__).parent / "templates" / "chat.jinja"
+    p = Prompt(p_file.read_text())
+
+    assert (
+        p.text()
+        == """
+{"role": "system", "content": "You are a helpful assistant.\\n"}
+{"role": "user", "content": "Hello, how are you?\\n"}
+{"role": "system", "content": "I'm doing well, thank you! How can I assist you today?\\n"}
+{"role": "user", "content": "Can you explain quantum computing?\\n"}
+Some random text.
+""".strip()
+    )
+
+    assert p.chat_messages() == [
+        ChatMessage(role="system", content="You are a helpful assistant.\n"),
+        ChatMessage(role="user", content="Hello, how are you?\n"),
+        ChatMessage(role="system", content="I'm doing well, thank you! How can I assist you today?\n"),
+        ChatMessage(role="user", content="Can you explain quantum computing?\n"),
+    ]
+
+
+def test_chat_messages_cached():
+    mock_cache = DefaultCache()
+    mock_cache.set = mock.Mock()
+    p_file = Path(__file__).parent / "templates" / "chat.jinja"
+    p = Prompt(p_file.read_text(), render_cache=mock_cache)
+    p.chat_messages()
+    mock_cache.set.assert_called_once()

@@ -1,23 +1,23 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import html
-import os
+import json
 
-import requests
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
-
 
 SUPPORTED_TYPES = ("system", "user")
 
 
 class ChatMessage(Extension):
     """
+    `chat` can be used to render prompt text as structured ChatMessage objects.
 
     Example:
         ```
-
+        {% chat role="system" %}
+        You are a helpful assistant.
+        {% endchat %}
         ```
     """
 
@@ -65,5 +65,4 @@ class ChatMessage(Extension):
         """
         Helper callback.
         """
-        print({"role": role, "content": caller()})
-        return caller()
+        return json.dumps({"role": role, "content": caller()})

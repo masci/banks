@@ -46,7 +46,7 @@ pip install banks
 
 Prompts are instrumental for the success of any LLM application, and Banks focuses around specific areas of their
 lifecycle:
-- :blue_book: **Templating**: Banks provides tools and functions to build prompts text from generic blueprints.
+- :blue_book: **Templating**: Banks provides tools and functions to build prompts text and chat messages from generic blueprints.
 - :tickets: **Versioning and metadata**: Banks supports attaching metadata to prompts to ease their management, and versioning is
 first-class citizen.
 - :file_cabinet: **Management**: Banks provides ways to store prompts on disk along with their metadata.
@@ -73,6 +73,30 @@ This will print the following text, that can be pasted directly into Chat-GPT:
 Write a 500-word blog post on retrogame computing.
 
 Blog post:
+```
+
+The same prompt can be written in form of chat messages:
+```py
+prompt_text = """{% chat role="system" %}
+I want you to act as a title generator for written pieces.
+{% endchat %}
+
+{% chat role="user" %}
+Write a 500-word blog post on {{ topic }}.
+
+Blog post:
+{% endchat %}"""
+
+p = Prompt(prompt_text)
+print(p.chat_messages({"topic":"prompt engineering"}))
+```
+
+This will output the following:
+```txt
+[
+  ChatMessage(role='system', content='I want you to act as a title generator for written pieces.\n'),
+  ChatMessage(role='user', content='Write a 500-word blog post on .\n\nBlog post:\n')
+]
 ```
 
 ### Create a summarizer prompt

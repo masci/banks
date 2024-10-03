@@ -32,8 +32,8 @@ Docs are available [here](https://masci.github.io/banks/).
     - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
     - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
-    - [Reuse templates from registries](#reuse-templates-from-registries)
-    - [Async support](#async-support)
+  - [Reuse templates from registries](#reuse-templates-from-registries)
+  - [Async support](#async-support)
   - [License](#license)
 
 ## Installation
@@ -277,7 +277,7 @@ print(p.text({"topic": "climate change"}))
 
 The final answer from the LLM will be printed, this time all in uppercase.
 
-### Reuse templates from registries
+## Reuse templates from registries
 
 We can get the same result as the previous example loading the prompt template from a registry
 instead of hardcoding it into the Python code. For convenience, Banks comes with a few registry types
@@ -295,7 +295,7 @@ prompt = registry.get(name="blog")
 print(prompt.text({"topic": "retrogame computing"}))
 ```
 
-### Async support
+## Async support
 
 To run banks within an `asyncio` loop you have to do two things:
 1. set the environment variable `BANKS_ASYNC_ENABLED=true`.

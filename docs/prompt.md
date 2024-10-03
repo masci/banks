@@ -33,6 +33,13 @@ provided by Jinja, Banks supports the following ones, specific for prompt engine
 Extensions are custom functions that can be used to add new tags to the template engine.
 Banks supports the following ones, specific for prompt engineering.
 
+::: banks.extensions.chat.chat
+    options:
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
+
 ::: banks.extensions.generate.generate
     options:
         show_root_full_path: false

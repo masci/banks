@@ -31,6 +31,8 @@ def chat(role: str):  # pylint: disable=W0613
 
 
 class _ContentBlockParser(HTMLParser):
+    """A parser used to extract text surrounded by `<content_block_txt>` and `</content_block_txt>` tags."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._parse_block_content = False
@@ -38,15 +40,19 @@ class _ContentBlockParser(HTMLParser):
 
     @property
     def content(self) -> ChatMessageContent:
+        """Returns ChatMessageContent data that can be directly assigned to ChatMessage.content.
+
+        If only one block is present, this block is of type text and has no cache control set, we just
+        return it as plain text for simplicity.
+        """
         if len(self._content_blocks) == 1:
             block = self._content_blocks[0]
-            if type(block) is ContentBlock:
-                if block.type == "text" and block.cache_control is None:
-                    return block.text or ""
+            if block.type == "text" and block.cache_control is None:
+                return block.text or ""
 
         return self._content_blocks
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, _):
         if tag == "content_block_txt":
             self._parse_block_content = True
 

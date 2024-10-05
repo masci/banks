@@ -9,8 +9,7 @@ from pydantic import BaseModel, Field
 
 from banks import Prompt
 from banks.errors import InvalidPromptError, PromptNotFoundError
-from banks.prompt import DEFAULT_VERSION
-from banks.types import PromptModel
+from banks.prompt import DEFAULT_VERSION, PromptModel
 
 # Constants
 DEFAULT_INDEX_NAME = "index.json"

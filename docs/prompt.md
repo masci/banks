@@ -21,6 +21,13 @@ In addition to all the [builtin filters](https://jinja.palletsprojects.com/en/3.
 provided by Jinja, Banks supports the following ones, specific for prompt engineering.
 
 
+::: banks.filters.cache_control.cache_control
+    options:
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
+
 ::: banks.filters.lemmatize.lemmatize
     options:
         show_root_full_path: false

@@ -10,11 +10,11 @@ def cache_control(value: str, cache_type: str = "ephemeral") -> str:
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
 
     Example:
-    ```
-    {{ "This is a long, long text" | cache_control("ephemeral") }}
+        ```
+        {{ "This is a long, long text" | cache_control("ephemeral") }}
 
-    This is short and won't be cached.
-    ```
+        This is short and won't be cached.
+        ```
 
     Important: this filter marks the content to cache by surrounding it with `<content_block_txt>` and
     `</content_block_txt>`, so it's only useful when used within a `{% chat %}` block.

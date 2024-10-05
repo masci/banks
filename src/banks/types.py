@@ -5,6 +5,8 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+# pylint: disable=invalid-name
+
 
 class ContentBlockType(str, Enum):
     text = "text"
@@ -41,7 +43,7 @@ class ContentBlock(BaseModel):
         use_enum_values = True
 
 
-type ChatMessageContent = list[ContentBlock] | str
+ChatMessageContent = list[ContentBlock] | str
 
 
 class ChatMessage(BaseModel):

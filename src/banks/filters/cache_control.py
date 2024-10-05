@@ -10,14 +10,15 @@ def cache_control(value: str, cache_type: str = "ephemeral") -> str:
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
 
     Example:
-        ```
+        ```jinja
         {{ "This is a long, long text" | cache_control("ephemeral") }}
 
         This is short and won't be cached.
         ```
 
-    Important: this filter marks the content to cache by surrounding it with `<content_block_txt>` and
-    `</content_block_txt>`, so it's only useful when used within a `{% chat %}` block.
+    Important:
+        this filter marks the content to cache by surrounding it with `<content_block_txt>` and
+        `</content_block_txt>`, so it's only useful when used within a `{% chat %}` block.
     """
     block = ContentBlock.model_validate({"type": "text", "text": value, "cache_control": {"type": cache_type}})
     return f"<content_block_txt>{block.model_dump_json()}</content_block_txt>"

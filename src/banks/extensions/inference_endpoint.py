@@ -15,7 +15,7 @@ class HFInferenceEndpointsExtension(Extension):
     passing a prompt to get back some content.
 
     Example:
-        ```
+        ```jinja
         {% inference_endpoint "write a tweet with positive sentiment", "https://foo.aws.endpoints.huggingface.cloud" %}
         Life is beautiful, full of opportunities & positivity
         ```

@@ -60,12 +60,12 @@ Insert into the prompt a canary word that can be checked later with `Prompt.cana
 to ensure the original prompt was not leaked.
 
 Example:
-```python
-from banks import Prompt
+    ```python
+    from banks import Prompt
 
-p = Prompt("{{canary_word}}Hello, World!")
-p.text()  ## outputs 'BANKS[5f0bbba4]Hello, World!'
-```
+    p = Prompt("{{canary_word}}Hello, World!")
+    p.text()  ## outputs 'BANKS[5f0bbba4]Hello, World!'
+    ```
 
 ## Macros
 

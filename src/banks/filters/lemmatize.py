@@ -17,7 +17,7 @@ def lemmatize(text: str) -> str:
     to English.
 
     Example:
-        ```
+        ```jinja
         {{"The dog is running" | lemmatize}}
         "the dog be run"
         ```

@@ -18,7 +18,7 @@ def chat(role: str):  # pylint: disable=W0613
     will return a list of `ChatMessage` instances.
 
     Example:
-        ```
+        ```jinja
         {% chat role="system" %}
         You are a helpful assistant.
         {% endchat %}

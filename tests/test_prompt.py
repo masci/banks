@@ -5,7 +5,7 @@ import pytest
 import regex as re
 from jinja2 import Environment
 
-from banks import AsyncPrompt, ChatExtension, Prompt
+from banks import AsyncPrompt, ChatMessage, Prompt
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
 
@@ -88,19 +88,19 @@ def test_chat_messages():
     assert (
         p.text()
         == """
-{"role": "system", "content": "You are a helpful assistant.\\n"}
-{"role": "user", "content": "Hello, how are you?\\n"}
-{"role": "system", "content": "I'm doing well, thank you! How can I assist you today?\\n"}
-{"role": "user", "content": "Can you explain quantum computing?\\n"}
+{"role":"system","content":"You are a helpful assistant.\\n"}
+{"role":"user","content":"Hello, how are you?\\n"}
+{"role":"system","content":"I'm doing well, thank you! How can I assist you today?\\n"}
+{"role":"user","content":"Can you explain quantum computing?\\n"}
 Some random text.
 """.strip()
     )
 
     assert p.chat_messages() == [
-        ChatExtension(role="system", content="You are a helpful assistant.\n"),
-        ChatExtension(role="user", content="Hello, how are you?\n"),
-        ChatExtension(role="system", content="I'm doing well, thank you! How can I assist you today?\n"),
-        ChatExtension(role="user", content="Can you explain quantum computing?\n"),
+        ChatMessage(role="system", content="You are a helpful assistant.\n"),
+        ChatMessage(role="user", content="Hello, how are you?\n"),
+        ChatMessage(role="system", content="I'm doing well, thank you! How can I assist you today?\n"),
+        ChatMessage(role="user", content="Can you explain quantum computing?\n"),
     ]
 
 

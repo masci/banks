@@ -41,7 +41,7 @@ class ContentBlock(BaseModel):
         use_enum_values = True
 
 
-type ChatMessageContent = list[ContentBlock | str]
+type ChatMessageContent = list[ContentBlock] | str
 
 
 class ChatMessage(BaseModel):

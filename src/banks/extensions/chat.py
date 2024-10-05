@@ -34,10 +34,16 @@ class _ContentBlockParser(HTMLParser):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._parse_block_content = False
-        self._content_blocks: ChatMessageContent = []
+        self._content_blocks: list[ContentBlock] = []
 
     @property
     def content(self) -> ChatMessageContent:
+        if len(self._content_blocks) == 1:
+            block = self._content_blocks[0]
+            if type(block) is ContentBlock:
+                if block.type == "text" and block.cache_control is None:
+                    return block.text or ""
+
         return self._content_blocks
 
     def handle_starttag(self, tag, attrs):

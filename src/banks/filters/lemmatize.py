@@ -4,7 +4,7 @@
 from banks.errors import MissingDependencyError
 
 try:
-    from simplemma import text_lemmatizer
+    from simplemma import text_lemmatizer  # type: ignore
 
     SIMPLEMMA_AVAIL = True
 except ImportError:

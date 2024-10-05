@@ -1,0 +1,7 @@
+{% chat role="user" %}
+The book to analize is included in the tags <book> and </book>.
+
+<book>{{ book | cache_control("ephemeral") }}</book>
+
+What is the title of this book? Only output the title.
+{% endchat %}

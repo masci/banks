@@ -111,3 +111,9 @@ def test_chat_messages_cached():
     p = Prompt(p_file.read_text(), render_cache=mock_cache)
     p.chat_messages()
     mock_cache.set.assert_called_once()
+
+
+def test_chat_message_no_chat_tag():
+    text = "This is raw text"
+    p = Prompt(text=text)
+    assert p.chat_messages() == [ChatMessage(role="user", content=text)]

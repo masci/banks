@@ -27,12 +27,12 @@ Docs are available [here](https://masci.github.io/banks/).
   - [Features](#features)
   - [Cookbooks](#cookbooks)
   - [Examples](#examples)
-    - [Create a blog writing prompt](#create-a-blog-writing-prompt)
-    - [Create a summarizer prompt](#create-a-summarizer-prompt)
-    - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
-    - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
-    - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
-    - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
+    - [:point\_right: Create a blog writing prompt](#point_right-create-a-blog-writing-prompt)
+    - [:point\_right: Create a summarizer prompt](#point_right-create-a-summarizer-prompt)
+    - [:point\_right: Lemmatize text while processing a template](#point_right-lemmatize-text-while-processing-a-template)
+    - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
+    - [:point\_right: Go meta: create a prompt and `generate` its response](#point_right-go-meta-create-a-prompt-and-generate-its-response)
+    - [:point\_right: Go meta(meta): process a LLM response](#point_right-go-metameta-process-a-llm-response)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
   - [License](#license)
@@ -59,7 +59,7 @@ first-class citizen.
 
 ## Examples
 
-### Create a blog writing prompt
+### :point_right: Create a blog writing prompt
 
 Given a generic template to instruct an LLM to generate a blog article, we
 use Banks to generate the actual prompt on our topic of choice, "retrogame computing":
@@ -105,7 +105,7 @@ This will output the following:
 ]
 ```
 
-### Create a summarizer prompt
+### :point_right: Create a summarizer prompt
 
 Instead of hardcoding the content to summarize in the prompt itself, we can inject it
 starting from a generic one:
@@ -148,7 +148,7 @@ A third paragraph talking about retrogaming
 Summary:
 ```
 
-### Lemmatize text while processing a template
+### :point_right: Lemmatize text while processing a template
 
 Banks comes with predefined filters you can use to process data before generating the
 prompt. Say you want to use a lemmatizer on a document before summarizing it, first
@@ -182,7 +182,7 @@ the cat be run
 Summary:
 ```
 
-### Use a LLM to generate a text while rendering a prompt
+### :point_right: Use a LLM to generate a text while rendering a prompt
 
 Sometimes it might be useful to ask another LLM to generate examples for you in a
 few-shot prompt. Provided you have a valid OpenAI API key stored in an env var
@@ -238,7 +238,7 @@ Climate change is a pressing global issue, but together we can create positive c
 > Banks uses a cache to avoid generating text again for the same template with the same context. By default
 > the cache is in-memory but it can be customized.
 
-### Go meta: create a prompt and `generate` its response
+### :point_right: Go meta: create a prompt and `generate` its response
 
 We can leverage Jinja's macro system to generate a prompt, send the result to OpenAI and get a response.
 Let's bring back the blog writing example:
@@ -275,7 +275,7 @@ Climate change is a phenomenon that has been gaining attention in recent years..
 ...
 ```
 
-### Go meta(meta): process a LLM response
+### :point_right: Go meta(meta): process a LLM response
 
 When generating a response from a prompt template, we can take a step further and
 post-process the LLM response by assinging it to a variable and applying filters

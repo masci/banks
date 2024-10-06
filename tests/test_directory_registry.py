@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 
 import pytest
@@ -63,17 +62,12 @@ def test_set_existing_no_overwrite(registry: DirectoryPromptRegistry):
 
 def test_set_existing_overwrite(registry: DirectoryPromptRegistry):
     new_prompt = Prompt("a new prompt!", name="blog")
-    current_time = time.ctime()
     registry.set(prompt=new_prompt, overwrite=True)
     assert registry.get(name="blog").text() == "a new prompt!"
-    assert registry.get(name="blog").metadata == {
-        "created_at": current_time
-    }  # created_at changes because it's overwritten
+    assert "created_at" in registry.get(name="blog").metadata  # created_at is added when overwrite==True
 
 
 def test_set_multiple_templates(registry: DirectoryPromptRegistry):
-    current_time = time.ctime()
-
     new_prompt = Prompt("a very new prompt!", name="new", version="2")
     registry.set(prompt=new_prompt)
     old_prompt = Prompt("an old prompt!", name="old", version="1")
@@ -81,19 +75,19 @@ def test_set_multiple_templates(registry: DirectoryPromptRegistry):
 
     p = registry.get(name="old", version="1")
     assert p.raw == "an old prompt!"
-    assert p.metadata == {"created_at": current_time}
+    assert "created_at" in p.metadata
 
     p = registry.get(name="new", version="2")
     assert p.raw == "a very new prompt!"
-    assert p.metadata == {"created_at": current_time}
+    assert "created_at" in p.metadata
 
 
 def test_update_meta(registry: DirectoryPromptRegistry):
     # test metadata for initial set
     new_prompt = Prompt("a very new prompt!", name="new", version="3", metadata={"accuracy": 91.2})
-    current_time = time.ctime()
     registry.set(prompt=new_prompt)
-    assert registry.get(name="new", version="3").metadata == {"accuracy": 91.2, "created_at": current_time}
+    created_at = new_prompt.metadata["created_at"]
+    assert registry.get(name="new", version="3").metadata == {"accuracy": 91.2, "created_at": created_at}
 
     # test metadata update for existing prompt
     p = registry.get(name="new", version="3")

@@ -4,10 +4,10 @@
 from banks.errors import MissingDependencyError
 
 try:
-    from simplemma import text_lemmatizer
+    from simplemma import text_lemmatizer  # type: ignore
 
     SIMPLEMMA_AVAIL = True
-except ImportError:
+except ImportError:  # pragma: no cover
     SIMPLEMMA_AVAIL = False
 
 
@@ -17,10 +17,10 @@ def lemmatize(text: str) -> str:
     to English.
 
     Example:
-    ```
-    {{"The dog is running" | lemmatize}}
-    "the dog be run"
-    ```
+        ```jinja
+        {{"The dog is running" | lemmatize}}
+        "the dog be run"
+        ```
 
     Note:
         Simplemma must be manually installed to use this filter

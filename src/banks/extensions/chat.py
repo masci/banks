@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import json
+from html.parser import HTMLParser
 
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
+
+from banks.types import ChatMessage, ChatMessageContent, ContentBlock, ContentBlockType
 
 SUPPORTED_TYPES = ("system", "user")
 
@@ -16,7 +18,7 @@ def chat(role: str):  # pylint: disable=W0613
     will return a list of `ChatMessage` instances.
 
     Example:
-        ```
+        ```jinja
         {% chat role="system" %}
         You are a helpful assistant.
         {% endchat %}
@@ -28,7 +30,44 @@ def chat(role: str):  # pylint: disable=W0613
     """
 
 
-class ChatMessage(Extension):
+class _ContentBlockParser(HTMLParser):
+    """A parser used to extract text surrounded by `<content_block_txt>` and `</content_block_txt>` tags."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._parse_block_content = False
+        self._content_blocks: list[ContentBlock] = []
+
+    @property
+    def content(self) -> ChatMessageContent:
+        """Returns ChatMessageContent data that can be directly assigned to ChatMessage.content.
+
+        If only one block is present, this block is of type text and has no cache control set, we just
+        return it as plain text for simplicity.
+        """
+        if len(self._content_blocks) == 1:
+            block = self._content_blocks[0]
+            if block.type == "text" and block.cache_control is None:
+                return block.text or ""
+
+        return self._content_blocks
+
+    def handle_starttag(self, tag, _):
+        if tag == "content_block_txt":
+            self._parse_block_content = True
+
+    def handle_endtag(self, tag):
+        if tag == "content_block_txt":
+            self._parse_block_content = False
+
+    def handle_data(self, data):
+        if self._parse_block_content:
+            self._content_blocks.append(ContentBlock.model_validate_json(data))
+        else:
+            self._content_blocks.append(ContentBlock(type=ContentBlockType.text, text=data))
+
+
+class ChatExtension(Extension):
     """
     `chat` can be used to render prompt text as structured ChatMessage objects.
 
@@ -85,4 +124,7 @@ class ChatMessage(Extension):
         """
         Helper callback.
         """
-        return json.dumps({"role": role, "content": caller()})
+        parser = _ContentBlockParser()
+        parser.feed(caller())
+        cm = ChatMessage(role=role, content=parser.content)
+        return cm.model_dump_json()

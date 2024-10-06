@@ -1,29 +1,51 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import Any, Protocol, Self
+from enum import Enum
 
 from pydantic import BaseModel
 
-from .prompt import Prompt
+# pylint: disable=invalid-name
 
 
-class PromptRegistry(Protocol):  # pragma: no cover
-    """Interface to be implemented by concrete prompt registries."""
-
-    def get(self, *, name: str, version: str | None = None) -> Prompt: ...
-
-    def set(self, *, prompt: Prompt, overwrite: bool = False) -> None: ...
+class ContentBlockType(str, Enum):
+    text = "text"
+    image = "image"
 
 
-class PromptModel(BaseModel):
-    """Serializable representation of a Prompt."""
+class MediaTypeBlockType(str, Enum):
+    image_jpeg = "image/jpeg"
+    image_png = "image/png"
+    image_gif = "image/gif"
+    image_webp = "image/webp"
 
-    text: str
-    name: str | None = None
-    version: str | None = None
-    metadata: dict[str, Any] | None = None
 
-    @classmethod
-    def from_prompt(cls: type[Self], prompt: Prompt) -> Self:
-        return cls(text=prompt.raw, name=prompt.name, version=prompt.version, metadata=prompt.metadata)
+class CacheControl(BaseModel):
+    type: str = "ephemeral"
+
+
+class Source(BaseModel):
+    type: str = "base64"
+    media_type: MediaTypeBlockType
+    data: str
+
+    class Config:
+        use_enum_values = True
+
+
+class ContentBlock(BaseModel):
+    type: ContentBlockType
+    cache_control: CacheControl | None = None
+    text: str | None = None
+    source: Source | None = None
+
+    class Config:
+        use_enum_values = True
+
+
+ChatMessageContent = list[ContentBlock] | str
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str | ChatMessageContent

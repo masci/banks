@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 from .config import config
 from .env import env
-from .prompt import AsyncPrompt, ChatMessage, Prompt
+from .prompt import AsyncPrompt, Prompt
+from .types import ChatMessage
 
 __all__ = ("env", "Prompt", "AsyncPrompt", "config", "ChatMessage")

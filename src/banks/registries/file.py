@@ -6,8 +6,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from banks.errors import InvalidPromptError, PromptNotFoundError
-from banks.prompt import Prompt
-from banks.types import PromptModel
+from banks.prompt import Prompt, PromptModel
 
 
 class PromptRegistryIndex(BaseModel):

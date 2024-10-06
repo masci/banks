@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 import uuid
-from typing import Any
+from typing import Any, Protocol, Self
 
 from pydantic import BaseModel, ValidationError
 
@@ -10,14 +10,10 @@ from .cache import DefaultCache, RenderCache
 from .config import config
 from .env import env
 from .errors import AsyncError
+from .types import ChatMessage
 from .utils import generate_canary_word
 
 DEFAULT_VERSION = "0"
-
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
 
 
 class BasePrompt:
@@ -219,3 +215,24 @@ class AsyncPrompt(BasePrompt):
         rendered: str = await self._template.render_async(data)
         self._render_cache.set(data, rendered)
         return rendered
+
+
+class PromptRegistry(Protocol):  # pragma: no cover
+    """Interface to be implemented by concrete prompt registries."""
+
+    def get(self, *, name: str, version: str | None = None) -> Prompt: ...
+
+    def set(self, *, prompt: Prompt, overwrite: bool = False) -> None: ...
+
+
+class PromptModel(BaseModel):
+    """Serializable representation of a Prompt."""
+
+    text: str
+    name: str | None = None
+    version: str | None = None
+    metadata: dict[str, Any] | None = None
+
+    @classmethod
+    def from_prompt(cls: type[Self], prompt: Prompt) -> Self:
+        return cls(text=prompt.raw, name=prompt.name, version=prompt.version, metadata=prompt.metadata)

@@ -1,9 +1,8 @@
 import pytest
 
 from banks.errors import InvalidPromptError, PromptNotFoundError
-from banks.prompt import Prompt
+from banks.prompt import Prompt, PromptModel
 from banks.registries.file import FilePromptRegistry, PromptRegistryIndex
-from banks.types import PromptModel
 
 
 @pytest.fixture

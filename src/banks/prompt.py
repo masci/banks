@@ -2,7 +2,12 @@
 #
 # SPDX-License-Identifier: MIT
 import uuid
-from typing import Any, Protocol, Self
+from typing import Any, Protocol
+
+try:
+    from typing import Self
+except ImportError:  # pragma: no cover
+    from typing_extensions import Self
 
 from pydantic import BaseModel, ValidationError
 

@@ -3,8 +3,11 @@
 # SPDX-License-Identifier: MIT
 import time
 from pathlib import Path
-from typing import Self
 
+try:
+    from typing import Self
+except ImportError:  # pragma: no cover
+    from typing_extensions import Self
 from pydantic import BaseModel, Field
 
 from banks import Prompt

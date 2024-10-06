@@ -134,6 +134,12 @@ class Prompt(BasePrompt):
             except ValidationError:
                 # Ignore lines that are not a message
                 pass
+
+        if not messages:
+            # fallback, if there was no {% chat %} block in the template,
+            # put the text into a single user message
+            messages.append(ChatMessage(role="user", content=rendered))
+
         return messages
 
 

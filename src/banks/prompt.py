@@ -6,7 +6,7 @@ from typing import Any, Protocol
 
 try:
     from typing import Self
-except ImportError:
+except ImportError:  # pragma: no cover
     from typing_extensions import Self
 
 from pydantic import BaseModel, ValidationError

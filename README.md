@@ -25,6 +25,7 @@ Docs are available [here](https://masci.github.io/banks/).
 - [banks](#banks)
   - [Installation](#installation)
   - [Features](#features)
+  - [Cookbooks](#cookbooks)
   - [Examples](#examples)
     - [Create a blog writing prompt](#create-a-blog-writing-prompt)
     - [Create a summarizer prompt](#create-a-summarizer-prompt)
@@ -46,10 +47,15 @@ pip install banks
 
 Prompts are instrumental for the success of any LLM application, and Banks focuses around specific areas of their
 lifecycle:
-- :blue_book: **Templating**: Banks provides tools and functions to build prompts text and chat messages from generic blueprints.
+- :orange_book: **Templating**: Banks provides tools and functions to build prompts text and chat messages from generic blueprints.
 - :tickets: **Versioning and metadata**: Banks supports attaching metadata to prompts to ease their management, and versioning is
 first-class citizen.
 - :file_cabinet: **Management**: Banks provides ways to store prompts on disk along with their metadata.
+
+## Cookbooks
+
+- :blue_book: [Prompt caching with Anthropic](./cookbooks/Prompt_Caching_with_Anthropic.ipynb)
+- :blue_book: [Prompt versioning](./cookbooks/Prompt_Versioning.ipynb)
 
 ## Examples
 

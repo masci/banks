@@ -6,6 +6,8 @@
 - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
 - [Go meta: create a prompt and `generate` its response](#go-meta-create-a-prompt-and-generate-its-response)
 - [Go meta(meta): process a LLM response](#go-metameta-process-a-llm-response)
+- [Render a prompt template as chat messages](#render-a-prompt-template-as-chat-messages)
+- [Use prompt caching from Anthropic](#use-prompt-caching-from-anthropic)
 - [Reuse templates from registries](#reuse-templates-from-registries)
 - [Async support](#async-support)
 
@@ -258,6 +260,67 @@ print(p.text({"topic": "climate change"}))
 ```
 
 The final answer from the LLM will be printed, this time all in uppercase.
+
+## Render a prompt template as chat messages
+
+You'll find yourself feeding an LLM a list of chat messages instead of plain text
+more often than not. Banks will help you remove the boilerplate by defining the
+messages already at the prompt level.
+
+```py
+from banks import Prompt
+
+
+prompt_template = """
+{% chat role="system" %}
+You are a {{ persona }}.
+{% endchat %}
+
+{% chat role="user" %}
+Hello, how are you?
+{% endchat %}
+"""
+
+p = Prompt(prompt_template)
+print(p.chat_messages({"persona": "helpful assistant"}))
+
+# Output:
+# [
+#   ChatMessage(role='system', content='You are a helpful assistant.\n'),
+#   ChatMessage(role='user', content='Hello, how are you?\n')
+# ]
+```
+
+## Use prompt caching from Anthropic
+
+Several inference providers support prompt caching to save time and costs, and Anthropic in particular offers
+fine-grained control over the parts of the prompt that we want to cache. With Banks this is as simple as
+using a template filter:
+
+```py
+prompt_template = """
+{% chat role="user" %}
+Analyze this book:
+
+{# Only this part of the chat message (the book content) will be cached #}
+{{ book | cache_control("ephemeral") }}
+
+What is the title of this book? Only output the title.
+{% endchat %}
+"""
+
+p = Prompt(prompt_template)
+print(p.chat_messages({"book":"This is a short book!"}))
+
+# Output:
+# [
+#   ChatMessage(role='user', content=[
+#      ContentBlock(type='text', text='Analyze this book:\n\n'),
+#      ContentBlock(type='text', cache_control=CacheControl(type='ephemeral'), text='This is a short book!'),
+#      ContentBlock(type='text', text='\n\nWhat is the title of this book? Only output the title.\n')
+#   ])
+# ]
+```
 
 ## Reuse templates from registries
 

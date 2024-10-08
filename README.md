@@ -27,12 +27,9 @@ Docs are available [here](https://masci.github.io/banks/).
   - [Features](#features)
   - [Cookbooks](#cookbooks)
   - [Examples](#examples)
-    - [:point\_right: Create a blog writing prompt](#point_right-create-a-blog-writing-prompt)
-    - [:point\_right: Create a summarizer prompt](#point_right-create-a-summarizer-prompt)
-    - [:point\_right: Lemmatize text while processing a template](#point_right-lemmatize-text-while-processing-a-template)
     - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
-    - [:point\_right: Go meta: create a prompt and `generate` its response](#point_right-go-meta-create-a-prompt-and-generate-its-response)
-    - [:point\_right: Go meta(meta): process a LLM response](#point_right-go-metameta-process-a-llm-response)
+    - [:point\_right: Render a prompt template as chat messages](#point_right-render-a-prompt-template-as-chat-messages)
+    - [:point\_right: Use prompt caching from Anthropic](#point_right-use-prompt-caching-from-anthropic)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
   - [License](#license)
@@ -59,128 +56,7 @@ first-class citizen.
 
 ## Examples
 
-### :point_right: Create a blog writing prompt
-
-Given a generic template to instruct an LLM to generate a blog article, we
-use Banks to generate the actual prompt on our topic of choice, "retrogame computing":
-
-```py
-from banks import Prompt
-
-
-p = Prompt("Write a 500-word blog post on {{ topic }}.\n\nBlog post:")
-topic = "retrogame computing"
-print(p.text({"topic": topic}))
-```
-
-This will print the following text, that can be pasted directly into Chat-GPT:
-
-```txt
-Write a 500-word blog post on retrogame computing.
-
-Blog post:
-```
-
-The same prompt can be written in form of chat messages:
-```py
-prompt_text = """{% chat role="system" %}
-I want you to act as a title generator for written pieces.
-{% endchat %}
-
-{% chat role="user" %}
-Write a 500-word blog post on {{ topic }}.
-
-Blog post:
-{% endchat %}"""
-
-p = Prompt(prompt_text)
-print(p.chat_messages({"topic":"prompt engineering"}))
-```
-
-This will output the following:
-```txt
-[
-  ChatMessage(role='system', content='I want you to act as a title generator for written pieces.\n'),
-  ChatMessage(role='user', content='Write a 500-word blog post on .\n\nBlog post:\n')
-]
-```
-
-### :point_right: Create a summarizer prompt
-
-Instead of hardcoding the content to summarize in the prompt itself, we can inject it
-starting from a generic one:
-
-
-```py
-from banks import Prompt
-
-
-prompt_template = """
-Summarize the following documents:
-{% for document in documents %}
-{{ document }}
-{% endfor %}
-Summary:
-"""
-
-# In a real-world scenario, these would be loaded as external resources from files or network
-documents = [
-    "A first paragraph talking about AI",
-    "A second paragraph talking about climate change",
-    "A third paragraph talking about retrogaming"
-]
-
-p = Prompt(prompt_template)
-print(p.text({"documents": documents}))
-```
-
-The resulting prompt:
-
-```txt
-Summarize the following documents:
-
-A first paragraph talking about AI
-
-A second paragraph talking about climate change
-
-A third paragraph talking about retrogaming
-
-Summary:
-```
-
-### :point_right: Lemmatize text while processing a template
-
-Banks comes with predefined filters you can use to process data before generating the
-prompt. Say you want to use a lemmatizer on a document before summarizing it, first
-you need to install `simplemma`:
-
-```sh
-pip install simplemma
-```
-
-then you can use the `lemmatize` filter in your templates like this:
-
-```py
-from banks import Prompt
-
-
-prompt_template = """
-Summarize the following document:
-{{ document | lemmatize }}
-Summary:
-"""
-
-p = Prompt(prompt_template)
-print(p.text({"document": "The cats are running"}))
-```
-
-the output would be:
-
-```txt
-Summarize the following document:
-the cat be run
-Summary:
-```
+For a more extensive set of code examples, [see the documentation page](https://masci.github.io/banks/examples/).
 
 ### :point_right: Use a LLM to generate a text while rendering a prompt
 
@@ -238,74 +114,68 @@ Climate change is a pressing global issue, but together we can create positive c
 > Banks uses a cache to avoid generating text again for the same template with the same context. By default
 > the cache is in-memory but it can be customized.
 
-### :point_right: Go meta: create a prompt and `generate` its response
+### :point_right: Render a prompt template as chat messages
 
-We can leverage Jinja's macro system to generate a prompt, send the result to OpenAI and get a response.
-Let's bring back the blog writing example:
-
-```py
-from banks import Prompt
-
-prompt_template = """
-{% from "banks_macros.jinja" import run_prompt with context %}
-
-{%- call run_prompt() -%}
-Write a 500-word blog post on {{ topic }}
-
-Blog post:
-{%- endcall -%}
-"""
-
-p = Prompt(prompt_template)
-print(p.text({"topic": "climate change"}))
-```
-
-The snippet above won't print the prompt, instead will generate the prompt text
-
-```
-Write a 500-word blog post on climate change
-
-Blog post:
-```
-
-and will send it to OpenAI using the `generate` extension, eventually returning its response:
-
-```
-Climate change is a phenomenon that has been gaining attention in recent years...
-...
-```
-
-### :point_right: Go meta(meta): process a LLM response
-
-When generating a response from a prompt template, we can take a step further and
-post-process the LLM response by assinging it to a variable and applying filters
-to it:
+You'll find yourself feeding an LLM a list of chat messages instead of plain text
+more often than not. Banks will help you remove the boilerplate by defining the
+messages already at the prompt level.
 
 ```py
 from banks import Prompt
 
+
 prompt_template = """
-{% from "banks_macros.jinja" import run_prompt with context %}
+{% chat role="system" %}
+You are a {{ persona }}.
+{% endchat %}
 
-{%- set prompt_result %}
-{%- call run_prompt() -%}
-Write a 500-word blog post on {{ topic }}
-
-Blog post:
-{%- endcall -%}
-{%- endset %}
-
-{# nothing is returned at this point: the variable 'prompt_result' contains the result #}
-
-{# let's use the prompt_result variable now #}
-{{ prompt_result | upper }}
+{% chat role="user" %}
+Hello, how are you?
+{% endchat %}
 """
 
 p = Prompt(prompt_template)
-print(p.text({"topic": "climate change"}))
+print(p.chat_messages({"persona": "helpful assistant"}))
+
+# Output:
+# [
+#   ChatMessage(role='system', content='You are a helpful assistant.\n'),
+#   ChatMessage(role='user', content='Hello, how are you?\n')
+# ]
 ```
 
-The final answer from the LLM will be printed, this time all in uppercase.
+### :point_right: Use prompt caching from Anthropic
+
+Several inference providers support prompt caching to save time and costs, and Anthropic in particular offers
+fine-grained control over the parts of the prompt that we want to cache. With Banks this is as simple as
+using a template filter:
+
+```py
+prompt_template = """
+{% chat role="user" %}
+Analyze this book:
+
+{# Only this part of the chat message (the book content) will be cached #}
+{{ book | cache_control("ephemeral") }}
+
+What is the title of this book? Only output the title.
+{% endchat %}
+"""
+
+p = Prompt(prompt_template)
+print(p.chat_messages({"book":"This is a short book!"}))
+
+# Output:
+# [
+#   ChatMessage(role='user', content=[
+#      ContentBlock(type='text', text='Analyze this book:\n\n'),
+#      ContentBlock(type='text', cache_control=CacheControl(type='ephemeral'), text='This is a short book!'),
+#      ContentBlock(type='text', text='\n\nWhat is the title of this book? Only output the title.\n')
+#   ])
+# ]
+```
+
+The output of `p.chat_messages()` can be fed to the Anthropic client directly.
 
 ## Reuse templates from registries
 

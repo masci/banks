@@ -4,7 +4,7 @@
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from .config import config
-from .filters import cache_control, lemmatize
+from .filters import cache_control, lemmatize, tool
 
 
 def _add_extensions(_env):
@@ -40,4 +40,5 @@ env = Environment(
 # Setup custom filters and defaults
 env.filters["lemmatize"] = lemmatize
 env.filters["cache_control"] = cache_control
+env.filters["tool"] = tool
 _add_extensions(env)

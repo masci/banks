@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: MIT
 from .cache_control import cache_control
 from .lemmatize import lemmatize
+from .tool import tool
 
 __all__ = (
     "cache_control",
     "lemmatize",
+    "tool",
 )

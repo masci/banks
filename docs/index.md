@@ -47,10 +47,10 @@ Some functionalities require additional dependencies that need to be installed m
 
 If you like to jump straight to the code:
 
-- See a showcase of basic examples [here](examples).
+- See a showcase of basic examples [here](examples.md).
 - Check out the Cookbooks:
-    - :blue_book: [Prompt caching with Anthropic](./cookbooks/Prompt_Caching_with_Anthropic.ipynb)
-    - :blue_book: [Prompt versioning](./cookbooks/Prompt_Versioning.ipynb)
+    - :blue_book: [Prompt caching with Anthropic](https://github.com/masci/banks/blob/main/cookbooks/Prompt_Caching_with_Anthropic.ipynb)
+    - :blue_book: [Prompt versioning](https://github.com/masci/banks/blob/main/cookbooks/Prompt_Versioning.ipynb)
 
 ## License
 

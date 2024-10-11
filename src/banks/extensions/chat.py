@@ -11,25 +11,6 @@ from banks.types import ChatMessage, ChatMessageContent, ContentBlock, ContentBl
 SUPPORTED_TYPES = ("system", "user")
 
 
-# This function exists for documentation purpose.
-def chat(role: str):  # pylint: disable=W0613
-    """
-    Text inside `chat` tags will be rendered as JSON strings representing chat messages. Calling `Prompt.chat_messages`
-    will return a list of `ChatMessage` instances.
-
-    Example:
-        ```jinja
-        {% chat role="system" %}
-        You are a helpful assistant.
-        {% endchat %}
-
-        {% chat role="user" %}
-        Hello, how are you?
-        {% endchat %}
-        ```
-    """
-
-
 class _ContentBlockParser(HTMLParser):
     """A parser used to extract text surrounded by `<content_block_txt>` and `</content_block_txt>` tags."""
 

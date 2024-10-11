@@ -30,7 +30,7 @@ class CompletionExtension(Extension):
         {% endset %}
 
         {# output the response content #}
-        {{ response.choices[0].message.content }}
+        {{ response }}
         ```
     """
 

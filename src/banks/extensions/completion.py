@@ -103,8 +103,7 @@ class CompletionExtension(Extension):
         for line in body.split("\n"):
             try:
                 messages.append(ChatMessage.model_validate_json(line))
-            except ValidationError:
-                # Ignore lines that are not a message
+            except ValidationError:  # pylint: disable=R0801
                 pass
 
         if not messages:

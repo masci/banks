@@ -163,6 +163,10 @@ parallel = true
 omit = [
   "src/banks/__about__.py",
   "tests/*",
+  "src/banks/extensions/docs.py",
+  # deprecated modules, to be removed
+  "src/banks/extensions/inference_endpoint.py",
+  "src/banks/extensions/generate.py",
 ]
 
 [tool.coverage.paths]

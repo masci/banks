@@ -69,8 +69,8 @@ class CompletionExtension(Extension):
 
         # Call LLM
         if parser.environment.is_async:
-            return nodes.Output(self.call_method("_do_completion_async", args), [], [], body).set_lineno(lineno)
-        return nodes.Output(self.call_method("_do_completion", args), [], [], body).set_lineno(lineno)
+            return nodes.CallBlock(self.call_method("_do_completion_async", args), [], [], body).set_lineno(lineno)
+        return nodes.CallBlock(self.call_method("_do_completion", args), [], [], body).set_lineno(lineno)
 
     def _do_completion(self, model_name, caller):
         """

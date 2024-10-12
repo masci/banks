@@ -26,6 +26,7 @@ dependencies = [
   "jinja2",
   "litellm",
   "pydantic",
+  "deprecated",
 ]
 
 [project.urls]

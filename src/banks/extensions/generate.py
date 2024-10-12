@@ -7,6 +7,7 @@ from jinja2 import nodes
 from jinja2.ext import Extension
 from litellm import acompletion, completion
 from litellm.types.utils import ModelResponse
+from deprecated import deprecated
 
 from banks.errors import CanaryWordError
 from banks.prompt import Prompt
@@ -15,6 +16,7 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 SYSTEM_PROMPT = Prompt("{{canary_word}} You are a helpful assistant.")
 
 
+@deprecated(version="1.3.0", reason="This extension is deprecated, use {% completion %} instead.")
 class GenerateExtension(Extension):
     # a set of names that trigger the extension.
     tags = {"generate"}  # noqa

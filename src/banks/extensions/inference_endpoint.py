@@ -5,14 +5,19 @@ import html
 import os
 
 import requests
+from deprecated import deprecated
 from jinja2 import nodes
 from jinja2.ext import Extension
 
 
+@deprecated(version="1.3.0", reason="This extension is deprecated, use {% completion %} instead.")
 class HFInferenceEndpointsExtension(Extension):
     """
     `inference_endpoint` can be used to call the Hugging Face Inference Endpoint API
     passing a prompt to get back some content.
+
+    Deprecated:
+        This extension is deprecated, use `{% completion %}` instead.
 
     Example:
         ```jinja

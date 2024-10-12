@@ -1,4 +1,5 @@
 # This module exists for documentation purpose only
+from deprecated import deprecated
 
 
 def chat(role: str):  # pylint: disable=W0613
@@ -39,9 +40,13 @@ def completion(model_name: str):  # pylint: disable=W0613
     """
 
 
+@deprecated(version="1.3.0", reason="This extension is deprecated, use {% completion %} instead.")
 def generate(model_name: str):  # pylint: disable=W0613
     """
     `generate` can be used to call the LiteLLM API passing the tag text as a prompt and get back some content.
+
+    Deprecated:
+        This extension is deprecated, use `{% completion %}` instead.
 
     Example:
         ```jinja

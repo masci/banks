@@ -27,8 +27,8 @@ Docs are available [here](https://masci.github.io/banks/).
   - [Features](#features)
   - [Cookbooks](#cookbooks)
   - [Examples](#examples)
-    - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [:point\_right: Render a prompt template as chat messages](#point_right-render-a-prompt-template-as-chat-messages)
+    - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
     - [:point\_right: Use prompt caching from Anthropic](#point_right-use-prompt-caching-from-anthropic)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
@@ -59,62 +59,6 @@ first-class citizen.
 
 For a more extensive set of code examples, [see the documentation page](https://masci.github.io/banks/examples/).
 
-### :point_right: Use a LLM to generate a text while rendering a prompt
-
-Sometimes it might be useful to ask another LLM to generate examples for you in a
-few-shot prompt. Provided you have a valid OpenAI API key stored in an env var
-called `OPENAI_API_KEY` you can ask Banks to do something like this (note we can
-annotate the prompt using comments - anything within `{# ... #}` will be removed
-from the final prompt):
-
-```py
-from banks import Prompt
-
-
-prompt_template = """
-Generate a tweet about the topic {{ topic }} with a positive sentiment.
-
-{#
-    This is for illustration purposes only, there are better and cheaper ways
-    to generate examples for a few-shots prompt.
-#}
-Examples:
-{% for number in range(3) %}
-- {% generate "write a tweet with positive sentiment" "gpt-3.5-turbo" %}
-{% endfor %}
-"""
-
-p = Prompt(prompt_template)
-print(p.text({"topic": "climate change"}))
-```
-
-The output would be something similar to the following:
-```txt
-Generate a tweet about the topic climate change with a positive sentiment.
-
-
-Examples:
-
-- "Feeling grateful for the amazing capabilities of #GPT3.5Turbo! It's making my work so much easier and efficient. Thank you, technology!" #positivity #innovation
-
-- "Feeling grateful for all the opportunities that come my way! With #GPT3.5Turbo, I am able to accomplish tasks faster and more efficiently. #positivity #productivity"
-
-- "Feeling grateful for all the wonderful opportunities and experiences that life has to offer! #positivity #gratitude #blessed #gpt3.5turbo"
-```
-
-If you paste Banks' output into ChatGPT you would get something like this:
-```txt
-Climate change is a pressing global issue, but together we can create positive change! Let's embrace renewable energy, protect our planet, and build a sustainable future for generations to come. 🌍💚 #ClimateAction #PositiveFuture
-```
-
-> [!IMPORTANT]
-> The `generate` extension uses [LiteLLM](https://github.com/BerriAI/litellm) under the hood, and provided you have the
-> proper environment variables set, you can use any model from the supported [model providers](https://docs.litellm.ai/docs/providers).
-
-> [!NOTE]
-> Banks uses a cache to avoid generating text again for the same template with the same context. By default
-> the cache is in-memory but it can be customized.
-
 ### :point_right: Render a prompt template as chat messages
 
 You'll find yourself feeding an LLM a list of chat messages instead of plain text
@@ -144,6 +88,53 @@ print(p.chat_messages({"persona": "helpful assistant"}))
 #   ChatMessage(role='user', content='Hello, how are you?\n')
 # ]
 ```
+
+### :point_right: Use a LLM to generate a text while rendering a prompt
+
+Sometimes it might be useful to ask another LLM to generate examples for you in a
+few-shots prompt. Provided you have a valid OpenAI API key stored in an env var
+called `OPENAI_API_KEY` you can ask Banks to do something like this (note we can
+annotate the prompt using comments - anything within `{# ... #}` will be removed
+from the final prompt):
+
+```py
+from banks import Prompt
+
+
+prompt_template = """
+{% set examples %}
+{% completion model="gpt-3.5-turbo-0125" %}
+  {% chat role="system" %}You are a helpful assistant{% endchat %}
+  {% chat role="user" %}Generate a bullet list of 3 tweets with a positive sentiment.{% endchat %}
+{% endcompletion %}
+{% endset %}
+
+{# output the response content #}
+Generate a tweet about the topic {{ topic }} with a positive sentiment.
+Examples:
+{{ examples }}
+"""
+
+p = Prompt(prompt_template)
+print(p.text({"topic": "climate change"}))
+```
+
+The output would be something similar to the following:
+```txt
+Generate a tweet about the topic climate change with a positive sentiment.
+Examples:
+- "Feeling grateful for the sunshine today! 🌞 #thankful #blessed"
+- "Just had a great workout and feeling so energized! 💪 #fitness #healthyliving"
+- "Spent the day with loved ones and my heart is so full. 💕 #familytime #grateful"
+```
+
+> [!IMPORTANT]
+> The `completion` extension uses [LiteLLM](https://github.com/BerriAI/litellm) under the hood, and provided you have the
+> proper environment variables set, you can use any model from the supported [model providers](https://docs.litellm.ai/docs/providers).
+
+> [!NOTE]
+> Banks uses a cache to avoid generating text again for the same template with the same context. By default
+> the cache is in-memory but it can be customized.
 
 ### :point_right: Use prompt caching from Anthropic
 

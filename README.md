@@ -51,6 +51,7 @@ first-class citizen.
 
 ## Cookbooks
 
+- :blue_book: [In-prompt chat completion](https://github.com/masci/banks/blob/main/cookbooks/in_prompt_completion.ipynb)
 - :blue_book: [Prompt caching with Anthropic](./cookbooks/Prompt_Caching_with_Anthropic.ipynb)
 - :blue_book: [Prompt versioning](./cookbooks/Prompt_Versioning.ipynb)
 

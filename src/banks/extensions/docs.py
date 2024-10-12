@@ -23,8 +23,7 @@ def completion(model_name: str):  # pylint: disable=W0613
     """
     `completion` can be used to send to the LLM the content of the block in form of messages.
 
-    The rendered value of the block can be used as is but it's usually more useful to
-    assign it to a variable and access it from another section of the prompt.
+    The rendered value of the block can be assigned to a variable and accessed from another section of the prompt.
 
     Example:
         ```jinja

@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: MIT
 from typing import cast
 
+from deprecated import deprecated
 from jinja2 import nodes
 from jinja2.ext import Extension
 from litellm import acompletion, completion
 from litellm.types.utils import ModelResponse
-from deprecated import deprecated
 
 from banks.errors import CanaryWordError
 from banks.prompt import Prompt

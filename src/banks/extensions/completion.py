@@ -81,7 +81,7 @@ class CompletionExtension(Extension):
                 module_name, func_name = tool.import_path.rsplit(".", maxsplit=1)
                 module = importlib.import_module(module_name)
                 return getattr(module, func_name)
-        msg = f"Function {tool.function.name} not found in available tools"
+        msg = f"Function {tool_call.function.name} not found in available tools"
         raise ValueError(msg)
 
     def _do_completion(self, model_name, caller):
@@ -134,17 +134,14 @@ class CompletionExtension(Extension):
                 msg = "Function name is empty"
                 raise LLMError(msg)
 
-            for tool in tools:
-                if tool.function.name == tool_call.function.name:
-                    module_name, func_name = tool.import_path.rsplit(".", maxsplit=1)
-                    module = importlib.import_module(module_name)
-                    func = getattr(module, func_name)
+            func = self._get_tool_callable(tools, tool_call)
 
-            function_args = json.loads(tool_call.function.arguments)
-            function_response = func(**function_args)
             messages.append(
                 ChatMessage(
-                    tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
+                    tool_call_id=tool_call.id,
+                    role="tool",
+                    name=tool_call.function.name,
+                    content=func(**json.loads(tool_call.function.arguments)),
                 )
             )
 

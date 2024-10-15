@@ -30,19 +30,19 @@ def python_type_to_jsonschema(python_type: type) -> str:
     """Given a Python type, returns the jsonschema string describing it."""
     if python_type is str:
         return "string"
-    elif python_type is int:
+    if python_type is int:
         return "integer"
-    elif python_type is float:
+    if python_type is float:
         return "number"
-    elif python_type is bool:
+    if python_type is bool:
         return "boolean"
-    elif python_type is list:
+    if python_type is list:
         return "array"
-    elif python_type is dict:
+    if python_type is dict:
         return "object"
-    else:
-        msg = f"Unsupported type: {python_type}"
-        raise ValueError(msg)
+
+    msg = f"Unsupported type: {python_type}"
+    raise ValueError(msg)
 
 
 def parse_params_from_docstring(docstring: str) -> dict[str, dict[str, str]]:

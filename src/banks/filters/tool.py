@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: MIT
 from typing import Callable
 
+from banks.types import Tool
+
 
 def tool(value: Callable) -> str:
-    return f"Function {value}"
+    tool = Tool.from_callable(value)
+    return tool.model_dump_json()

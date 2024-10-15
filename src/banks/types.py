@@ -5,6 +5,7 @@ from enum import Enum
 from inspect import Parameter, getdoc, signature
 from typing import Callable
 
+from litellm.types.utils import Message
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -54,11 +55,12 @@ ChatMessageContent = list[ContentBlock] | str
 class ChatMessage(BaseModel):
     role: str
     content: str | ChatMessageContent
+    tool_call_id: str | None = None
+    name: str | None = None
 
-
-class ChatWithToolMessage(ChatMessage):
-    tool_call_id: str
-    name: str
+    @classmethod
+    def from_litellm(cls, msg: Message) -> Self:
+        return cls(role=msg.role, content=msg.content or "")
 
 
 class FunctionParameter(BaseModel):
@@ -106,7 +108,7 @@ class Tool(BaseModel):
 
     type: str = "function"
     function: Function
-    _import_path: str
+    import_path: str
 
     @classmethod
     def from_callable(cls, func: Callable) -> Self:
@@ -135,5 +137,5 @@ class Tool(BaseModel):
                 description=description,
                 parameters=FunctionParameters(properties=properties, required=required),
             ),
-            _import_path=f"{func.__module__}.{func.__qualname__}",
+            import_path=f"{func.__module__}.{func.__qualname__}",
         )

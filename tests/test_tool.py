@@ -17,16 +17,17 @@ def test_tool():
     tool_dump = tool(my_tool_function)
     t = Tool.model_validate_json(tool_dump)
     assert t.model_dump() == {
+        "type": "function",
         "function": {
-            "description": inspect.getdoc(my_tool_function),
             "name": "my_tool_function",
+            "description": "Description of the tool.\n\nArgs:\n    myparam (str): description of the parameter",
             "parameters": {
-                "properties": {"myparam": {"description": "description " "of the " "parameter", "type": "string"}},
-                "required": ["myparam"],
                 "type": "object",
+                "properties": {"myparam": {"type": "string", "description": "description of the parameter"}},
+                "required": ["myparam"],
             },
         },
-        "type": "function",
+        "import_path": "tests.test_tool.test_tool.<locals>.my_tool_function",
     }
 
 
@@ -43,14 +44,15 @@ def test_tool_with_defaults():
     tool_dump = tool(my_tool_function)
     t = Tool.model_validate_json(tool_dump)
     assert t.model_dump() == {
+        "type": "function",
         "function": {
-            "description": inspect.getdoc(my_tool_function),
             "name": "my_tool_function",
+            "description": "Description of the tool.\n\nArgs:\n    myparam (str): description of the parameter",
             "parameters": {
-                "properties": {"myparam": {"description": "description " "of the " "parameter", "type": "string"}},
-                "required": [],
                 "type": "object",
+                "properties": {"myparam": {"type": "string", "description": "description of the parameter"}},
+                "required": [],
             },
         },
-        "type": "function",
+        "import_path": "tests.test_tool.test_tool_with_defaults.<locals>.my_tool_function",
     }

@@ -8,4 +8,4 @@ from banks.types import Tool
 
 def tool(value: Callable) -> str:
     tool = Tool.from_callable(value)
-    return tool.model_dump_json()
+    return tool.model_dump_json() + "\n"

@@ -12,7 +12,7 @@ from litellm.types.utils import Choices, ModelResponse
 from pydantic import ValidationError
 
 from banks.errors import InvalidPromptError, LLMError
-from banks.types import ChatMessage, ChatWithToolMessage, Tool
+from banks.types import ChatMessage, Tool
 
 SUPPORTED_KWARGS = ("model",)
 
@@ -78,10 +78,11 @@ class CompletionExtension(Extension):
     def _get_tool_callable(self, tools, tool_call):
         for tool in tools:
             if tool.function.name == tool_call.function.name:
-                module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
+                module_name, func_name = tool.import_path.rsplit(".", maxsplit=1)
                 module = importlib.import_module(module_name)
                 return getattr(module, func_name)
-        return None
+        msg = f"Function {tool.function.name} not found in available tools"
+        raise ValueError(msg)
 
     def _do_completion(self, model_name, caller):
         """
@@ -95,24 +96,22 @@ class CompletionExtension(Extension):
         if not tool_calls:
             return choices[0].message.content
 
+        messages.append(choices[0].message)  # type:ignore
         for tool_call in tool_calls:
             if not tool_call.function.name:
                 msg = "Function name is empty"
                 raise LLMError(msg)
 
-            for tool in tools:
-                if tool.function.name == tool_call.function.name:
-                    module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
-                    module = importlib.import_module(module_name)
-                    func = getattr(module, func_name)
+            func = self._get_tool_callable(tools, tool_call)
 
             function_args = json.loads(tool_call.function.arguments)
             function_response = func(**function_args)
             messages.append(
-                ChatWithToolMessage(
+                ChatMessage(
                     tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
                 )
             )
+
         response = cast(ModelResponse, completion(model=model_name, messages=messages))
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
@@ -129,6 +128,7 @@ class CompletionExtension(Extension):
         if not tool_calls:
             return choices[0].message.content
 
+        messages.append(choices[0].message)  # type:ignore
         for tool_call in tool_calls:
             if not tool_call.function.name:
                 msg = "Function name is empty"
@@ -136,17 +136,18 @@ class CompletionExtension(Extension):
 
             for tool in tools:
                 if tool.function.name == tool_call.function.name:
-                    module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
+                    module_name, func_name = tool.import_path.rsplit(".", maxsplit=1)
                     module = importlib.import_module(module_name)
                     func = getattr(module, func_name)
 
             function_args = json.loads(tool_call.function.arguments)
             function_response = func(**function_args)
             messages.append(
-                ChatWithToolMessage(
+                ChatMessage(
                     tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
                 )
             )
+
         response = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content

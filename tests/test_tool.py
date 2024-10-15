@@ -1,5 +1,3 @@
-import inspect
-
 from banks.filters import tool
 from banks.types import Tool
 

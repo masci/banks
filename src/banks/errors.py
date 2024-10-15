@@ -19,3 +19,7 @@ class PromptNotFoundError(Exception):
 
 class InvalidPromptError(Exception):
     """The prompt is not valid."""
+
+
+class LLMError(Exception):
+    """The LLM had problems."""

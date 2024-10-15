@@ -1,15 +1,18 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import importlib
+import json
 from typing import cast
 
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
 from litellm import acompletion, completion
-from litellm.types.utils import ModelResponse
+from litellm.types.utils import Choices, ModelResponse
 from pydantic import ValidationError
 
-from banks.types import ChatMessage
+from banks.errors import InvalidPromptError, LLMError
+from banks.types import ChatMessage, ChatWithToolMessage, Tool
 
 SUPPORTED_KWARGS = ("model",)
 
@@ -72,41 +75,97 @@ class CompletionExtension(Extension):
             return nodes.CallBlock(self.call_method("_do_completion_async", args), [], [], body).set_lineno(lineno)
         return nodes.CallBlock(self.call_method("_do_completion", args), [], [], body).set_lineno(lineno)
 
+    def _get_tool_callable(self, tools, tool_call):
+        for tool in tools:
+            if tool.function.name == tool_call.function.name:
+                module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
+                module = importlib.import_module(module_name)
+                return getattr(module, func_name)
+        return None
+
     def _do_completion(self, model_name, caller):
         """
         Helper callback.
         """
-        messages = self._body_to_messages(caller())
-        if not messages:
-            return ""
+        messages, tools = self._body_to_messages(caller())
 
+        response = cast(ModelResponse, completion(model=model_name, messages=messages, tools=tools))
+        choices = cast(list[Choices], response.choices)
+        tool_calls = choices[0].message.tool_calls
+        if not tool_calls:
+            return choices[0].message.content
+
+        for tool_call in tool_calls:
+            if not tool_call.function.name:
+                msg = "Function name is empty"
+                raise LLMError(msg)
+
+            for tool in tools:
+                if tool.function.name == tool_call.function.name:
+                    module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
+                    module = importlib.import_module(module_name)
+                    func = getattr(module, func_name)
+
+            function_args = json.loads(tool_call.function.arguments)
+            function_response = func(**function_args)
+            messages.append(
+                ChatWithToolMessage(
+                    tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
+                )
+            )
         response = cast(ModelResponse, completion(model=model_name, messages=messages))
-        return response.choices[0].message.content  # type: ignore
+        choices = cast(list[Choices], response.choices)
+        return choices[0].message.content
 
     async def _do_completion_async(self, model_name, caller):
         """
         Helper callback.
         """
-        messages = self._body_to_messages(caller())
-        if not messages:
-            return ""
+        messages, tools = self._body_to_messages(caller())
 
+        response = cast(ModelResponse, await acompletion(model=model_name, messages=messages, tools=tools))
+        choices = cast(list[Choices], response.choices)
+        tool_calls = choices[0].message.tool_calls or []
+        if not tool_calls:
+            return choices[0].message.content
+
+        for tool_call in tool_calls:
+            if not tool_call.function.name:
+                msg = "Function name is empty"
+                raise LLMError(msg)
+
+            for tool in tools:
+                if tool.function.name == tool_call.function.name:
+                    module_name, func_name = tool._import_path.rsplit(".", maxsplit=1)
+                    module = importlib.import_module(module_name)
+                    func = getattr(module, func_name)
+
+            function_args = json.loads(tool_call.function.arguments)
+            function_response = func(**function_args)
+            messages.append(
+                ChatWithToolMessage(
+                    tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
+                )
+            )
         response = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
-        return response.choices[0].message.content  # type: ignore
+        choices = cast(list[Choices], response.choices)
+        return choices[0].message.content
 
-    def _body_to_messages(self, body: str) -> list[ChatMessage]:
+    def _body_to_messages(self, body: str) -> tuple[list[ChatMessage], list[Tool]]:
         body = body.strip()
-        if not body:
-            return []
-
         messages = []
+        tools = []
         for line in body.split("\n"):
             try:
                 messages.append(ChatMessage.model_validate_json(line))
             except ValidationError:  # pylint: disable=R0801
-                pass
+                try:
+                    tools.append(Tool.model_validate_json(line))
+                except ValidationError:
+                    pass
 
         if not messages:
-            messages.append(ChatMessage(role="user", content=body))
+            msg = "Completion must contain at least one chat message"
+            raise InvalidPromptError(msg)
 
-        return messages
+        return (messages, tools)

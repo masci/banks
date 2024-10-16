@@ -99,7 +99,7 @@ class CompletionExtension(Extension):
         messages.append(choices[0].message)  # type:ignore
         for tool_call in tool_calls:
             if not tool_call.function.name:
-                msg = "Function name is empty"
+                msg = "Malformed response: function name is empty"
                 raise LLMError(msg)
 
             func = self._get_tool_callable(tools, tool_call)

@@ -5,7 +5,6 @@ from enum import Enum
 from inspect import Parameter, getdoc, signature
 from typing import Callable
 
-from litellm.types.utils import Message
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -58,10 +57,6 @@ class ChatMessage(BaseModel):
     tool_call_id: str | None = None
     name: str | None = None
 
-    @classmethod
-    def from_litellm(cls, msg: Message) -> Self:
-        return cls(role=msg.role, content=msg.content or "")
-
 
 class FunctionParameter(BaseModel):
     type: str
@@ -102,6 +97,7 @@ class Tool(BaseModel):
                 "required": ["location"],
             },
         },
+        "import_path": "module.get_current_weather",
     }
     ```
     """

@@ -94,7 +94,7 @@ def test__do_completion_with_tools(ext, mocked_choices_with_tools):
         assert calls[0].kwargs["tools"] == ["tool1", "tool2"]
         assert "tools" not in calls[1].kwargs
         for m in calls[1].kwargs["messages"]:
-            if type(m) == ChatMessage:
+            if type(m) is ChatMessage:
                 assert m.role == "tool"
                 assert m.name == "get_current_weather"
 

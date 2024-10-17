@@ -1,4 +1,5 @@
 site_name: Banks
+repo_url: https://github.com/masci/banks
 
 theme:
   name: material

@@ -6,6 +6,11 @@ from typing import Callable
 from banks.types import Tool
 
 
-def tool(value: Callable) -> str:
-    t = Tool.from_callable(value)
+def tool(function: Callable) -> str:
+    """Inspect a Python callable and generates a JSON-schema ready for LLM function calling.
+
+    Important:
+        This filter only works when used within a `{% completion %}` block.
+    """
+    t = Tool.from_callable(function)
     return t.model_dump_json() + "\n"

@@ -29,7 +29,7 @@ Docs are available [here](https://masci.github.io/banks/).
   - [Examples](#examples)
     - [:point\_right: Render a prompt template as chat messages](#point_right-render-a-prompt-template-as-chat-messages)
     - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
-    - [:point\_right: Call functions directly from the prompt](#point_right-call-functions-directly-from-the-prompt)
+    - [:point\_right: Function calling directly from the prompt](#point_right-function-calling-directly-from-the-prompt)
     - [:point\_right: Use prompt caching from Anthropic](#point_right-use-prompt-caching-from-anthropic)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
@@ -137,7 +137,7 @@ Examples:
 > Banks uses a cache to avoid generating text again for the same template with the same context. By default
 > the cache is in-memory but it can be customized.
 
-### :point_right: Call functions directly from the prompt
+### :point_right: Function calling directly from the prompt
 
 Banks provides a filter `tool` that can be used to convert a callable passed to a prompt into an LLM function call.
 Docstrings are used to describe the tool and its arguments, and during prompt rendering Banks will perform all the LLM

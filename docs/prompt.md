@@ -20,6 +20,12 @@ p.text()  ## outputs 'HELLO'
 In addition to all the [builtin filters](https://jinja.palletsprojects.com/en/3.1.x/templates/#list-of-builtin-filters)
 provided by Jinja, Banks supports the following ones, specific for prompt engineering.
 
+::: banks.filters.tool.tool
+    options:
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
 
 ::: banks.filters.cache_control.cache_control
     options:

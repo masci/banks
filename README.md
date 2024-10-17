@@ -29,6 +29,7 @@ Docs are available [here](https://masci.github.io/banks/).
   - [Examples](#examples)
     - [:point\_right: Render a prompt template as chat messages](#point_right-render-a-prompt-template-as-chat-messages)
     - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
+    - [:point\_right: Call functions directly from the prompt](#point_right-call-functions-directly-from-the-prompt)
     - [:point\_right: Use prompt caching from Anthropic](#point_right-use-prompt-caching-from-anthropic)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
@@ -135,6 +136,43 @@ Examples:
 > [!NOTE]
 > Banks uses a cache to avoid generating text again for the same template with the same context. By default
 > the cache is in-memory but it can be customized.
+
+### :point_right: Call functions directly from the prompt
+
+Banks provides a filter `tool` that can be used to convert a callable passed to a prompt into an LLM function call.
+Docstrings are used to describe the tool and its arguments, and during prompt rendering Banks will perform all the LLM
+roundtrips needed in case the model wants to use a tool within a `{% completion %}` block. For example:
+
+```py
+import platform
+
+from banks import Prompt
+
+
+def get_laptop_info():
+    """Get information about the user laptop.
+
+    For example, it returns the operating system and version, along with hardware and network specs."""
+    return str(platform.uname())
+
+
+p = Prompt("""
+{% set response %}
+{% completion model="gpt-3.5-turbo-0125" %}
+    {% chat role="user" %}{{ query }}{% endchat %}
+    {{ get_laptop_info | tool }}
+{% endcompletion %}
+{% endset %}
+
+{# the variable 'response' contains the result #}
+
+{{ response }}
+""")
+
+print(p.text({"query": "Can you guess the name of my laptop?", "get_laptop_info": get_laptop_info}))
+# Output:
+# Based on the information provided, the name of your laptop is likely "MacGiver."
+```
 
 ### :point_right: Use prompt caching from Anthropic
 

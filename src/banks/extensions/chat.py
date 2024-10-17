@@ -108,4 +108,4 @@ class ChatExtension(Extension):
         parser = _ContentBlockParser()
         parser.feed(caller())
         cm = ChatMessage(role=role, content=parser.content)
-        return cm.model_dump_json()
+        return cm.model_dump_json(exclude_none=True) + "\n"

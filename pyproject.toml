@@ -23,6 +23,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "griffe",
   "jinja2",
   "litellm",
   "pydantic",
@@ -183,8 +184,9 @@ exclude_lines = [
 
 [[tool.mypy.overrides]]
 module = [
-  "simplemma.*",
+  # "griffe.*",
   "litellm.*",
+  "simplemma.*",
 ]
 ignore_missing_imports = true
 

@@ -89,9 +89,13 @@ def test_chat_messages():
         p.text()
         == """
 {"role":"system","content":"You are a helpful assistant.\\n"}
+
 {"role":"user","content":"Hello, how are you?\\n"}
+
 {"role":"system","content":"I'm doing well, thank you! How can I assist you today?\\n"}
+
 {"role":"user","content":"Can you explain quantum computing?\\n"}
+
 Some random text.
 """.strip()
     )

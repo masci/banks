@@ -8,12 +8,12 @@ theme:
     scheme: slate
 
 nav:
-  - Home: 'index.md'
-  - Examples: 'examples.md'
-  - Python API: 'python.md'
-  - Prompt API: 'prompt.md'
-  - Configuration: 'config.md'
-  - Prompt Registry: 'registry.md'
+  - Home: "index.md"
+  - Examples: "examples.md"
+  - Python API: "python.md"
+  - Prompt API: "prompt.md"
+  - Configuration: "config.md"
+  - Prompt Registry: "registry.md"
 
 plugins:
   - search
@@ -22,13 +22,14 @@ plugins:
         python:
           paths: [src]
           options:
-              docstring_style: google
-              show_root_heading: true
-              show_root_full_path: true
-              show_symbol_type_heading: true
-              show_source: false
-              show_signature_annotations: true
-              show_bases: false
+            docstring_style: google
+            show_root_heading: true
+            show_root_full_path: true
+            show_symbol_type_heading: false
+            show_source: false
+            show_signature_annotations: true
+            show_bases: false
+            separate_signature: true
 
 markdown_extensions:
   - attr_list

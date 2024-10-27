@@ -1,6 +1,10 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+"""
+Directory-based prompt registry implementation that stores prompts as files.
+"""
+
 import time
 from pathlib import Path
 
@@ -19,10 +23,22 @@ DEFAULT_INDEX_NAME = "index.json"
 
 
 class PromptFile(PromptModel):
+    """Model representing a prompt file stored on disk."""
+
     path: Path = Field(exclude=True)
 
     @classmethod
     def from_prompt_path(cls: type[Self], prompt: Prompt, path: Path) -> Self:
+        """
+        Create a PromptFile instance from a Prompt object and save it to disk.
+
+        Args:
+            prompt: The Prompt object to save
+            path: Directory path where the prompt file should be stored
+
+        Returns:
+            A new PromptFile instance
+        """
         prompt_file = path / f"{prompt.name}.{prompt.version}.jinja"
         prompt_file.write_text(prompt.raw)
         return cls(
@@ -31,11 +47,25 @@ class PromptFile(PromptModel):
 
 
 class PromptFileIndex(BaseModel):
+    """Index tracking all prompt files in the directory."""
+
     files: list[PromptFile] = Field(default=[])
 
 
 class DirectoryPromptRegistry:
+    """Registry that stores prompts as files in a directory structure."""
+
     def __init__(self, directory_path: Path, *, force_reindex: bool = False):
+        """
+        Initialize the directory prompt registry.
+
+        Args:
+            directory_path: Path to directory where prompts will be stored
+            force_reindex: Whether to force rebuilding the index from disk
+
+        Raises:
+            ValueError: If directory_path is not a directory
+        """
         if not directory_path.is_dir():
             msg = "{directory_path} must be a directory."
             raise ValueError(msg)
@@ -49,9 +79,23 @@ class DirectoryPromptRegistry:
 
     @property
     def path(self) -> Path:
+        """Get the directory path where prompts are stored."""
         return self._path
 
     def get(self, *, name: str, version: str | None = None) -> Prompt:
+        """
+        Retrieve a prompt by name and version.
+
+        Args:
+            name: Name of the prompt to retrieve
+            version: Version of the prompt (optional)
+
+        Returns:
+            The requested Prompt object
+
+        Raises:
+            PromptNotFoundError: If prompt doesn't exist
+        """
         version = version or DEFAULT_VERSION
         for pf in self._index.files:
             if pf.name == name and pf.version == version and pf.path.exists():
@@ -59,6 +103,16 @@ class DirectoryPromptRegistry:
         raise PromptNotFoundError
 
     def set(self, *, prompt: Prompt, overwrite: bool = False):
+        """
+        Store a prompt in the registry.
+
+        Args:
+            prompt: The Prompt object to store
+            overwrite: Whether to overwrite existing prompt
+
+        Raises:
+            InvalidPromptError: If prompt exists and overwrite=False
+        """
         try:
             version = prompt.version or DEFAULT_VERSION
             idx, pf = self._get_prompt_file(name=prompt.name, version=version)
@@ -76,12 +130,15 @@ class DirectoryPromptRegistry:
             self._save()
 
     def _load(self):
+        """Load the prompt index from disk."""
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
 
     def _save(self):
+        """Save the prompt index to disk."""
         self._index_path.write_text(self._index.model_dump_json())
 
     def _scan(self):
+        """Scan directory for prompt files and build the index."""
         self._index: PromptFileIndex = PromptFileIndex()
         for path in self._path.glob("*.jinja*"):
             name, version = path.stem.rsplit(".", 1) if "." in path.stem else (path.stem, DEFAULT_VERSION)
@@ -91,6 +148,19 @@ class DirectoryPromptRegistry:
         self._index_path.write_text(self._index.model_dump_json())
 
     def _get_prompt_file(self, *, name: str | None, version: str) -> tuple[int, PromptFile]:
+        """
+        Find a prompt file in the index.
+
+        Args:
+            name: Name of the prompt
+            version: Version of the prompt
+
+        Returns:
+            Tuple of (index position, PromptFile)
+
+        Raises:
+            PromptNotFoundError: If prompt doesn't exist in index
+        """
         for i, pf in enumerate(self._index.files):
             if pf.name == name and pf.version == version:
                 return i, pf

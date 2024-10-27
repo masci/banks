@@ -28,6 +28,7 @@ dependencies = [
   "litellm",
   "pydantic",
   "deprecated",
+  "redis",
 ]
 
 [project.urls]

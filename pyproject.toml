@@ -10,25 +10,23 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "Massimiliano Pippi", email = "mpippi@gmail.com" },
-]
+authors = [{ name = "Massimiliano Pippi", email = "mpippi@gmail.com" }]
 classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "griffe",
-  "jinja2",
-  "litellm",
-  "pydantic",
-  "deprecated",
-  "redis",
+    "griffe",
+    "jinja2",
+    "litellm",
+    "pydantic",
+    "deprecated",
+    "redis",
 ]
 
 [project.urls]
@@ -41,51 +39,34 @@ path = "src/banks/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
-  "coverage[toml]>=6.5",
-  "pytest",
-  "pytest-cov",
-  "pytest-asyncio",
-  "mkdocs-material",
-  "mkdocstrings[python]",
-  "simplemma",
+    "coverage[toml]>=6.5",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "simplemma",
 ]
 
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "pytest --cov --cov-report=xml {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report -m",
-]
-cov = [
-  "test-cov",
-  "cov-report",
-]
+cov-report = ["- coverage combine", "coverage report -m"]
+cov = ["test-cov", "cov-report"]
 docs = "mkdocs {args:build}"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.lint]
-detached = false  # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
-dependencies = [
-  "mypy>=1.0.0",
-  "ruff>=0.0.243",
-  "pylint",
-]
+detached = false                                          # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
+dependencies = ["mypy>=1.0.0", "ruff>=0.0.243", "pylint"]
 
 [tool.hatch.envs.lint.scripts]
-check = [
-  "ruff format --check {args}",
-  "ruff check {args:.}",
-]
+check = ["ruff format --check {args}", "ruff check {args:.}"]
 lint = "pylint {args:src/banks}"
 typing = "mypy --install-types --non-interactive {args:src/banks}"
-all = [
-  "check",
-  "typing",
-  "lint",
-]
+all = ["check", "typing", "lint"]
 fmt = "ruff format {args}"
 
 [tool.hatch.build.targets.wheel]
@@ -101,51 +82,59 @@ line-length = 120
 exclude = ["cookbooks"]
 [tool.ruff.lint]
 select = [
-  "A",
-  "ARG",
-  "B",
-  "C",
-  "DTZ",
-  "E",
-  "EM",
-  "F",
-  "FBT",
-  "I",
-  "ICN",
-  "ISC",
-  "N",
-  "PLC",
-  "PLE",
-  "PLR",
-  "PLW",
-  "Q",
-  "RUF",
-  "S",
-  "T",
-  "TID",
-  "UP",
-  "W",
-  "YTT",
+    "A",
+    "ARG",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
 ]
 ignore = [
-  # Allow methods like 'set'
-  "A003",
-  # Allow non-abstract empty methods in abstract base classes
-  "B027",
-  # Allow boolean positional values in function calls, like `dict.get(... True)`
-  "FBT003",
-  # Ignore checks for possible passwords
-  "S105", "S106", "S107",
-  # Ignore complexity
-  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-  # Avoid conflicts with the formatter
-  "ISC001",
-  # Magic numbers
-  "PLR2004",
+    # Allow unused arguments
+    "ARG001",
+    # Allow methods like 'set'
+    "A003",
+    # Allow non-abstract empty methods in abstract base classes
+    "B027",
+    # Allow boolean positional values in function calls, like `dict.get(... True)`
+    "FBT003",
+    # Ignore checks for possible passwords
+    "S105",
+    "S106",
+    "S107",
+    # Ignore complexity
+    "C901",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    # Avoid conflicts with the formatter
+    "ISC001",
+    # Magic numbers
+    "PLR2004",
 ]
 unfixable = [
-  # Don't touch unused imports
-  "F401",
+    # Don't touch unused imports
+    "F401",
 ]
 
 [tool.ruff.lint.isort]
@@ -164,41 +153,37 @@ source_pkgs = ["banks", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/banks/__about__.py",
-  "tests/*",
-  "src/banks/extensions/docs.py",
-  # deprecated modules, to be removed
-  "src/banks/extensions/inference_endpoint.py",
-  "src/banks/extensions/generate.py",
+    "src/banks/__about__.py",
+    "tests/*",
+    "src/banks/extensions/docs.py",
+    # deprecated modules, to be removed
+    "src/banks/extensions/inference_endpoint.py",
+    "src/banks/extensions/generate.py",
 ]
 
 [tool.coverage.paths]
 banks = ["src/banks", "*/banks/src/banks"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 
 [[tool.mypy.overrides]]
 module = [
-  # "griffe.*",
-  "litellm.*",
-  "simplemma.*",
+    # "griffe.*",
+    "litellm.*",
+    "simplemma.*",
 ]
 ignore_missing_imports = true
 
 [tool.pylint]
 disable = [
-  "line-too-long",
-  "too-few-public-methods",
-  "missing-module-docstring",
-  "missing-class-docstring",
-  "missing-function-docstring",
-  "cyclic-import",
+    "line-too-long",
+    "too-few-public-methods",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "cyclic-import",
 ]
 max-args = 10
 

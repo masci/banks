@@ -16,7 +16,7 @@ def redis_client():
 
 
 @pytest.fixture
-def registry(redis_client):
+def registry(redis_client):  # type: ignore[ARG001]
     return RedisPromptRegistry(redis_url="redis://localhost:6379")
 
 

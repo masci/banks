@@ -5,7 +5,7 @@ name: test
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
 
 concurrency:
@@ -17,33 +17,89 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
-  run:
-    name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
-    runs-on: ${{ matrix.os }}
+  linux:
+    name: Python ${{ matrix.python-version }} on Linux
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install Hatch
-      run: pip install --upgrade hatch
+      - name: Install Hatch
+        run: pip install --upgrade hatch
 
-    - if: matrix.python-version == '3.12' && runner.os == 'Linux'
-      name: Lint
-      run: hatch run lint:all
+      - if: matrix.python-version == '3.12'
+        name: Lint
+        run: hatch run lint:all
 
-    - name: Run tests
-      run: hatch run cov
+      - name: Run tests
+        run: hatch run cov
 
-    - if: matrix.python-version == '3.12' && runner.os == 'Linux'
-      name: Report Coveralls
-      uses: coverallsapp/github-action@v2
+      - if: matrix.python-version == '3.12'
+        name: Report Coveralls
+        uses: coverallsapp/github-action@v2
+
+  macos:
+    name: Python ${{ matrix.python-version }} on macOS
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Run tests
+        run: hatch run test
+
+  windows:
+    name: Python ${{ matrix.python-version }} on Windows
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Run tests
+        run: hatch run test

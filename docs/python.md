@@ -5,6 +5,18 @@
 
 ::: banks.prompt.AsyncPrompt
 
+::: banks.registries.directory.DirectoryPromptRegistry
+    options:
+      inherited_members: true
+
+::: banks.registries.file.FilePromptRegistry
+    options:
+      inherited_members: true
+
+::: banks.registries.redis.RedisPromptRegistry
+    options:
+      inherited_members: true
+
 ## Default macros
 
 Banks' package comes with default template macros you can use in your prompts.

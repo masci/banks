@@ -79,7 +79,7 @@ jobs:
         run: pip install --upgrade hatch
 
       - name: Run tests
-        run: hatch run cov
+        run: hatch run test
 
   windows:
     name: Python ${{ matrix.python-version }} on Windows
@@ -102,4 +102,4 @@ jobs:
         run: pip install --upgrade hatch
 
       - name: Run tests
-        run: hatch run cov
+        run: hatch run test

@@ -11,10 +11,7 @@ def is_redis_available():
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
-        "redis: mark test as requiring Redis"
-    )
+    config.addinivalue_line("markers", "redis: mark test as requiring Redis")
 
 
 @pytest.fixture(autouse=True)

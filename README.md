@@ -25,7 +25,7 @@ Docs are available [here](https://masci.github.io/banks/).
 - [banks](#banks)
   - [Installation](#installation)
   - [Features](#features)
-  - [Cookbooks](#cookbooks)
+  - [Cookbook](#cookbook)
   - [Examples](#examples)
     - [:point\_right: Render a prompt template as chat messages](#point_right-render-a-prompt-template-as-chat-messages)
     - [:point\_right: Use a LLM to generate a text while rendering a prompt](#point_right-use-a-llm-to-generate-a-text-while-rendering-a-prompt)
@@ -50,11 +50,11 @@ lifecycle:
 first-class citizen.
 - :file_cabinet: **Management**: Banks provides ways to store prompts on disk along with their metadata.
 
-## Cookbooks
+## Cookbook
 
-- :blue_book: [In-prompt chat completion](https://github.com/masci/banks/blob/main/cookbooks/in_prompt_completion.ipynb)
-- :blue_book: [Prompt caching with Anthropic](./cookbooks/Prompt_Caching_with_Anthropic.ipynb)
-- :blue_book: [Prompt versioning](./cookbooks/Prompt_Versioning.ipynb)
+- :blue_book: [In-prompt chat completion](./cookbook/in_prompt_completion.ipynb)
+- :blue_book: [Prompt caching with Anthropic](./cookbook/Prompt_Caching_with_Anthropic.ipynb)
+- :blue_book: [Prompt versioning](./cookbook/Prompt_Versioning.ipynb)
 
 ## Examples
 

@@ -17,8 +17,8 @@ def cache_control(value: str, cache_type: str = "ephemeral") -> str:
         ```
 
     Important:
-        this filter marks the content to cache by surrounding it with `<content_block_txt>` and
-        `</content_block_txt>`, so it's only useful when used within a `{% chat %}` block.
+        this filter marks the content to cache by surrounding it with `<content_block>` and
+        `</content_block>`, so it's only useful when used within a `{% chat %}` block.
     """
     block = ContentBlock.model_validate({"type": "text", "text": value, "cache_control": {"type": cache_type}})
-    return f"<content_block_txt>{block.model_dump_json()}</content_block_txt>"
+    return f"<content_block>{block.model_dump_json()}</content_block>"

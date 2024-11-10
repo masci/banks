@@ -33,12 +33,12 @@ class _ContentBlockParser(HTMLParser):
 
         return self._content_blocks
 
-    def handle_starttag(self, tag, _):
-        if tag == "content_block_txt":
+    def handle_starttag(self, tag, attrs):  # noqa
+        if tag == "content_block":
             self._parse_block_content = True
 
     def handle_endtag(self, tag):
-        if tag == "content_block_txt":
+        if tag == "content_block":
             self._parse_block_content = False
 
     def handle_data(self, data):

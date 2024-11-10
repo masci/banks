@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import base64
 from enum import Enum
 from inspect import Parameter, getdoc, signature
+from pathlib import Path
 from typing import Callable
 
 from pydantic import BaseModel
@@ -26,8 +28,13 @@ class ImageUrl(BaseModel):
     url: str
 
     @classmethod
-    def from_base64(cls, media_type: str, base64_str: str):
+    def from_base64(cls, media_type: str, base64_str: str) -> Self:
         return cls(url=f"data:{media_type};base64,{base64_str}")
+
+    @classmethod
+    def from_path(cls, file_path: Path) -> Self:
+        with open(file_path, "rb") as image_file:
+            return cls.from_base64("image/jpeg", base64.b64encode(image_file.read()).decode("utf-8"))
 
 
 class ContentBlock(BaseModel):

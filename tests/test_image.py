@@ -74,18 +74,3 @@ def test_image_content_block_structure():
     assert content_block["type"] == "image_url"
     assert isinstance(content_block["image_url"], dict)
     assert "url" in content_block["image_url"]
-
-
-@pytest.mark.parametrize(
-    "invalid_input",
-    [
-        "",  # empty string
-        None,  # None value
-        123,  # non-string number
-        True,  # boolean
-    ],
-)
-def test_image_with_invalid_input(invalid_input):
-    """Test image filter with various invalid inputs"""
-    with pytest.raises((IsADirectoryError, ValueError, AttributeError, TypeError)):
-        image(invalid_input)

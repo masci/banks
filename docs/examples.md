@@ -10,7 +10,8 @@
 - [Use prompt caching from Anthropic](#use-prompt-caching-from-anthropic)
 - [Reuse templates from registries](#reuse-templates-from-registries)
 - [Async support](#async-support)
-
+- [Function calling directly from the prompt](#function-calling-directly-from-the-prompt)
+- [Add images to the prompt for vision models](#add-images-to-the-prompt-for-vision-models)
 
 
 ## Create a blog writing prompt
@@ -356,4 +357,71 @@ async def main():
     print(result)
 
 asyncio.run(main())
+```
+
+## Function calling directly from the prompt
+
+Banks provides a filter `tool` that can be used to convert a callable passed to a prompt into an LLM function call.
+Docstrings are used to describe the tool and its arguments, and during prompt rendering Banks will perform all the LLM
+roundtrips needed in case the model wants to use a tool within a `{% completion %}` block. For example:
+
+```py
+import platform
+
+from banks import Prompt
+
+
+def get_laptop_info():
+    """Get information about the user laptop.
+
+    For example, it returns the operating system and version, along with hardware and network specs."""
+    return str(platform.uname())
+
+
+p = Prompt("""
+{% set response %}
+{% completion model="gpt-3.5-turbo-0125" %}
+    {% chat role="user" %}{{ query }}{% endchat %}
+    {{ get_laptop_info | tool }}
+{% endcompletion %}
+{% endset %}
+
+{# the variable 'response' contains the result #}
+
+{{ response }}
+""")
+
+print(p.text({"query": "Can you guess the name of my laptop?", "get_laptop_info": get_laptop_info}))
+# Output:
+# Based on the information provided, the name of your laptop is likely "MacGiver."
+```
+
+## Add images to the prompt for vision models
+
+If you're working with a multimodal model, you can include images directly in the prompt,
+and Banks will do the job needed to upload them when rendering the chat messages:
+
+```py
+import litellm
+
+from banks import Prompt
+
+prompt_template = """
+{% chat role="user" %}
+Guess where is this place.
+{{ picture | image }}
+{%- endchat %}
+"""
+
+pic_url = (
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/CorcianoMar302024_01.jpg/1079px-CorcianoMar302024_01.jpg"
+)
+# Alternatively, load the image from disk
+# pic_url = "/Users/massi/Downloads/CorcianoMar302024_01.jpg"
+
+p = Prompt(prompt_template)
+as_dict = [msg.model_dump(exclude_none=True) for msg in p.chat_messages({"picture": pic_url})]
+r = litellm.completion(model="gpt-4-vision-preview", messages=as_dict)
+
+print(r.choices[0].message.content)
 ```

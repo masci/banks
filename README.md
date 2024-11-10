@@ -90,6 +90,36 @@ print(p.chat_messages({"persona": "helpful assistant"}))
 # ]
 ```
 
+### :point_right: Add images to the prompt for vision models
+
+If you're working with a multimodal model, you can include images directly in the prompt,
+and Banks will do the job needed to upload them when rendering the chat messages:
+
+```py
+import litellm
+
+from banks import Prompt
+
+prompt_template = """
+{% chat role="user" %}
+Guess where is this place.
+{{ picture | image }}
+{%- endchat %}
+"""
+
+pic_url = (
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/CorcianoMar302024_01.jpg/1079px-CorcianoMar302024_01.jpg"
+)
+# Alternatively, load the image from disk
+# pic_url = "/Users/massi/Downloads/CorcianoMar302024_01.jpg"
+
+p = Prompt(prompt_template)
+as_dict = [msg.model_dump(exclude_none=True) for msg in p.chat_messages({"picture": pic_url})]
+r = litellm.completion(model="gpt-4-vision-preview", messages=as_dict)
+
+print(r.choices[0].message.content)
+```
+
 ### :point_right: Use a LLM to generate a text while rendering a prompt
 
 Sometimes it might be useful to ask another LLM to generate examples for you in a

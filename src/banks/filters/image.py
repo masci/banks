@@ -8,11 +8,8 @@ from banks.types import ContentBlock, ImageUrl
 
 
 def _is_url(string: str) -> bool:
-    try:
-        result = urlparse(string)
-        return all([result.scheme, result.netloc])
-    except ValueError:
-        return False
+    result = urlparse(string)
+    return all([result.scheme, result.netloc])
 
 
 def image(value: str) -> str:

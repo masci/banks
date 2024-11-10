@@ -15,37 +15,26 @@ from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 class ContentBlockType(str, Enum):
     text = "text"
-    image = "image"
-
-
-class MediaTypeBlockType(str, Enum):
-    image_jpeg = "image/jpeg"
-    image_png = "image/png"
-    image_gif = "image/gif"
-    image_webp = "image/webp"
+    image_url = "image_url"
 
 
 class CacheControl(BaseModel):
     type: str = "ephemeral"
 
 
-class Source(BaseModel):
-    type: str = "base64"
-    media_type: MediaTypeBlockType
-    data: str
+class ImageUrl(BaseModel):
+    url: str
 
-    class Config:
-        use_enum_values = True
+    @classmethod
+    def from_base64(cls, media_type: str, base64_str: str):
+        return cls(url=f"data:{media_type};base64,{base64_str}")
 
 
 class ContentBlock(BaseModel):
     type: ContentBlockType
     cache_control: CacheControl | None = None
     text: str | None = None
-    source: Source | None = None
-
-    class Config:
-        use_enum_values = True
+    image_url: ImageUrl | None = None
 
 
 ChatMessageContent = list[ContentBlock] | str

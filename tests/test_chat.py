@@ -30,7 +30,7 @@ def test_content_block_parser_init():
 def test_content_block_parser_single_with_cache_control():
     p = _ContentBlockParser()
     p.feed(
-        '<content_block_txt>{"type":"text","cache_control":{"type":"ephemeral"},"text":"foo","source":null}</content_block_txt>'
+        '<content_block>{"type":"text","cache_control":{"type":"ephemeral"},"text":"foo","source":null}</content_block>'
     )
     assert p.content == [
         ContentBlock(type=ContentBlockType.text, cache_control=CacheControl(type="ephemeral"), text="foo", source=None)
@@ -39,15 +39,15 @@ def test_content_block_parser_single_with_cache_control():
 
 def test_content_block_parser_single_no_cache_control():
     p = _ContentBlockParser()
-    p.feed('<content_block_txt>{"type":"text","cache_control":null,"text":"foo","source":null}</content_block_txt>')
+    p.feed('<content_block>{"type":"text","cache_control":null,"text":"foo","source":null}</content_block>')
     assert p.content == "foo"
 
 
 def test_content_block_parser_multiple():
     p = _ContentBlockParser()
     p.feed(
-        '<content_block_txt>{"type":"text","cache_control":null,"text":"foo","source":null}</content_block_txt>'
-        '<content_block_txt>{"type":"text","cache_control":null,"text":"bar","source":null}</content_block_txt>'
+        '<content_block>{"type":"text","cache_control":null,"text":"foo","source":null}</content_block>'
+        '<content_block>{"type":"text","cache_control":null,"text":"bar","source":null}</content_block>'
     )
     assert p.content == [
         ContentBlock(type=ContentBlockType.text, cache_control=None, text="foo", source=None),

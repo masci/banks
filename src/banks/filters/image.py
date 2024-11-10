@@ -1,24 +1,40 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from banks.types import ContentBlock
+from pathlib import Path
+from urllib.parse import urlparse
+
+from banks.types import ContentBlock, ImageUrl
 
 
-def cache_control(value: str, cache_type: str = "ephemeral") -> str:
+def _is_url(string: str) -> bool:
+    try:
+        result = urlparse(string)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
+
+
+def image(value: str) -> str:
     """Wrap the filtered value into a ContentBlock with the proper cache_control field set.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
 
     Example:
         ```jinja
-        {{ "This is a long, long text" | cache_control("ephemeral") }}
+        Describe what you see
 
-        This is short and won't be cached.
+        {{ "path/to/image/file" | image }}
         ```
 
     Important:
         this filter marks the content to cache by surrounding it with `<content_block>` and
         `</content_block>`, so it's only useful when used within a `{% chat %}` block.
     """
-    block = ContentBlock.model_validate({"type": "text", "text": value, "cache_control": {"type": cache_type}})
+    if _is_url(value):
+        image_url = ImageUrl(url=value)
+    else:
+        image_url = ImageUrl.from_path(Path(value))
+
+    block = ContentBlock.model_validate({"type": "image_url", "image_url": image_url})
     return f"<content_block>{block.model_dump_json()}</content_block>"

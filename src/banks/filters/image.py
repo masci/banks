@@ -13,7 +13,7 @@ def _is_url(string: str) -> bool:
 
 
 def image(value: str) -> str:
-    """Wrap the filtered value into a ContentBlock with the proper cache_control field set.
+    """Wrap the filtered value into a ContentBlock of type image.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
 

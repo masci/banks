@@ -34,6 +34,13 @@ provided by Jinja, Banks supports the following ones, specific for prompt engine
         show_signature_annotations: false
         heading_level: 3
 
+::: banks.filters.image.image
+    options:
+        show_root_full_path: false
+        show_symbol_type_heading: false
+        show_signature_annotations: false
+        heading_level: 3
+
 ::: banks.filters.lemmatize.lemmatize
     options:
         show_root_full_path: false

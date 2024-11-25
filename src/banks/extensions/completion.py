@@ -89,8 +89,9 @@ class CompletionExtension(Extension):
         Helper callback.
         """
         messages, tools = self._body_to_messages(caller())
+        messages_as_dict = [m.model_dump() for m in messages]
 
-        response = cast(ModelResponse, completion(model=model_name, messages=messages, tools=tools))
+        response = cast(ModelResponse, completion(model=model_name, messages=messages_as_dict, tools=tools or None))
         choices = cast(list[Choices], response.choices)
         tool_calls = choices[0].message.tool_calls
         if not tool_calls:
@@ -112,7 +113,8 @@ class CompletionExtension(Extension):
                 )
             )
 
-        response = cast(ModelResponse, completion(model=model_name, messages=messages))
+        messages_as_dict = [m.model_dump() for m in messages]
+        response = cast(ModelResponse, completion(model=model_name, messages=messages_as_dict))
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
 

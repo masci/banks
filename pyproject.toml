@@ -131,6 +131,8 @@ ignore = [
     "ISC001",
     # Magic numbers
     "PLR2004",
+    # __all__ sorted
+    "RUF022",
 ]
 unfixable = [
     # Don't touch unused imports

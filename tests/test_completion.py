@@ -115,7 +115,7 @@ def test__do_completion_no_tools(ext, mocked_choices_no_tools):
         mocked_completion.return_value.choices = mocked_choices_no_tools
         ext._do_completion("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(
-            model="test-model", messages=[ChatMessage(role="user", content="hello")], tools=[]
+            model="test-model", messages=[ChatMessage(role="user", content="hello").model_dump()], tools=None
         )
 
 
@@ -131,13 +131,18 @@ async def test__do_completion_async_no_tools(ext, mocked_choices_no_tools):
 
 def test__do_completion_with_tools(ext, mocked_choices_with_tools):
     ext._get_tool_callable = mock.MagicMock(return_value=lambda location, unit: f"I got {location} with {unit}")
-    ext._body_to_messages = mock.MagicMock(return_value=(["message1", "message2"], ["tool1", "tool2"]))
+    ext._body_to_messages = mock.MagicMock(
+        return_value=(
+            [ChatMessage(role="user", content="message1"), ChatMessage(role="user", content="message2")],
+            [mock.MagicMock(), mock.MagicMock()],
+        )
+    )
     with mock.patch("banks.extensions.completion.completion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         ext._do_completion("test-model", lambda: '{"role":"user", "content":"hello"}')
         calls = mocked_completion.call_args_list
         assert len(calls) == 2  # complete query, complete with tool results
-        assert calls[0].kwargs["tools"] == ["tool1", "tool2"]
+        assert len(calls[0].kwargs["tools"]) == 2
         assert "tools" not in calls[1].kwargs
         for m in calls[1].kwargs["messages"]:
             if type(m) is ChatMessage:

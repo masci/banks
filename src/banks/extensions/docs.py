@@ -1,5 +1,4 @@
 # This module exists for documentation purpose only
-from deprecated import deprecated
 
 
 def chat(role: str):  # pylint: disable=W0613

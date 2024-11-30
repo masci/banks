@@ -125,7 +125,9 @@ async def test__do_completion_async_no_tools(ext, mocked_choices_no_tools):
         mocked_completion.return_value.choices = mocked_choices_no_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(
-            model="test-model", messages=[ChatMessage(role="user", content="hello")], tools=[]
+            model="test-model",
+            messages=[{"role": "user", "content": "hello", "tool_call_id": None, "name": None}],
+            tools=None,
         )
 
 
@@ -143,7 +145,6 @@ def test__do_completion_with_tools(ext, mocked_choices_with_tools):
         calls = mocked_completion.call_args_list
         assert len(calls) == 2  # complete query, complete with tool results
         assert len(calls[0].kwargs["tools"]) == 2
-        assert "tools" not in calls[1].kwargs
         for m in calls[1].kwargs["messages"]:
             if type(m) is ChatMessage:
                 assert m.role == "tool"
@@ -151,16 +152,20 @@ def test__do_completion_with_tools(ext, mocked_choices_with_tools):
 
 
 @pytest.mark.asyncio
-async def test__do_completion_async_with_tools(ext, mocked_choices_with_tools):
+async def test__do_completion_async_with_tools(ext, mocked_choices_with_tools, tools):
     ext._get_tool_callable = mock.MagicMock(return_value=lambda location, unit: f"I got {location} with {unit}")
-    ext._body_to_messages = mock.MagicMock(return_value=(["message1", "message2"], ["tool1", "tool2"]))
+    ext._body_to_messages = mock.MagicMock(
+        return_value=(
+            [ChatMessage(role="user", content="message1"), ChatMessage(role="user", content="message2")],
+            tools,
+        )
+    )
     with mock.patch("banks.extensions.completion.acompletion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         calls = mocked_completion.call_args_list
         assert len(calls) == 2  # complete query, complete with tool results
-        assert calls[0].kwargs["tools"] == ["tool1", "tool2"]
-        assert "tools" not in calls[1].kwargs
+        assert calls[0].kwargs["tools"] == [t.model_dump() for t in tools]
         for m in calls[1].kwargs["messages"]:
             if type(m) is ChatMessage:
                 assert m.role == "tool"
@@ -190,7 +195,9 @@ async def test__do_completion_async_no_prompt_no_tools(ext, mocked_choices_no_to
         mocked_completion.return_value.choices = mocked_choices_no_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(
-            model="test-model", messages=[ChatMessage(role="user", content="hello")], tools=[]
+            model="test-model",
+            messages=[{"role": "user", "content": "hello", "tool_call_id": None, "name": None}],
+            tools=None,
         )
 
 

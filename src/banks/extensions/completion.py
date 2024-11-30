@@ -89,15 +89,16 @@ class CompletionExtension(Extension):
         Helper callback.
         """
         messages, tools = self._body_to_messages(caller())
-        messages_as_dict = [m.model_dump() for m in messages]
+        message_dicts = [m.model_dump() for m in messages]
+        tool_dicts = [t.model_dump() for t in tools] or None
 
-        response = cast(ModelResponse, completion(model=model_name, messages=messages_as_dict, tools=tools or None))
+        response = cast(ModelResponse, completion(model=model_name, messages=message_dicts, tools=tool_dicts))
         choices = cast(list[Choices], response.choices)
         tool_calls = choices[0].message.tool_calls
         if not tool_calls:
             return choices[0].message.content
 
-        messages.append(choices[0].message)  # type:ignore
+        message_dicts.append(choices[0].message.model_dump())
         for tool_call in tool_calls:
             if not tool_call.function.name:
                 msg = "Malformed response: function name is empty"
@@ -107,14 +108,13 @@ class CompletionExtension(Extension):
 
             function_args = json.loads(tool_call.function.arguments)
             function_response = func(**function_args)
-            messages.append(
+            message_dicts.append(
                 ChatMessage(
                     tool_call_id=tool_call.id, role="tool", name=tool_call.function.name, content=function_response
-                )
+                ).model_dump()
             )
 
-        messages_as_dict = [m.model_dump() for m in messages]
-        response = cast(ModelResponse, completion(model=model_name, messages=messages_as_dict))
+        response = cast(ModelResponse, completion(model=model_name, messages=message_dicts, tools=tool_dicts))
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
 
@@ -123,14 +123,16 @@ class CompletionExtension(Extension):
         Helper callback.
         """
         messages, tools = self._body_to_messages(caller())
+        message_dicts = [m.model_dump() for m in messages]
+        tool_dicts = [t.model_dump() for t in tools] or None
 
-        response = cast(ModelResponse, await acompletion(model=model_name, messages=messages, tools=tools))
+        response = cast(ModelResponse, await acompletion(model=model_name, messages=message_dicts, tools=tool_dicts))
         choices = cast(list[Choices], response.choices)
         tool_calls = choices[0].message.tool_calls or []
         if not tool_calls:
             return choices[0].message.content
 
-        messages.append(choices[0].message)  # type:ignore
+        message_dicts.append(choices[0].message.model_dump())
         for tool_call in tool_calls:
             if not tool_call.function.name:
                 msg = "Function name is empty"
@@ -138,30 +140,34 @@ class CompletionExtension(Extension):
 
             func = self._get_tool_callable(tools, tool_call)
 
-            messages.append(
+            message_dicts.append(
                 ChatMessage(
                     tool_call_id=tool_call.id,
                     role="tool",
                     name=tool_call.function.name,
                     content=func(**json.loads(tool_call.function.arguments)),
-                )
+                ).model_dump()
             )
 
-        response = cast(ModelResponse, await acompletion(model=model_name, messages=messages))
+        response = cast(ModelResponse, await acompletion(model=model_name, messages=message_dicts, tools=tool_dicts))
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
 
     def _body_to_messages(self, body: str) -> tuple[list[ChatMessage], list[Tool]]:
+        """Converts each line in the body of a block into a chat message."""
         body = body.strip()
         messages = []
         tools = []
         for line in body.split("\n"):
             try:
+                # Try to parse a chat message
                 messages.append(ChatMessage.model_validate_json(line))
             except ValidationError:  # pylint: disable=R0801
                 try:
+                    # If not a chat message, try to parse a tool
                     tools.append(Tool.model_validate_json(line))
                 except ValidationError:
+                    # Give up
                     pass
 
         if not messages:

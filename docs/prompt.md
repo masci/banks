@@ -67,13 +67,6 @@ Banks supports the following ones, specific for prompt engineering.
         show_signature_annotations: false
         heading_level: 3
 
-::: banks.extensions.docs.generate
-    options:
-        show_root_full_path: false
-        show_symbol_type_heading: false
-        show_signature_annotations: false
-        heading_level: 3
-
 ### `canary_word`
 
 Insert into the prompt a canary word that can be checked later with `Prompt.canary_leaked()`

@@ -38,6 +38,7 @@ Source = "https://github.com/unknown/banks"
 path = "src/banks/__about__.py"
 
 [tool.hatch.envs.default]
+installer = "uv"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
@@ -171,9 +172,9 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [[tool.mypy.overrides]]
 module = [
-    # "griffe.*",
     "litellm.*",
     "simplemma.*",
+    "deprecated.*"
 ]
 ignore_missing_imports = true
 
@@ -190,3 +191,6 @@ max-args = 10
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "e2e",
+]

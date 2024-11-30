@@ -177,12 +177,6 @@ class AsyncPrompt(BasePrompt):
 
     prompt_template = \"\"\"
     Generate a tweet about the topic '{{ topic }}' with a positive sentiment.
-
-    Examples:
-    - {% generate "write a tweet with a positive sentiment", "gpt-3.5-turbo" %}
-    - {% generate "write a tweet with a sad sentiment", "gpt-3.5-turbo" %}
-    - {% generate "write a tweet with a neutral sentiment", "gpt-3.5-turbo" %}
-
     \"\"\"
 
     async def task(task_id: int, sleep_time: int):

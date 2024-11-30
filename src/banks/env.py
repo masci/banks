@@ -15,16 +15,13 @@ def _add_extensions(_env):
     """
     from .extensions.chat import ChatExtension  # pylint: disable=import-outside-toplevel
     from .extensions.completion import CompletionExtension  # pylint: disable=import-outside-toplevel
-    from .extensions.generate import GenerateExtension  # pylint: disable=import-outside-toplevel
 
     _env.add_extension(ChatExtension)
     _env.add_extension(CompletionExtension)
-    _env.add_extension(GenerateExtension)
 
 
 # Init the Jinja env
 env = Environment(
-    loader=PackageLoader("banks", "internal"),
     autoescape=select_autoescape(
         enabled_extensions=("html", "xml"),
         default_for_string=False,

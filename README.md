@@ -34,6 +34,7 @@ Docs are available [here](https://masci.github.io/banks/).
     - [:point\_right: Use prompt caching from Anthropic](#point_right-use-prompt-caching-from-anthropic)
   - [Reuse templates from registries](#reuse-templates-from-registries)
   - [Async support](#async-support)
+  - [Contributing](#contributing)
   - [License](#license)
 
 ## Installation

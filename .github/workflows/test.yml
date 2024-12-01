@@ -52,7 +52,14 @@ jobs:
         run: hatch run lint:all
 
       - name: Run tests
-        run: hatch run cov
+        run: hatch run cov -m"not e2e"
+
+      - if: matrix.python-version == '3.12'
+        name: End-to-end
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: hatch run test -m"e2e"
 
       - if: matrix.python-version == '3.12'
         name: Report Coveralls
@@ -79,7 +86,7 @@ jobs:
         run: pip install --upgrade hatch
 
       - name: Run tests
-        run: hatch run test
+        run: hatch run test -m"not e2e"
 
   windows:
     name: Python ${{ matrix.python-version }} on Windows
@@ -102,4 +109,4 @@ jobs:
         run: pip install --upgrade hatch
 
       - name: Run tests
-        run: hatch run test
+        run: hatch run test -m"not e2e"

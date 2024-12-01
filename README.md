@@ -18,6 +18,8 @@ LLM prompts using a template language that makes sense. If you're still using `f
 
 Docs are available [here](https://masci.github.io/banks/).
 
+![Banks Logo](./assets/banks.png)
+
 -----
 
 **Table of Contents**

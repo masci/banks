@@ -274,6 +274,11 @@ async def main():
 asyncio.run(main())
 ```
 
+## Contributing
+
+Contributions are very welcome, the [CONTRIBUTING.md](CONTRIBUTING.md) file contains all the details
+about how to do it.
+
 ## License
 
 `banks` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

@@ -69,8 +69,6 @@ class ChatExtension(Extension):
         """
         Helper callback.
         """
-        # parser = _ContentBlockParser()
-        # parser.feed(caller())
         content_blocks: list[ContentBlock] = []
         result = CONTENT_BLOCK_REGEX.match(caller())
         if result is not None:

@@ -8,6 +8,7 @@ from jinja2 import Environment
 from banks import AsyncPrompt, ChatMessage, Prompt
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
+from banks.types import CacheControl, ContentBlock, ContentBlockType
 
 
 def test_canary_word_generation():
@@ -90,7 +91,7 @@ def test_chat_messages():
         == """
 {"role":"system","content":"You are a helpful assistant.\\n"}
 
-{"role":"user","content":"Hello, how are you?\\n"}
+{"role":"user","content":[{"type":"text","cache_control":{"type":"ephemeral"},"text":"Hello, <bold>how are you?</bold>"}]}
 
 {"role":"system","content":"I'm doing well, thank you! How can I assist you today?\\n"}
 
@@ -102,7 +103,19 @@ Some random text.
 
     assert p.chat_messages() == [
         ChatMessage(role="system", content="You are a helpful assistant.\n"),
-        ChatMessage(role="user", content="Hello, how are you?\n"),
+        ChatMessage(
+            role="user",
+            content=[
+                ContentBlock(
+                    type=ContentBlockType.text,
+                    cache_control=CacheControl(type="ephemeral"),
+                    text="Hello, <bold>how are you?</bold>",
+                    image_url=None,
+                )
+            ],
+            tool_call_id=None,
+            name=None,
+        ),
         ChatMessage(role="system", content="I'm doing well, thank you! How can I assist you today?\n"),
         ChatMessage(role="user", content="Can you explain quantum computing?\n"),
     ]

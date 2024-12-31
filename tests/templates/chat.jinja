@@ -3,7 +3,7 @@ You are a helpful assistant.
 {% endchat %}
 
 {% chat role="user" %}
-Hello, how are you?
+{{ "Hello, <bold>how are you?</bold>" | cache_control("ephemeral") }}
 {% endchat %}
 
 {% chat role="system" %}

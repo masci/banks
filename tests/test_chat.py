@@ -2,7 +2,6 @@ import pytest
 from jinja2 import TemplateSyntaxError
 
 from banks import Prompt
-from banks.types import CacheControl, ContentBlock, ContentBlockType
 
 
 def test_wrong_tag():

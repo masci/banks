@@ -8,7 +8,7 @@ from jinja2.ext import Extension
 
 from banks.types import ChatMessage, ContentBlock, ContentBlockType
 
-SUPPORTED_TYPES = ("system", "user","assistant")
+SUPPORTED_TYPES = ("system", "user", "assistant")
 CONTENT_BLOCK_REGEX = re.compile(r"<content_block>((?s:.)*)<\/content_block>")
 
 

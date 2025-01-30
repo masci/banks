@@ -114,6 +114,8 @@ ignore = [
     "ARG001",
     # Allow methods like 'set'
     "A003",
+    # Allow calling a module `types`
+    "A005",
     # Allow non-abstract empty methods in abstract base classes
     "B027",
     # Allow boolean positional values in function calls, like `dict.get(... True)`

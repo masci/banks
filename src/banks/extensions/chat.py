@@ -70,14 +70,34 @@ class ChatExtension(Extension):
         Helper callback.
         """
         content_blocks: list[ContentBlock] = []
-        result = CONTENT_BLOCK_REGEX.match(caller())
-        if result is not None:
-            for g in result.groups():
-                content_blocks.append(ContentBlock.model_validate_json(g))
-        else:
-            content_blocks.append(ContentBlock(type=ContentBlockType.text, text=caller()))
+        block_content = caller()
+
+        # Find all content block matches
+        matches = CONTENT_BLOCK_REGEX.finditer(block_content)
+        last_end = 0
+        for match in matches:
+            # If there's text before the match, add it as a text content block
+            if match.start() > last_end:
+                text = block_content[last_end : match.start()].strip()
+                if text:
+                    content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
+
+            # Add the parsed content block
+            content_blocks.append(ContentBlock.model_validate_json(match.group(1)))
+            last_end = match.end()
+
+        # Add any remaining text after the last match
+        if last_end < len(block_content):
+            text = block_content[last_end:].strip()
+            if text:
+                content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
+
+        # If no content blocks were found, treat entire content as text
+        if not content_blocks:
+            content_blocks.append(ContentBlock(type=ContentBlockType.text, text=block_content))
 
         content = content_blocks
+
         if len(content_blocks) == 1:
             block = content_blocks[0]
             if block.type == "text" and block.cache_control is None:

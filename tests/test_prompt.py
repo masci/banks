@@ -8,7 +8,6 @@ from jinja2 import Environment
 from banks import AsyncPrompt, ChatMessage, Prompt
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
-from banks.types import CacheControl, ContentBlock, ContentBlockType
 
 
 def test_canary_word_generation():

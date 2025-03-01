@@ -137,10 +137,6 @@ ignore = [
     # __all__ sorted
     "RUF022",
 ]
-unfixable = [
-    # Don't touch unused imports
-    "F401",
-]
 
 [tool.ruff.lint.isort]
 known-first-party = ["banks"]

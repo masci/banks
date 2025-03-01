@@ -25,5 +25,5 @@ def test_blocks():
     assert len(messages) == 1
     content = messages[0].content
     assert len(content) == 2
-    assert content[0].type == "text"
-    assert content[1].type == "image_url"
+    assert content[0].type == "text"  # type: ignore
+    assert content[1].type == "image_url"  # type: ignore

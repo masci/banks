@@ -1,11 +1,11 @@
 import json
 from typing import cast
 
-import redis
-
 from banks import Prompt
 from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import DEFAULT_VERSION, PromptModel
+
+REDIS_INSTALL_MSG = "redis is not installed. Please install it with `pip install redis`."
 
 
 class RedisPromptRegistry:
@@ -23,6 +23,11 @@ class RedisPromptRegistry:
             redis_url: Redis connection URL
             prefix: Key prefix for storing prompts in Redis
         """
+        try:
+            import redis
+        except ImportError:
+            raise ImportError(REDIS_INSTALL_MSG)
+
         self._redis = redis.from_url(redis_url, decode_responses=True)
         self._prefix = prefix
 

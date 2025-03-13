@@ -9,6 +9,8 @@ as the storage backend. The file contains an index of all prompts with their ass
 metadata and content.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -95,7 +97,7 @@ class FilePromptRegistry:
 
         Writes the current state of the registry to disk.
         """
-        with open(self._index_fpath, "w", encoding="locale") as f:
+        with open(self._index_fpath, "w", encoding="utf-8") as f:
             f.write(self._index.model_dump_json())
 
     def _get_prompt_model(self, name: str | None, version: str | None) -> tuple[int, PromptModel]:

@@ -5,6 +5,8 @@
 Directory-based prompt registry implementation that stores prompts as files.
 """
 
+from __future__ import annotations
+
 import time
 from pathlib import Path
 

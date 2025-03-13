@@ -1,11 +1,13 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+from __future__ import annotations
+
 import base64
 from enum import Enum
 from inspect import Parameter, getdoc, signature
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -44,7 +46,7 @@ class ContentBlock(BaseModel):
     image_url: ImageUrl | None = None
 
 
-ChatMessageContent = list[ContentBlock] | str
+ChatMessageContent = Union[list[ContentBlock], str]
 
 
 class ChatMessage(BaseModel):

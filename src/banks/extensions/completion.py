@@ -7,14 +7,13 @@ from typing import cast
 
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
-from litellm import acompletion, completion
-from litellm.types.utils import Choices, ModelResponse
 from pydantic import ValidationError
 
 from banks.errors import InvalidPromptError, LLMError
 from banks.types import ChatMessage, Tool
 
 SUPPORTED_KWARGS = ("model",)
+LITELLM_INSTALL_MSG = "litellm is not installed. Please install it with `pip install litellm`."
 
 
 class CompletionExtension(Extension):
@@ -88,6 +87,12 @@ class CompletionExtension(Extension):
         """
         Helper callback.
         """
+        try:
+            from litellm import completion
+            from litellm.types.utils import Choices, ModelResponse
+        except ImportError as e:
+            raise ImportError(LITELLM_INSTALL_MSG) from e
+
         messages, tools = self._body_to_messages(caller())
         message_dicts = [m.model_dump() for m in messages]
         tool_dicts = [t.model_dump() for t in tools] or None
@@ -122,6 +127,12 @@ class CompletionExtension(Extension):
         """
         Helper callback.
         """
+        try:
+            from litellm import acompletion
+            from litellm.types.utils import Choices, ModelResponse
+        except ImportError as e:
+            raise ImportError(LITELLM_INSTALL_MSG) from e
+
         messages, tools = self._body_to_messages(caller())
         message_dicts = [m.model_dump() for m in messages]
         tool_dicts = [t.model_dump() for t in tools] or None

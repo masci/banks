@@ -28,6 +28,16 @@ dependencies = [
     "pydantic",
     "deprecated",
     "redis",
+    "eval-type-backport;python_version<'3.10'",
+]
+
+[project.optional-dependencies]
+minimal = [
+    "griffe",
+    "jinja2",
+    "pydantic",
+    "deprecated",
+    "eval-type-backport;python_version<'3.10'",
 ]
 
 [project.urls]
@@ -186,6 +196,8 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "cyclic-import",
+    "import-outside-toplevel",
+    "too-many-locals",
 ]
 max-args = 10
 

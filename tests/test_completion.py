@@ -111,7 +111,7 @@ async def test__do_completion_async_no_prompt(ext):
 
 
 def test__do_completion_no_tools(ext, mocked_choices_no_tools):
-    with mock.patch("banks.extensions.completion.completion") as mocked_completion:
+    with mock.patch("litellm.completion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_no_tools
         ext._do_completion("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(
@@ -121,7 +121,7 @@ def test__do_completion_no_tools(ext, mocked_choices_no_tools):
 
 @pytest.mark.asyncio
 async def test__do_completion_async_no_tools(ext, mocked_choices_no_tools):
-    with mock.patch("banks.extensions.completion.acompletion") as mocked_completion:
+    with mock.patch("litellm.acompletion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_no_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(
@@ -139,7 +139,7 @@ def test__do_completion_with_tools(ext, mocked_choices_with_tools):
             [mock.MagicMock(), mock.MagicMock()],
         )
     )
-    with mock.patch("banks.extensions.completion.completion") as mocked_completion:
+    with mock.patch("litellm.completion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         ext._do_completion("test-model", lambda: '{"role":"user", "content":"hello"}')
         calls = mocked_completion.call_args_list
@@ -160,7 +160,7 @@ async def test__do_completion_async_with_tools(ext, mocked_choices_with_tools, t
             tools,
         )
     )
-    with mock.patch("banks.extensions.completion.acompletion") as mocked_completion:
+    with mock.patch("litellm.acompletion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         calls = mocked_completion.call_args_list
@@ -174,7 +174,7 @@ async def test__do_completion_async_with_tools(ext, mocked_choices_with_tools, t
 
 def test__do_completion_with_tools_malformed(ext, mocked_choices_with_tools):
     mocked_choices_with_tools[0].message.tool_calls[0].function.name = None
-    with mock.patch("banks.extensions.completion.completion") as mocked_completion:
+    with mock.patch("litellm.completion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         with pytest.raises(LLMError):
             ext._do_completion("test-model", lambda: '{"role":"user", "content":"hello"}')
@@ -183,7 +183,7 @@ def test__do_completion_with_tools_malformed(ext, mocked_choices_with_tools):
 @pytest.mark.asyncio
 async def test__do_completion_async_with_tools_malformed(ext, mocked_choices_with_tools):
     mocked_choices_with_tools[0].message.tool_calls[0].function.name = None
-    with mock.patch("banks.extensions.completion.acompletion") as mocked_completion:
+    with mock.patch("litellm.acompletion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_with_tools
         with pytest.raises(LLMError):
             await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
@@ -191,7 +191,7 @@ async def test__do_completion_async_with_tools_malformed(ext, mocked_choices_wit
 
 @pytest.mark.asyncio
 async def test__do_completion_async_no_prompt_no_tools(ext, mocked_choices_no_tools):
-    with mock.patch("banks.extensions.completion.acompletion") as mocked_completion:
+    with mock.patch("litellm.acompletion") as mocked_completion:
         mocked_completion.return_value.choices = mocked_choices_no_tools
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         mocked_completion.assert_called_with(

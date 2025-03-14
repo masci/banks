@@ -196,6 +196,8 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "cyclic-import",
+    "import-outside-toplevel",
+    "too-many-locals",
 ]
 max-args = 10
 

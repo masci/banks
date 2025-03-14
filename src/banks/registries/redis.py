@@ -27,8 +27,8 @@ class RedisPromptRegistry:
         """
         try:
             import redis
-        except ImportError:
-            raise ImportError(REDIS_INSTALL_MSG)
+        except ImportError as e:
+            raise ImportError(REDIS_INSTALL_MSG) from e
 
         self._redis = redis.from_url(redis_url, decode_responses=True)
         self._prefix = prefix

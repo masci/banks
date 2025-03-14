@@ -90,8 +90,8 @@ class CompletionExtension(Extension):
         try:
             from litellm import completion
             from litellm.types.utils import Choices, ModelResponse
-        except ImportError:
-            raise ImportError(LITELLM_INSTALL_MSG)
+        except ImportError as e:
+            raise ImportError(LITELLM_INSTALL_MSG) from e
 
         messages, tools = self._body_to_messages(caller())
         message_dicts = [m.model_dump() for m in messages]
@@ -130,8 +130,8 @@ class CompletionExtension(Extension):
         try:
             from litellm import acompletion
             from litellm.types.utils import Choices, ModelResponse
-        except ImportError:
-            raise ImportError(LITELLM_INSTALL_MSG)
+        except ImportError as e:
+            raise ImportError(LITELLM_INSTALL_MSG) from e
 
         messages, tools = self._body_to_messages(caller())
         message_dicts = [m.model_dump() for m in messages]

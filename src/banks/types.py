@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import base64
+import re
 from enum import Enum
 from inspect import Parameter, getdoc, signature
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing_extensions import Self
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
+CONTENT_BLOCK_REGEX = re.compile(r"<content_block>((?s:.)*)<\/content_block>")
 
 
 class ContentBlockType(str, Enum):
@@ -133,3 +135,43 @@ class Tool(BaseModel):
             ),
             import_path=f"{func.__module__}.{func.__qualname__}",
         )
+
+
+def chat_message_from_text(role: str, content: str) -> ChatMessage:
+    """
+    Helper callback.
+    """
+    content_blocks: list[ContentBlock] = []
+
+    # Find all content block matches
+    matches = CONTENT_BLOCK_REGEX.finditer(content)
+    last_end = 0
+    for match in matches:
+        # If there's text before the match, add it as a text content block
+        if match.start() > last_end:
+            text = content[last_end : match.start()].strip()
+            if text:
+                content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
+
+        # Add the parsed content block
+        content_blocks.append(ContentBlock.model_validate_json(match.group(1)))
+        last_end = match.end()
+
+    # Add any remaining text after the last match
+    if last_end < len(content):
+        text = content[last_end:].strip()
+        if text:
+            content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
+
+    # If no content blocks were found, treat entire content as text
+    if not content_blocks:
+        content_blocks.append(ContentBlock(type=ContentBlockType.text, text=content))
+
+    final_content = content_blocks
+
+    if len(content_blocks) == 1:
+        block = content_blocks[0]
+        if block.type == "text" and block.cache_control is None:
+            final_content = block.text or ""
+
+    return ChatMessage(role=role, content=final_content)

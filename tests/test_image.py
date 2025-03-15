@@ -1,7 +1,9 @@
 import json
+from pathlib import Path
 
 import pytest
 
+from banks import Prompt
 from banks.filters.image import _is_url, image
 
 
@@ -74,3 +76,14 @@ def test_image_content_block_structure():
     assert content_block["type"] == "image_url"
     assert isinstance(content_block["image_url"], dict)
     assert "url" in content_block["image_url"]
+
+
+def test_image_no_chat_block():
+    here = Path(__file__).parent
+    prompt = Prompt("{{ test }} and {{ another | image }}")
+    messages = prompt.chat_messages({"test": "hello world", "another": str(here / "data" / "1x1.png")})
+    assert len(messages) == 1
+    message = messages[0]
+    assert len(message.content) == 2
+    assert message.content[0].text == "hello world and"
+    assert message.content[1].type == "image_url"

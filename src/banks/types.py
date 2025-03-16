@@ -53,7 +53,7 @@ ChatMessageContent = Union[list[ContentBlock], str]
 
 class ChatMessage(BaseModel):
     role: str
-    content: str | ChatMessageContent
+    content: ChatMessageContent
     tool_call_id: str | None = None
     name: str | None = None
 
@@ -168,10 +168,5 @@ def chat_message_from_text(role: str, content: str) -> ChatMessage:
         content_blocks.append(ContentBlock(type=ContentBlockType.text, text=content))
 
     final_content = content_blocks
-
-    if len(content_blocks) == 1:
-        block = content_blocks[0]
-        if block.type == "text" and block.cache_control is None:
-            final_content = block.text or ""
 
     return ChatMessage(role=role, content=final_content)

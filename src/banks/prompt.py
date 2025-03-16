@@ -11,6 +11,7 @@ try:
 except ImportError:  # pragma: no cover
     from typing_extensions import Self
 
+from jinja2 import meta
 from pydantic import BaseModel, ValidationError
 
 from .cache import DefaultCache, RenderCache
@@ -77,6 +78,11 @@ class BasePrompt:
     @property
     def version(self) -> str | None:
         return self._version
+
+    @property
+    def variables(self) -> set[str]:
+        ast = env.parse(self.raw)
+        return meta.find_undeclared_variables(ast)
 
     def canary_leaked(self, text: str) -> bool:
         """Returns whether the canary word is present in `text`, signalling the prompt might have leaked."""

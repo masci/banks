@@ -119,3 +119,9 @@ def test_chat_message_no_chat_tag():
     text = "This is raw text"
     p = Prompt(text=text)
     assert p.chat_messages() == [ChatMessage(role="user", content=text)]
+
+
+def test_variables():
+    prompt_text = "This is a {{ first_variable.content }} and this is {{ another_variable }}"
+    p = Prompt(text=prompt_text)
+    assert p.variables == {"another_variable", "first_variable"}

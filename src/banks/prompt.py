@@ -18,7 +18,7 @@ from .cache import DefaultCache, RenderCache
 from .config import config
 from .env import env
 from .errors import AsyncError
-from .types import ChatMessage
+from .types import ChatMessage, chat_message_from_text
 from .utils import generate_canary_word
 
 DEFAULT_VERSION = "0"
@@ -145,8 +145,8 @@ class Prompt(BasePrompt):
 
         if not messages:
             # fallback, if there was no {% chat %} block in the template,
-            # put the text into a single user message
-            messages.append(ChatMessage(role="user", content=rendered))
+            # try to build a list of messages for the role "user"
+            messages.append(chat_message_from_text(role="user", content=rendered))
 
         return messages
 

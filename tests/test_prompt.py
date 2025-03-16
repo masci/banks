@@ -5,7 +5,7 @@ import pytest
 import regex as re
 from jinja2 import Environment
 
-from banks import AsyncPrompt, ChatMessage, Prompt
+from banks import AsyncPrompt, Prompt
 from banks.cache import DefaultCache
 from banks.errors import AsyncError
 
@@ -88,13 +88,13 @@ def test_chat_messages():
     assert (
         p.text()
         == """
-{"role":"system","content":"You are a helpful assistant."}
+{"role":"system","content":[{"type":"text","text":"You are a helpful assistant."}]}
 
 {"role":"user","content":[{"type":"text","cache_control":{"type":"ephemeral"},"text":"Hello, <bold>how are you?</bold>"}]}
 
-{"role":"system","content":"I'm doing well, thank you! How can I assist you today?"}
+{"role":"system","content":[{"type":"text","text":"I'm doing well, thank you! How can I assist you today?"}]}
 
-{"role":"user","content":"Can you explain quantum computing?"}
+{"role":"user","content":[{"type":"text","text":"Can you explain quantum computing?"}]}
 
 Some random text.
 """.strip()
@@ -103,7 +103,7 @@ Some random text.
     messages = p.chat_messages()
     assert len(messages) == 4
     assert messages[3].role == "user"
-    assert messages[3].content == "Can you explain quantum computing?"
+    assert messages[3].content[0].text == "Can you explain quantum computing?"
 
 
 def test_chat_messages_cached():
@@ -118,7 +118,10 @@ def test_chat_messages_cached():
 def test_chat_message_no_chat_tag():
     text = "This is raw text"
     p = Prompt(text=text)
-    assert p.chat_messages() == [ChatMessage(role="user", content=text)]
+    assert len(p.chat_messages()) == 1
+    assert len(p.chat_messages()[0].content) == 1
+    assert p.chat_messages()[0].content[0].type == "text"
+    assert p.chat_messages()[0].content[0].text == "This is raw text"
 
 
 def test_variables():

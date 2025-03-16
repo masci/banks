@@ -6,7 +6,7 @@ import re
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
 
-from banks.types import ChatMessage, ContentBlock, ContentBlockType
+from banks.types import chat_message_from_text
 
 SUPPORTED_TYPES = ("system", "user", "assistant")
 CONTENT_BLOCK_REGEX = re.compile(r"<content_block>((?s:.)*)<\/content_block>")
@@ -69,39 +69,5 @@ class ChatExtension(Extension):
         """
         Helper callback.
         """
-        content_blocks: list[ContentBlock] = []
-        block_content = caller()
-
-        # Find all content block matches
-        matches = CONTENT_BLOCK_REGEX.finditer(block_content)
-        last_end = 0
-        for match in matches:
-            # If there's text before the match, add it as a text content block
-            if match.start() > last_end:
-                text = block_content[last_end : match.start()].strip()
-                if text:
-                    content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
-
-            # Add the parsed content block
-            content_blocks.append(ContentBlock.model_validate_json(match.group(1)))
-            last_end = match.end()
-
-        # Add any remaining text after the last match
-        if last_end < len(block_content):
-            text = block_content[last_end:].strip()
-            if text:
-                content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
-
-        # If no content blocks were found, treat entire content as text
-        if not content_blocks:
-            content_blocks.append(ContentBlock(type=ContentBlockType.text, text=block_content))
-
-        content = content_blocks
-
-        if len(content_blocks) == 1:
-            block = content_blocks[0]
-            if block.type == "text" and block.cache_control is None:
-                content = block.text or ""
-
-        cm = ChatMessage(role=role, content=content)
+        cm = chat_message_from_text(role=role, content=caller())
         return cm.model_dump_json(exclude_none=True) + "\n"

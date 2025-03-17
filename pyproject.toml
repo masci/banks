@@ -54,6 +54,8 @@ dependencies = [
     "mkdocstrings[python]",
     "simplemma",
     "eval-type-backport;python_version<'3.10'",
+    "redis",
+    "litellm",
 ]
 
 [tool.hatch.envs.default.scripts]

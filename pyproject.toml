@@ -24,20 +24,15 @@ classifiers = [
 dependencies = [
     "griffe",
     "jinja2",
-    "litellm",
     "pydantic",
     "deprecated",
-    "redis",
     "eval-type-backport;python_version<'3.10'",
 ]
 
 [project.optional-dependencies]
-minimal = [
-    "griffe",
-    "jinja2",
-    "pydantic",
-    "deprecated",
-    "eval-type-backport;python_version<'3.10'",
+all = [
+    "litellm",
+    "redis",
 ]
 
 [project.urls]

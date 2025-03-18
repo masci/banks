@@ -43,6 +43,9 @@ Docs are available [here](https://masci.github.io/banks/).
 
 ```console
 pip install banks
+
+# install optional deps; litellm, redis
+pip install "banks[all]"
 ```
 
 ## Features

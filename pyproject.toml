@@ -24,20 +24,15 @@ classifiers = [
 dependencies = [
     "griffe",
     "jinja2",
-    "litellm",
     "pydantic",
     "deprecated",
-    "redis",
     "eval-type-backport;python_version<'3.10'",
 ]
 
 [project.optional-dependencies]
-minimal = [
-    "griffe",
-    "jinja2",
-    "pydantic",
-    "deprecated",
-    "eval-type-backport;python_version<'3.10'",
+all = [
+    "litellm",
+    "redis",
 ]
 
 [project.urls]
@@ -59,6 +54,8 @@ dependencies = [
     "mkdocstrings[python]",
     "simplemma",
     "eval-type-backport;python_version<'3.10'",
+    "redis",
+    "litellm",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -73,7 +70,7 @@ python = ["3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.lint]
 detached = false                                          # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
-dependencies = ["mypy>=1.0.0", "ruff>=0.0.243", "pylint"]
+dependencies = ["mypy>=1.0.0", "ruff>=0.0.243", "pylint", "redis", "litellm"]
 
 [tool.hatch.envs.lint.scripts]
 check = ["ruff format --check {args}", "ruff check {args:.}"]

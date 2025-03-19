@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from banks.types import ImageUrl
+from banks.types import ImageUrl, InputAudio
 
 
 def test_image_url_from_base64():
@@ -39,3 +39,23 @@ def test_image_url_from_path_nonexistent():
     """Test creating ImageUrl from a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
         ImageUrl.from_path(Path("nonexistent.jpg"))
+
+
+def test_input_audio_from_path(tmp_path):
+    """Test creating InputAudio from a file path"""
+    # Create a temporary test image file
+    test_audio = tmp_path / "test_audio.wav"
+    test_content = b"fake audio data"
+    test_audio.write_bytes(test_content)
+
+    input_audio = InputAudio.from_path(test_audio)
+
+    assert input_audio.format == "wav"
+    decoded_content = base64.b64decode(input_audio.data)
+    assert decoded_content == test_content
+
+
+def test_input_audio_from_path_nonexistent():
+    """Test creating ImageUrl from a nonexistent file path"""
+    with pytest.raises(FileNotFoundError):
+        InputAudio.from_path(Path("nonexistent.wav"))

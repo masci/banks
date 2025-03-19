@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -47,21 +47,21 @@ jobs:
       - name: Install Hatch
         run: pip install --upgrade hatch
 
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.13'
         name: Lint
         run: hatch run lint:all
 
       - name: Run tests
         run: hatch run cov -m"not e2e"
 
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.13'
         name: End-to-end
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: hatch run test -m"e2e"
 
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.13'
         name: Report Coveralls
         uses: coverallsapp/github-action@v2
 
@@ -72,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -95,7 +95,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4

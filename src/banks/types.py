@@ -8,7 +8,7 @@ import re
 from enum import Enum
 from inspect import Parameter, getdoc, signature
 from pathlib import Path
-from typing import Callable, Literal, Union
+from typing import Callable, Literal, Union, cast
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -42,15 +42,19 @@ class ImageUrl(BaseModel):
             return cls.from_base64("image/jpeg", base64.b64encode(image_file.read()).decode("utf-8"))
 
 
+AudioFormat = Literal["mp3", "wav", "m4a", "webm", "ogg", "flac"]
+
+
 class InputAudio(BaseModel):
     data: str
-    format: Literal["mp3", "wav", "m4a", "webm", "ogg", "flac"]
+    format: AudioFormat
 
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
         with open(file_path, "rb") as audio_file:
             encoded_str = base64.b64encode(audio_file.read()).decode("utf-8")
-            return cls(data=encoded_str, format=file_path.suffix[1:])
+            file_format = cast(AudioFormat, file_path.suffix[1:])
+            return cls(data=encoded_str, format=file_format)
 
 
 class ContentBlock(BaseModel):

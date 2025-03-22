@@ -41,5 +41,5 @@ def test_audio_no_chat_block(empty_wav):
     assert len(messages) == 1
     message = messages[0]
     assert len(message.content) == 2
-    assert message.content[0].text == "hello world and"
-    assert message.content[1].type == "audio"
+    assert message.content[0].text == "hello world and"  # type: ignore
+    assert message.content[1].type == "audio"  # type:ignore

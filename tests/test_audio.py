@@ -12,6 +12,7 @@ def empty_wav():
     here = Path(__file__).parent
     return here / "data" / "empty.wav"
 
+
 def test_audio_with_file_path(empty_wav):
     """Test audio filter with a file path input"""
     result = audio(str(empty_wav))

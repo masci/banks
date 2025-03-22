@@ -7,10 +7,4 @@ from .image import image
 from .lemmatize import lemmatize
 from .tool import tool
 
-__all__ = (
-    "cache_control",
-    "image",
-    "lemmatize",
-    "tool",
-    "audio"
-)
+__all__ = ("cache_control", "image", "lemmatize", "tool", "audio")

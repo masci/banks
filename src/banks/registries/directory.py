@@ -68,12 +68,12 @@ class DirectoryPromptRegistry:
         Raises:
             ValueError: If directory_path is not a directory
         """
-        directory_path = Path(directory_path)
-        if not directory_path.is_dir():
+        dir_path = Path(directory_path)
+        if not dir_path.is_dir():
             msg = "{directory_path} must be a directory."
             raise ValueError(msg)
 
-        self._path = directory_path
+        self._path = dir_path
         self._index_path = self._path / DEFAULT_INDEX_NAME
         if not self._index_path.exists() or force_reindex:
             self._scan()

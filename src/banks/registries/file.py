@@ -32,7 +32,7 @@ class PromptRegistryIndex(BaseModel):
 class FilePromptRegistry:
     """A prompt registry storing all prompt data in a single JSON file."""
 
-    def __init__(self, registry_index: Path) -> None:
+    def __init__(self, registry_index: str) -> None:
         """
         Initialize the file prompt registry.
 
@@ -42,7 +42,7 @@ class FilePromptRegistry:
         Note:
             Creates parent directories if they don't exist.
         """
-        self._index_fpath: Path = registry_index
+        self._index_fpath: Path = Path(registry_index)
         self._index: PromptRegistryIndex = PromptRegistryIndex(prompts=[])
         try:
             self._index = PromptRegistryIndex.model_validate_json(self._index_fpath.read_text())

@@ -45,7 +45,7 @@ class FilePromptRegistry:
         self._index_fpath: Path = Path(registry_index)
         self._index: PromptRegistryIndex = PromptRegistryIndex(prompts=[])
         try:
-            self._index = PromptRegistryIndex.model_validate_json(self._index_fpath.read_text())
+            self._index = PromptRegistryIndex.model_validate_json(self._index_fpath.read_text(encoding="utf-8"))
         except FileNotFoundError:
             # init the user data folder
             self._index_fpath.parent.mkdir(parents=True, exist_ok=True)

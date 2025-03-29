@@ -16,7 +16,7 @@ from typing_extensions import Self
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
-CONTENT_BLOCK_REGEX = re.compile(r"<content_block>((?s:.)*)<\/content_block>")
+CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>).)*)")
 
 
 class ContentBlockType(str, Enum):
@@ -162,23 +162,18 @@ def chat_message_from_text(role: str, content: str) -> ChatMessage:
 
     # Find all content block matches
     matches = CONTENT_BLOCK_REGEX.finditer(content)
-    last_end = 0
     for match in matches:
-        # If there's text before the match, add it as a text content block
-        if match.start() > last_end:
-            text = content[last_end : match.start()].strip()
+        if match.group(1):
+            # content block match
+            content_block_json_str = (
+                match.group(1).strip().removeprefix("<content_block>").removesuffix("</content_block>")
+            )
+            content_blocks.append(ContentBlock.model_validate_json(content_block_json_str))
+        elif match.group(2):
+            # plain-text match
+            text = match.group(2).strip()
             if text:
                 content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
-
-        # Add the parsed content block
-        content_blocks.append(ContentBlock.model_validate_json(match.group(1)))
-        last_end = match.end()
-
-    # Add any remaining text after the last match
-    if last_end < len(content):
-        text = content[last_end:].strip()
-        if text:
-            content_blocks.append(ContentBlock(type=ContentBlockType.text, text=text))
 
     # If no content blocks were found, treat entire content as text
     if not content_blocks:

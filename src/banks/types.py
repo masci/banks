@@ -165,7 +165,9 @@ def chat_message_from_text(role: str, content: str) -> ChatMessage:
     for match in matches:
         if match.group(1):
             # content block match
-            content_block_json_str = match.group(1).strip().lstrip("<content_block>").rstrip("</content_block>")
+            content_block_json_str = (
+                match.group(1).strip().removeprefix("<content_block>").removesuffix("</content_block>")
+            )
             content_blocks.append(ContentBlock.model_validate_json(content_block_json_str))
         elif match.group(2):
             # plain-text match

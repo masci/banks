@@ -37,9 +37,9 @@ all = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/banks#readme"
-Issues = "https://github.com/unknown/banks/issues"
-Source = "https://github.com/unknown/banks"
+Documentation = "https://github.com/masci/banks#readme"
+Issues = "https://github.com/masci/banks/issues"
+Source = "https://github.com/masci/banks"
 
 [tool.hatch.version]
 path = "src/banks/__about__.py"

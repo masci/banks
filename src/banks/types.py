@@ -18,6 +18,7 @@ from .utils import parse_params_from_docstring, python_type_to_jsonschema
 # pylint: disable=invalid-name
 CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>).)*)")
 
+
 class ContentBlockType(str, Enum):
     text = "text"
     image_url = "image_url"

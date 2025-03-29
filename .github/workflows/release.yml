@@ -23,3 +23,9 @@ jobs:
         run: |
           hatch build
           hatch publish -y
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*"
+          generateReleaseNotes: true

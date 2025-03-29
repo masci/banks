@@ -252,10 +252,10 @@ from a directory in the file system. Suppose you have a folder called `templates
 and the folder contains a file called `blog.jinja`. You can load the prompt template like this:
 
 ```py
-from banks import Prompt
-from banks.registries import DirectoryTemplateRegistry
+from banks.registries import directory
 
-registry = DirectoryTemplateRegistry(populated_dir)
+populated_dir="./templates/"
+registry = directory.DirectoryTemplateRegistry(populated_dir)
 prompt = registry.get(name="blog")
 
 print(prompt.text({"topic": "retrogame computing"}))

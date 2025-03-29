@@ -57,7 +57,7 @@ class PromptFileIndex(BaseModel):
 class DirectoryPromptRegistry:
     """Registry that stores prompts as files in a directory structure."""
 
-    def __init__(self, directory_path: Path, *, force_reindex: bool = False):
+    def __init__(self, directory_path: str, *, force_reindex: bool = False):
         """
         Initialize the directory prompt registry.
 
@@ -68,11 +68,12 @@ class DirectoryPromptRegistry:
         Raises:
             ValueError: If directory_path is not a directory
         """
-        if not directory_path.is_dir():
+        dir_path = Path(directory_path)
+        if not dir_path.is_dir():
             msg = "{directory_path} must be a directory."
             raise ValueError(msg)
 
-        self._path = directory_path
+        self._path = dir_path
         self._index_path = self._path / DEFAULT_INDEX_NAME
         if not self._index_path.exists() or force_reindex:
             self._scan()

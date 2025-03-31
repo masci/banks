@@ -28,6 +28,7 @@ dependencies = [
     "pydantic",
     "deprecated",
     "eval-type-backport;python_version<'3.10'",
+    "platformdirs",
 ]
 
 [project.optional-dependencies]

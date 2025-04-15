@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import re
 
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
@@ -9,7 +8,6 @@ from jinja2.ext import Extension
 from banks.types import chat_message_from_text
 
 SUPPORTED_TYPES = ("system", "user", "assistant")
-CONTENT_BLOCK_REGEX = re.compile(r"<content_block>((?s:.)*)<\/content_block>")
 
 
 class ChatExtension(Extension):
@@ -52,8 +50,8 @@ class ChatExtension(Extension):
             raise TemplateSyntaxError(error_msg, lineno)
 
         if attr_value.value not in SUPPORTED_TYPES:
-            types = ",".join(SUPPORTED_TYPES)
-            msg = f"Unknown role type '{attr_value}', use one of ({types})"
+            types = ", ".join(SUPPORTED_TYPES)
+            msg = f"Unknown role type '{attr_value.value}', use one of ({types})"
             raise TemplateSyntaxError(msg, lineno)
 
         # Pass the role name to the CallBlock node

@@ -92,8 +92,14 @@ print(p.chat_messages({"persona": "helpful assistant"}))
 
 # Output:
 # [
-#   ChatMessage(role='system', content='You are a helpful assistant.\n'),
-#   ChatMessage(role='user', content='Hello, how are you?\n')
+#   ChatMessage(role='system', content=[
+#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='You are a helpful assistant.', 
+#                  image_url=None, input_audio=None)
+#   ], tool_call_id=None, name=None), 
+#   ChatMessage(role='user', content=[
+#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='Hello, how are you?', 
+#                  image_url=None, input_audio=None)
+#   ], tool_call_id=None, name=None)
 # ]
 ```
 

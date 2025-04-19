@@ -16,7 +16,7 @@ from typing_extensions import Self
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
-CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>).)*)")
+CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>)[\s\S])*)")
 
 
 class ContentBlockType(str, Enum):

@@ -27,7 +27,7 @@ DEFAULT_INDEX_NAME = "index.json"
 class PromptFile(PromptModel):
     """Model representing a prompt file stored on disk."""
 
-    path: Path = Field(exclude=True)
+    path: Path | None = Field(default=None, exclude=True)
 
     @classmethod
     def from_prompt_path(cls: type[Self], prompt: Prompt, path: Path) -> Self:
@@ -101,7 +101,7 @@ class DirectoryPromptRegistry:
         """
         version = version or DEFAULT_VERSION
         for pf in self._index.files:
-            if pf.name == name and pf.version == version and pf.path.exists():
+            if pf.name == name and pf.version == version and pf.path and pf.path.exists():
                 return Prompt(**pf.model_dump())
         raise PromptNotFoundError
 
@@ -135,6 +135,10 @@ class DirectoryPromptRegistry:
     def _load(self):
         """Load the prompt index from disk."""
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
+        # Reconstruct the file paths since they're excluded from serialization
+        for pf in self._index.files:
+            if pf.path is None:
+                pf.path = self._path / f"{pf.name}.{pf.version}.jinja"
 
     def _save(self):
         """Save the prompt index to disk."""

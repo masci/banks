@@ -32,10 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-all = [
-    "litellm",
-    "redis",
-]
+all = ["litellm", "redis"]
 
 [project.urls]
 Documentation = "https://github.com/masci/banks#readme"
@@ -71,7 +68,7 @@ docs = "mkdocs {args:build}"
 python = ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
 [tool.hatch.envs.lint]
-detached = false                                          # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
+detached = false                                                              # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
 dependencies = ["mypy>=1.0.0", "ruff>=0.0.243", "pylint", "redis", "litellm"]
 
 [tool.hatch.envs.lint.scripts]
@@ -147,6 +144,8 @@ ignore = [
     "PLR2004",
     # __all__ sorted
     "RUF022",
+    # Conditional imports
+    "PLC0415",
 ]
 
 [tool.ruff.lint.isort]
@@ -180,11 +179,7 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 
 [[tool.mypy.overrides]]
-module = [
-    "litellm.*",
-    "simplemma.*",
-    "deprecated.*"
-]
+module = ["litellm.*", "simplemma.*", "deprecated.*"]
 ignore_missing_imports = true
 
 [tool.pylint]
@@ -202,11 +197,9 @@ max-args = 10
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
-markers = [
-    "e2e",
-]
-filterwarnings =[
+markers = ["e2e"]
+filterwarnings = [
     # Dilence litellm warning coming from their Pydantic config.
     # This assumes our use of Pydantic is correct :)
-    "ignore:Support for class-based `config` is deprecated"
+    "ignore:Support for class-based `config` is deprecated",
 ]

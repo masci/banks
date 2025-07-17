@@ -4,11 +4,13 @@ from typing import Dict, Any, Union, Optional
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
 
+
 def _deserialize(string: str) -> Optional[dict]:
     try:
         return json.loads(string)
     except json.JSONDecodeError:
         return
+
 
 def _prepare_dictionary(value: Union[str, BaseModel, Dict[str, Any]]):
     root_tag = "input"
@@ -28,6 +30,7 @@ def _prepare_dictionary(value: Union[str, BaseModel, Dict[str, Any]]):
     else:
         raise ValueError(f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}")
     return model, root_tag
+
 
 def xml(value: Union[str, BaseModel, Dict[str, Any]]) -> str:
     """
@@ -49,6 +52,5 @@ def xml(value: Union[str, BaseModel, Dict[str, Any]]) -> str:
     for k, v in model.items():
         sub = ET.SubElement(xml_model, k)
         sub.text = str(v)
-    xml_str = ET.tostring(xml_model, encoding='unicode')
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', '')
-
+    xml_str = ET.tostring(xml_model, encoding="unicode")
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")

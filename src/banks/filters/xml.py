@@ -24,11 +24,14 @@ def _prepare_dictionary(value: Union[str, BaseModel, dict[str, Any]]):
         model = value.model_dump()
         root_tag = value.__class__.__name__.lower()
     elif isinstance(value, dict):
+        model = value.copy()
         for k in value.keys():
             if not isinstance(k, str):
-                v = value.pop(k)
-                value[str(k)] = v
-        model = value
+                key = str(k)
+                if isinstance(k, (int, float)):
+                    key = "_" + key
+                v = model.pop(k)
+                model[key.lower()] = v
     else:
         msg = f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}"
         raise ValueError(msg)

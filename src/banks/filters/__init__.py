@@ -6,5 +6,6 @@ from .cache_control import cache_control
 from .image import image
 from .lemmatize import lemmatize
 from .tool import tool
+from .xml import xml
 
-__all__ = ("cache_control", "image", "lemmatize", "tool", "audio")
+__all__ = ("cache_control", "image", "lemmatize", "tool", "audio", "xml")

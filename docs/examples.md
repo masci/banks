@@ -3,6 +3,7 @@
 - [Create a blog writing prompt](#create-a-blog-writing-prompt)
 - [Create a summarizer prompt](#create-a-summarizer-prompt)
 - [Lemmatize text while processing a template](#lemmatize-text-while-processing-a-template)
+- [Convert a JSON-like object into XML while processing the template](#convert-a-json-like-object-into-xml-while-processing-the-template)
 - [Use a LLM to generate a text while rendering a prompt](#use-a-llm-to-generate-a-text-while-rendering-a-prompt)
 - [Render a prompt template as chat messages](#render-a-prompt-template-as-chat-messages)
 - [Use prompt caching from Anthropic](#use-prompt-caching-from-anthropic)
@@ -133,6 +134,57 @@ the output would be:
 Summarize the following document:
 the cat be run
 Summary:
+```
+
+## Convert a JSON-like object into XML while processing the template
+
+Banks has built-in support for filtering JSON-like objects (Pydantic `BaseModel` subclasses, dictionaries, deserializable strings) and returning an XML string. 
+
+Here is an example of how you can use it:
+
+```python
+from banks import Prompt
+from pydantic import BaseModel
+from typing import Dict
+
+prompt_template = """
+Please extract the contact details from this user:
+
+{{ data | to_xml }}
+
+Contact details:
+"""
+
+class User(BaseModel):
+    username: str
+    account_id: str
+    registered_at: str
+    email: str
+    phone_number: str
+    social_media_accounts: Dict[str, str]
+
+user = User(username="example", account_id="0000", registered_at="10-25-2024", email="example@email.com", phone_number="0123456789", social_media_accounts={"BlueSky": "@example.com"})
+
+p = Prompt(prompt_template)
+print(p.text({"data": user}))
+```
+
+This will output:
+
+```text
+Please extract the contact details from this user:
+
+<user>
+	<username>example</username>
+	<account_id>0000</account_id>
+	<registered_at>10-25-2024</registered_at>
+	<email>example@email.com</email>
+	<phone_number>0123456789</phone_number>
+	<social_media_accounts>{'BlueSky': '@example.com'}</social_media_accounts>
+</user>
+
+
+Contact details:
 ```
 
 ## Use a LLM to generate a text while rendering a prompt

@@ -1,23 +1,25 @@
 import json
-from pydantic import BaseModel
-from typing import Dict, Any, Union, Optional
 import xml.etree.ElementTree as ET
+from typing import Any, Optional, Union
 from xml.dom.minidom import parseString
+
+from pydantic import BaseModel
 
 
 def _deserialize(string: str) -> Optional[dict]:
     try:
         return json.loads(string)
     except json.JSONDecodeError:
-        return
+        return None
 
 
-def _prepare_dictionary(value: Union[str, BaseModel, Dict[str, Any]]):
+def _prepare_dictionary(value: Union[str, BaseModel, dict[str, Any]]):
     root_tag = "input"
     if isinstance(value, str):
-        model: Optional[Dict[str, Any]] = _deserialize(value)
+        model: Optional[dict[str, Any]] = _deserialize(value)
         if model is None:
-            raise ValueError(f"{value} is not deserializable")
+            msg = f"{value} is not deserializable"
+            raise ValueError(msg)
     elif isinstance(value, BaseModel):
         model = value.model_dump()
         root_tag = value.__class__.__name__.lower()
@@ -28,13 +30,14 @@ def _prepare_dictionary(value: Union[str, BaseModel, Dict[str, Any]]):
                 value[str(k)] = v
         model = value
     else:
-        raise ValueError(f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}")
+        msg = f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}"
+        raise ValueError(msg)
     return model, root_tag
 
 
-def xml(value: Union[str, BaseModel, Dict[str, Any]]) -> str:
+def xml(value: Union[str, BaseModel, dict[str, Any]]) -> str:
     """
-    Convert a Pydatic model, a deserializable string or a dictionary into an XML string.
+    Convert a Pydantic model, a deserializable string or a dictionary into an XML string.
 
     Example:
         ```jinja
@@ -53,4 +56,4 @@ def xml(value: Union[str, BaseModel, Dict[str, Any]]) -> str:
         sub = ET.SubElement(xml_model, k)
         sub.text = str(v)
     xml_str = ET.tostring(xml_model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318

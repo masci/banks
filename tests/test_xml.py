@@ -1,8 +1,9 @@
-import pytest
 import xml.etree.ElementTree as ET
+from typing import Any
 from xml.dom.minidom import parseString
+
+import pytest
 from pydantic import BaseModel
-from typing import Tuple, Dict, Any
 
 from banks.filters.xml import xml
 
@@ -15,7 +16,7 @@ def xml_string_from_basemodel() -> str:
     name = ET.SubElement(model, "name")
     name.text = "John Doe"
     xml_str = ET.tostring(model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318
 
 
 @pytest.fixture
@@ -26,11 +27,11 @@ def xml_string_from_other() -> str:
     name = ET.SubElement(model, "name")
     name.text = "John Doe"
     xml_str = ET.tostring(model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318
 
 
 @pytest.fixture
-def starting_value() -> Tuple[BaseModel, Dict[str, Any], str]:
+def starting_value() -> tuple[BaseModel, dict[str, Any], str]:
     class Person(BaseModel):
         age: int
         name: str
@@ -40,7 +41,7 @@ def starting_value() -> Tuple[BaseModel, Dict[str, Any], str]:
 
 
 def test_xml_filter(
-    xml_string_from_basemodel: str, xml_string_from_other: str, starting_value: Tuple[BaseModel, Dict[str, Any], str]
+    xml_string_from_basemodel: str, xml_string_from_other: str, starting_value: tuple[BaseModel, dict[str, Any], str]
 ) -> None:
     model, dictionary, string = starting_value
     assert xml(model) == xml_string_from_basemodel

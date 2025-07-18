@@ -57,6 +57,23 @@ def test_image_with_file_path(tmp_path):
     assert content_block["image_url"]["url"].startswith("data:image/jpeg;base64,")
 
 
+def test_image_base64(tmp_path):
+    """Test image filter with a binary input"""
+    test_image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABMgA"
+    result = image(test_image)
+
+    # Verify the content block wrapper
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    # Parse the JSON content
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+
+    assert content_block["type"] == "image_url"
+    assert content_block["image_url"]["url"].startswith("data:image/png;base64,")
+
+
 def test_image_with_nonexistent_file():
     """Test image filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):

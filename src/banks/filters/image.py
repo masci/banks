@@ -1,15 +1,25 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
 from banks.types import ContentBlock, ImageUrl
 
+BASE64_PATH_REGEX = re.compile(r"image\/.*;base64,.*")
+
 
 def _is_url(string: str) -> bool:
     result = urlparse(string)
-    return all([result.scheme, result.netloc])
+    if not result.scheme:
+        return False
+
+    if not result.netloc:
+        # The only valid format when netloc is empty is base64 data urls
+        return all([result.scheme == "data", BASE64_PATH_REGEX.match(result.path)])
+
+    return True
 
 
 def image(value: str) -> str:

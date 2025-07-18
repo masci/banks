@@ -1,34 +1,23 @@
 import json
-import xml.etree.ElementTree as ET
-from typing import Any, Optional, Union
-
-try:
-    from defusedxml.minidom import parseString
-    DEFUSED_XML_AVAILABLE = True
-except ImportError:
-    DEFUSED_XML_AVAILABLE = False
 from pydantic import BaseModel
+from typing import Dict, Any, Union, Optional
+import xml.etree.ElementTree as ET
+from xml.dom.minidom import parseString
 
-from banks.errors import MissingDependencyError
-
-if not DEFUSED_XML_AVAILABLE:
-    ERR_MESSAGE = "defusedxml is not available. Please install it with `pip install defusedxml`."
-    raise MissingDependencyError(ERR_MESSAGE)
 
 def _deserialize(string: str) -> Optional[dict]:
     try:
         return json.loads(string)
     except json.JSONDecodeError:
-        return None
+        return
 
 
-def _prepare_dictionary(value: Union[str, BaseModel, dict[str, Any]]):
+def _prepare_dictionary(value: Union[str, BaseModel, Dict[str, Any]]):
     root_tag = "input"
     if isinstance(value, str):
-        model: Optional[dict[str, Any]] = _deserialize(value)
+        model: Optional[Dict[str, Any]] = _deserialize(value)
         if model is None:
-            msg = f"{value} is not deserializable"
-            raise ValueError(msg)
+            raise ValueError(f"{value} is not deserializable")
     elif isinstance(value, BaseModel):
         model = value.model_dump()
         root_tag = value.__class__.__name__.lower()
@@ -39,14 +28,13 @@ def _prepare_dictionary(value: Union[str, BaseModel, dict[str, Any]]):
                 value[str(k)] = v
         model = value
     else:
-        msg = f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}"
-        raise ValueError(msg)
+        raise ValueError(f"Input can only be of type BaseModel, dictionary or deserializable string. Got {type(value)}")
     return model, root_tag
 
 
-def xml(value: Union[str, BaseModel, dict[str, Any]]) -> str:
+def xml(value: Union[str, BaseModel, Dict[str, Any]]) -> str:
     """
-    Convert a Pydantic model, a deserializable string or a dictionary into an XML string.
+    Convert a Pydatic model, a deserializable string or a dictionary into an XML string.
 
     Example:
         ```jinja
@@ -58,7 +46,6 @@ def xml(value: Union[str, BaseModel, dict[str, Any]]) -> str:
         </input>
         "
         ```
-    Important `defusedxml` need to be installed for this filter to work.
     """
     model, root_tag = _prepare_dictionary(value)
     xml_model = ET.Element(root_tag)

@@ -1,14 +1,8 @@
-import xml.etree.ElementTree as ET
-from typing import Any
-
 import pytest
-
-try:
-    from defusedxml.minidom import parseString
-    SKIP = False
-except ImportError:
-    SKIP = True
+import xml.etree.ElementTree as ET
+from xml.dom.minidom import parseString
 from pydantic import BaseModel
+from typing import Tuple, Dict, Any
 
 from banks.filters.xml import xml
 
@@ -36,7 +30,7 @@ def xml_string_from_other() -> str:
 
 
 @pytest.fixture
-def starting_value() -> tuple[BaseModel, dict[str, Any], str]:
+def starting_value() -> Tuple[BaseModel, Dict[str, Any], str]:
     class Person(BaseModel):
         age: int
         name: str
@@ -44,12 +38,9 @@ def starting_value() -> tuple[BaseModel, dict[str, Any], str]:
     p = Person(age=30, name="John Doe")
     return p, p.model_dump(), p.model_dump_json()
 
-@pytest.mark.skipif(
-    condition=SKIP,
-    reason="defusedxml is not installed"
-)
+
 def test_xml_filter(
-    xml_string_from_basemodel: str, xml_string_from_other: str, starting_value: tuple[BaseModel, dict[str, Any], str]
+    xml_string_from_basemodel: str, xml_string_from_other: str, starting_value: Tuple[BaseModel, Dict[str, Any], str]
 ) -> None:
     model, dictionary, string = starting_value
     assert xml(model) == xml_string_from_basemodel

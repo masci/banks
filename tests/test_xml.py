@@ -16,7 +16,7 @@ def xml_string_from_basemodel() -> str:
     name = ET.SubElement(model, "name")
     name.text = "John Doe"
     xml_str = ET.tostring(model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")  # noqa: S318
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def xml_string_from_other() -> str:
     name = ET.SubElement(model, "name")
     name.text = "John Doe"
     xml_str = ET.tostring(model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")  # noqa: S318
 
 
 @pytest.fixture

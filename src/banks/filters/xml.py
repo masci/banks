@@ -56,4 +56,4 @@ def xml(value: Union[str, BaseModel, dict[str, Any]]) -> str:
         sub = ET.SubElement(xml_model, k)
         sub.text = str(v)
     xml_str = ET.tostring(xml_model, encoding="unicode")
-    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "") # noqa: S318
+    return parseString(xml_str).toprettyxml().replace('<?xml version="1.0" ?>\n', "")  # noqa: S318

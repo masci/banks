@@ -14,7 +14,7 @@ class CanaryWordError(Exception):
 
 
 class PromptNotFoundError(Exception):
-    """The prompt was now found in the registry."""
+    """The prompt was not found in the registry."""
 
 
 class InvalidPromptError(Exception):

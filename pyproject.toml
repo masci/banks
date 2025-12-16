@@ -199,7 +199,7 @@ max-args = 10
 asyncio_default_fixture_loop_scope = "function"
 markers = ["e2e"]
 filterwarnings = [
-    # Dilence litellm warning coming from their Pydantic config.
+    # Silence litellm warning coming from their Pydantic config.
     # This assumes our use of Pydantic is correct :)
     "ignore:Support for class-based `config` is deprecated",
 ]

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from banks import Prompt
-from banks.filters.audio import audio
+from banks.filters.audio import _get_audio_format_from_url, _is_url, audio
 
 
 @pytest.fixture
@@ -33,6 +33,34 @@ def test_audio_with_nonexistent_file():
     """Test audio filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
         audio("nonexistent/audio.wav")
+
+
+def test_audio_with_url():
+    """Test audio filter with a URL input (no filesystem access)."""
+    url = "https://example.com/sound.ogg"
+    result = audio(url)
+
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+
+    assert content_block["type"] == "audio"
+    assert content_block["input_audio"]["data"] == url
+    assert content_block["input_audio"]["format"] == "ogg"
+
+
+def test_is_url_variants():
+    assert _is_url("relative/path.wav") is False
+    assert _is_url("https://example.com/sound.wav") is True
+    assert _is_url("data:audio/wav;base64,AAAA") is True
+    assert _is_url("data:text/plain;base64,AAAA") is False
+
+
+def test_get_audio_format_from_url():
+    assert _get_audio_format_from_url("https://example.com/sound.WAV") == "wav"
+    assert _get_audio_format_from_url("https://example.com/sound") == "mp3"
 
 
 def test_audio_no_chat_block(empty_wav):

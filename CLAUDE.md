@@ -28,7 +28,7 @@ Banks is a Python prompt programming language and templating system for LLM appl
 ### Environment Management
 - All commands use Hatch environments with automatic dependency management
 - Use `uv` as the installer for faster dependency resolution
-- Python 3.9+ supported across multiple versions (3.9-3.13)
+- Python 3.10+ supported across multiple versions (3.10-3.14)
 
 ## Architecture Overview
 

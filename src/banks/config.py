@@ -28,9 +28,12 @@ class _BanksConfig:
             return original_value
 
         # Convert string from env var to the actual type
-        t = super().__getattribute__("__annotations__")[name]
+        annotations = getattr(type(self), "__annotations__", {})
+        t = annotations.get(name, type(original_value))
         if t is bool:
             return strtobool(read_value)
+        if t is Any:
+            return read_value
 
         return t(read_value)
 

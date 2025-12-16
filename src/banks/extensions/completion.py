@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 import importlib
 import json
-from typing import cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
@@ -12,6 +12,8 @@ from pydantic import ValidationError
 from banks.errors import InvalidPromptError, LLMError
 from banks.types import ChatMessage, Tool
 
+if TYPE_CHECKING:
+    from litellm.types.utils import ChatCompletionMessageToolCall
 SUPPORTED_KWARGS = ("model",)
 LITELLM_INSTALL_MSG = "litellm is not installed. Please install it with `pip install litellm`."
 
@@ -74,7 +76,19 @@ class CompletionExtension(Extension):
             return nodes.CallBlock(self.call_method("_do_completion_async", args), [], [], body).set_lineno(lineno)
         return nodes.CallBlock(self.call_method("_do_completion", args), [], [], body).set_lineno(lineno)
 
-    def _get_tool_callable(self, tools, tool_call):
+    def _get_tool_callable(self, tools: list[Tool], tool_call: "ChatCompletionMessageToolCall") -> Callable[..., Any]:
+        """Get the callable function for a tool call.
+
+        Args:
+            tools: List of available tools
+            tool_call: The tool call from the LLM response
+
+        Returns:
+            The callable function
+
+        Raises:
+            ValueError: If the function is not found in available tools
+        """
         for tool in tools:
             if tool.function.name == tool_call.function.name:
                 module_name, func_name = tool.import_path.rsplit(".", maxsplit=1)

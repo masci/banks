@@ -45,7 +45,7 @@ def test_set_existing_no_overwrite(registry):
 
     new_prompt = Prompt("Hi {{name}}!", name="greeting")
     with pytest.raises(
-        InvalidPromptError, match="Prompt with name 'greeting' already exists. Use overwrite=True to overwrite"
+        InvalidPromptError, match=r"Prompt with name 'greeting' already exists. Use overwrite=True to overwrite"
     ):
         registry.set(prompt=new_prompt)
 

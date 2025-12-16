@@ -55,7 +55,7 @@ def test_get_not_found(registry: DirectoryPromptRegistry):
 def test_set_existing_no_overwrite(registry: DirectoryPromptRegistry):
     new_prompt = Prompt("a new prompt!", name="blog")
     with pytest.raises(
-        InvalidPromptError, match="Prompt with name 'blog' already exists. Use overwrite=True to overwrite"
+        InvalidPromptError, match=r"Prompt with name 'blog' already exists. Use overwrite=True to overwrite"
     ):
         registry.set(prompt=new_prompt)
 

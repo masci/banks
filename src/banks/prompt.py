@@ -81,8 +81,17 @@ class BasePrompt:
 
     @property
     def variables(self) -> set[str]:
-        ast = env.parse(self.raw)
-        return meta.find_undeclared_variables(ast)
+        try:
+            ast = env.parse(self.raw)
+            return meta.find_undeclared_variables(ast)
+        except Exception as e:
+            from jinja2 import TemplateSyntaxError
+
+            if isinstance(e, TemplateSyntaxError):
+                raise
+            # Re-raise as TemplateSyntaxError for consistency
+            msg = f"Failed to parse template: {e}"
+            raise TemplateSyntaxError(msg, 0) from e
 
     def canary_leaked(self, text: str) -> bool:
         """Returns whether the canary word is present in `text`, signalling the prompt might have leaked."""

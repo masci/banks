@@ -56,6 +56,19 @@ class InputAudio(BaseModel):
             file_format = cast(AudioFormat, file_path.suffix[1:])
             return cls(data=encoded_str, format=file_format)
 
+    @classmethod
+    def from_url(cls, url: str, audio_format: AudioFormat) -> Self:
+        """Create InputAudio from a URL.
+
+        Args:
+            url: The URL to the audio file
+            audio_format: The audio format
+
+        Returns:
+            InputAudio instance with the URL as data
+        """
+        return cls(data=url, format=audio_format)
+
 
 class ContentBlock(BaseModel):
     type: ContentBlockType

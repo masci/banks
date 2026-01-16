@@ -23,6 +23,7 @@ class ContentBlockType(str, Enum):
     text = "text"
     image_url = "image_url"
     audio = "audio"
+    document = "document"
 
 
 class CacheControl(BaseModel):
@@ -43,6 +44,7 @@ class ImageUrl(BaseModel):
 
 
 AudioFormat = Literal["mp3", "wav", "m4a", "webm", "ogg", "flac"]
+DocumentFormat = Literal["pdf", "html", "css", "plain", "xml", "csv", "rtf", "javascript", "json"]
 
 
 class InputAudio(BaseModel):
@@ -70,12 +72,38 @@ class InputAudio(BaseModel):
         return cls(data=url, format=audio_format)
 
 
+class InputDocument(BaseModel):
+    data: str
+    format: DocumentFormat
+
+    @classmethod
+    def from_path(cls, file_path: Path) -> Self:
+        with open(file_path, "rb") as document_file:
+            encoded_str = base64.b64encode(document_file.read()).decode("utf-8")
+            file_format = cast(DocumentFormat, file_path.suffix[1:])
+            return cls(data=encoded_str, format=file_format)
+
+    @classmethod
+    def from_url(cls, url: str, document_format: DocumentFormat) -> Self:
+        """Create InputDocument from a URL.
+
+        Args:
+            url: The URL to the document file
+            document_format: The document format
+
+        Returns:
+            InputDocument instance with the URL as data
+        """
+        return cls(data=url, format=document_format)
+
+
 class ContentBlock(BaseModel):
     type: ContentBlockType
     cache_control: CacheControl | None = None
     text: str | None = None
     image_url: ImageUrl | None = None
     input_audio: InputAudio | None = None
+    input_document: InputDocument | None = None
 
 
 ChatMessageContent = Union[list[ContentBlock], str]

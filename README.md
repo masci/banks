@@ -94,11 +94,11 @@ print(p.chat_messages({"persona": "helpful assistant"}))
 # [
 #   ChatMessage(role='system', content=[
 #      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='You are a helpful assistant.', 
-#                  image_url=None, input_audio=None)
+#                  image_url=None, input_audio=None, input_document=None)
 #   ], tool_call_id=None, name=None), 
 #   ChatMessage(role='user', content=[
 #      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='Hello, how are you?', 
-#                  image_url=None, input_audio=None)
+#                  image_url=None, input_audio=None, input_document=None)
 #   ], tool_call_id=None, name=None)
 # ]
 ```

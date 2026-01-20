@@ -87,14 +87,14 @@ class InputVideo(BaseModel):
 
     @classmethod
     def from_url(cls, url: str, video_format: VideoFormat) -> Self:
-        """Create InputAudio from a URL.
+        """Create InputVideo from a URL.
 
         Args:
             url: The URL to the audio file
-            audio_format: The audio format
+            video_format: The audio format
 
         Returns:
-            InputAudio instance with the URL as data
+            InputVideo instance with the URL as data
         """
         return cls(data=url, format=video_format)
 

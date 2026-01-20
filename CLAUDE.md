@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Banks is a Python prompt programming language and templating system for LLM applications. It provides a Jinja2-based template engine with specialized extensions and filters for creating dynamic prompts, managing chat messages, handling multimodal content (images/audio), and integrating with various LLM providers through LiteLLM.
+Banks is a Python prompt programming language and templating system for LLM applications. It provides a Jinja2-based template engine with specialized extensions and filters for creating dynamic prompts, managing chat messages, handling multimodal content (images/audio/documents), and integrating with various LLM providers through LiteLLM.
 
 ## Development Commands
 
@@ -42,7 +42,7 @@ Banks is a Python prompt programming language and templating system for LLM appl
 
 **Type System** (`src/banks/types.py`):
 - `ChatMessage`: Core chat message structure with role and content
-- `ContentBlock`: Handles different content types (text, image_url, audio) with optional cache control
+- `ContentBlock`: Handles different content types (text, image_url, audio, document) with optional cache control
 - `Tool`: Function calling support with automatic schema generation from Python callables
 - `CacheControl`: Anthropic-style prompt caching metadata
 
@@ -67,6 +67,7 @@ Banks is a Python prompt programming language and templating system for LLM appl
 **Core Filters** (`src/banks/filters/`):
 - `image`: Convert file paths/URLs to base64-encoded image content blocks
 - `audio`: Convert audio files to base64-encoded audio content blocks  
+- `document`: Convert documents (PDF, TXT, HTML, CSS, XML, CSV, RTF, JS, JSON) to base64-encoded content blocks
 - `cache_control`: Add Anthropic cache control metadata to content blocks
 - `tool`: Convert Python callables to LLM function call schemas
 - `lemmatize`: Text lemmatization using simplemma
@@ -95,7 +96,7 @@ Banks is a Python prompt programming language and templating system for LLM appl
 4. Caching layer prevents re-rendering identical contexts
 
 ### Multimodal Content Handling
-- Images/audio converted to base64 during filter application
+- Images/audio/documents converted to base64 during filter application
 - Content blocks maintain type safety and metadata
 - Cache control integrated at content block level
 

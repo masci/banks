@@ -7,5 +7,5 @@ def test_cache_control():
     res = res.replace("</content_block>", "")
     assert res == (
         '{"type":"text","cache_control":{"type":"ephemeral"},"text":"foo","image_url":null,"input_audio":null,'
-        '"input_document":null}'
+        '"input_video":null,"input_document":null}'
     )

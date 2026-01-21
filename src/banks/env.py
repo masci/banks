@@ -4,7 +4,7 @@
 from jinja2 import Environment, select_autoescape
 
 from .config import config
-from .filters import audio, cache_control, document, image, lemmatize, tool, xml
+from .filters import audio, cache_control, document, image, lemmatize, tool, video, xml
 
 
 def _add_extensions(_env):
@@ -38,6 +38,7 @@ env.filters["image"] = image
 env.filters["lemmatize"] = lemmatize
 env.filters["tool"] = tool
 env.filters["audio"] = audio
+env.filters["video"] = video
 env.filters["document"] = document
 env.filters["to_xml"] = xml
 

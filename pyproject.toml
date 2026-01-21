@@ -30,6 +30,7 @@ dependencies = [
     "deprecated",
     "eval-type-backport;python_version<'3.10'",
     "platformdirs",
+    "filetype>=1.2.0",
 ]
 
 [project.optional-dependencies]
@@ -78,6 +79,7 @@ lint = "pylint {args:src/banks}"
 typing = "mypy --install-types --non-interactive {args:src/banks}"
 all = ["check", "typing", "lint"]
 fmt = "ruff format {args}"
+fix = "ruff check --fix {args}"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/banks", "src/templates"]
@@ -182,6 +184,7 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 [[tool.mypy.overrides]]
 module = ["litellm.*", "simplemma.*", "deprecated.*"]
 ignore_missing_imports = true
+
 
 [tool.pylint]
 disable = [

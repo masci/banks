@@ -1,4 +1,5 @@
 import json
+from base64 import b64encode
 from pathlib import Path
 
 import pytest
@@ -78,6 +79,40 @@ def test_image_with_nonexistent_file():
     """Test image filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
         image("nonexistent/image.jpg")
+
+
+def test_image_from_bytes():
+    """Test image filter with bytes input"""
+    png_bytes = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00"
+    result = image(png_bytes)
+
+    # Verify the content block wrapper
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    # Parse the JSON content
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+
+    assert content_block["type"] == "image_url"
+    assert content_block["image_url"]["url"] == f"data:image/png;base64,{b64encode(png_bytes).decode('utf-8')}"
+
+
+def tests_image_from_b64_bytes():
+    webp_bytes = b"RIFF\x1a\x00\x00\x00WEBPVP8 "
+    b64_bytes = b64encode(webp_bytes)
+    result = image(b64_bytes)
+
+    # Verify the content block wrapper
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    # Parse the JSON content
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+
+    assert content_block["type"] == "image_url"
+    assert content_block["image_url"]["url"] == f"data:image/webp;base64,{b64_bytes.decode('utf-8')}"
 
 
 def test_image_content_block_structure():

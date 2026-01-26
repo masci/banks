@@ -32,10 +32,6 @@ def resolve_binary(bytes_str: bytes, *, as_base64: bool = True) -> bytes:
 
     Returns:
         b64 encoded bytes if input is not base64 encoded, else returns input as is.
-
-    Raises:
-        ValueError: If no valid source is provided
-
     """
     # check if bytes_str is base64 encoded
     try:
@@ -99,7 +95,12 @@ class ImageUrl(BaseModel):
 
 
 AudioFormat = Literal["mp3", "wav", "m4a", "webm", "ogg", "flac"]
-VideoFormat = Literal["mp4", "mpg", "mov", "avi", "flv", "mpg", "webm", "wmv", "3gp", "3gpp"]
+VideoFormat = Literal["mp4", "mpg", "mov", "avi", "flv", "webm", "wmv", "3gp", "3gpp"]
+# Because Claude only supports pdf and text, and Gemini only supports a small subset of text formats,
+# we can default to 'txt' for any text-based format that is not pdf. This allows the data to be sent to the llm
+# in an acceptable format, but the LLM should still be able to understand the content: e.g., html, markdown,
+# xml, etc.
+# If detecting text types should become desirable, I recommend using something like Google magicka
 DocumentFormat = Literal["pdf", "txt"]
 
 

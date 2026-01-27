@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import urlparse
 
-from banks.types import AudioFormat, ContentBlock, InputAudio
+import filetype  # type: ignore[import-untyped]
+
+from banks.types import AudioFormat, ContentBlock, InputAudio, resolve_binary
 
 BASE64_AUDIO_REGEX = re.compile(r"audio\/.*;base64,.*")
 
@@ -38,7 +40,18 @@ def _get_audio_format_from_url(url: str) -> AudioFormat:
     return "mp3"
 
 
-def audio(value: str) -> str:
+def _get_audio_format_from_bytes(data: bytes) -> AudioFormat:
+    """Extract audio format from bytes data using filetype library."""
+    kind = filetype.guess(data)
+    if kind is not None:
+        fmt = kind.extension
+        if fmt in ("mp3", "wav", "m4a", "webm", "ogg", "flac"):
+            return cast(AudioFormat, fmt)
+    # Default to mp3 if format cannot be determined
+    return "mp3"
+
+
+def audio(value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type audio.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -51,7 +64,10 @@ def audio(value: str) -> str:
         {{ "https://example.com/audio.mp3" | audio }}
         ```
     """
-    if _is_url(value):
+    if isinstance(value, bytes):
+        audio_format = _get_audio_format_from_bytes(resolve_binary(value, as_base64=False))
+        input_audio = InputAudio.from_bytes(value, audio_format=audio_format)
+    elif _is_url(value):
         audio_format = _get_audio_format_from_url(value)
         input_audio = InputAudio.from_url(value, audio_format)
     else:

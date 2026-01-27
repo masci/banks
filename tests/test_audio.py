@@ -1,10 +1,11 @@
 import json
+from base64 import b64encode
 from pathlib import Path
 
 import pytest
 
 from banks import Prompt
-from banks.filters.audio import _get_audio_format_from_url, _is_url, audio
+from banks.filters.audio import _get_audio_format_from_bytes, _get_audio_format_from_url, _is_url, audio
 
 
 @pytest.fixture
@@ -61,6 +62,53 @@ def test_is_url_variants():
 def test_get_audio_format_from_url():
     assert _get_audio_format_from_url("https://example.com/sound.WAV") == "wav"
     assert _get_audio_format_from_url("https://example.com/sound") == "mp3"
+
+
+def test_audio_from_bytes():
+    mp3 = b"\xff\xfb\x90\x64\x00\x0f\xff\xf3\xb4\x00\x00\x00\x00\x00\x00\x00"
+    result = audio(mp3)
+
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+    assert content_block["type"] == "audio"
+    assert content_block["input_audio"]["data"] == b64encode(mp3).decode("utf-8")
+    assert content_block["input_audio"]["format"] == "mp3"
+
+
+def test_audio_from_b64_bytes():
+    wav = b"RIFF$\x00\x00\x00WAVEfmt "
+    b64_wav = b64encode(wav)
+    result = audio(b64_wav)
+
+    assert result.startswith("<content_block>")
+    assert result.endswith("</content_block>")
+
+    json_content = result[15:-16]  # Remove wrapper tags
+    content_block = json.loads(json_content)
+    assert content_block["type"] == "audio"
+    assert content_block["input_audio"]["data"] == b64_wav.decode("utf-8")
+    assert content_block["input_audio"]["format"] == "wav"
+
+
+def test_get_audio_format_from_bytes():
+    wav = b"RIFF$\x00\x00\x00WAVEfmt "  # Beginning bytes of a WAV file
+    mp3 = b"\xff\xfb\x90\x64\x00\x0f\xff\xf3\xb4\x00\x00\x00\x00\x00\x00\x00"
+    m4a = b"\x00\x00\x00\x20ftypM4A "  # Beginning bytes of an M4A file
+    webm = b"\x1a\x45\xdf\xa3\x42\x82\x84webm"  # Beginning bytes of a WebM file
+    ogg = b"OggS"  # Beginning bytes of an OGG file
+    flac = b"fLaC"  # Beginning bytes of a FLAC file
+    undetermined = b"\x00\x01\x02\x03\x04\x05"
+
+    assert _get_audio_format_from_bytes(wav) == "wav"
+    assert _get_audio_format_from_bytes(mp3) == "mp3"
+    assert _get_audio_format_from_bytes(m4a) == "m4a"
+    assert _get_audio_format_from_bytes(webm) == "webm"
+    assert _get_audio_format_from_bytes(ogg) == "ogg"
+    assert _get_audio_format_from_bytes(flac) == "flac"
+    assert _get_audio_format_from_bytes(undetermined) == "mp3"
 
 
 def test_audio_no_chat_block(empty_wav):

@@ -6,9 +6,37 @@ from pathlib import Path
 from typing import cast
 from urllib.parse import urlparse
 
-from banks.types import ContentBlock, InputVideo, VideoFormat
+import filetype  # type: ignore[import-untyped]
+from filetype.types.video import IsoBmff  # type: ignore[import-untyped]
+
+from banks.types import ContentBlock, InputVideo, VideoFormat, resolve_binary
 
 BASE64_VIDEO_REGEX = re.compile(r"video\/.*;base64,.*")
+
+
+class M3gp(IsoBmff):
+    """
+    Implements the 3gp video type matcher.
+
+    The type matcher in the filetype lib does not work correctly for 3gp files,
+    so implement our own here.
+    """
+
+    MIME = "video/3gpp"
+    EXTENSION = "3gp"
+
+    def __init__(self):
+        super().__init__(mime=M3gp.MIME, extension=M3gp.EXTENSION)
+
+    def match(self, buf):
+        if not self._is_isobmff(buf):
+            return False
+
+        major_brand, _, compatible_brands = self._get_ftyp(buf)
+        for brand in compatible_brands:
+            if brand in ["3gp4", "3gp5", "3gpp"]:
+                return True
+        return major_brand in ["3gp4", "3gp5", "3gpp"]
 
 
 def _is_url(string: str) -> bool:
@@ -40,7 +68,22 @@ def _get_video_format_from_url(url: str) -> VideoFormat:
     return "mp4"
 
 
-def video(value: str) -> str:
+def _get_video_format_from_bytes(data: bytes) -> VideoFormat:
+    """Extract video format from bytes data using filetype library."""
+    m3gp = M3gp()
+    if m3gp not in filetype.types:
+        filetype.add_type(m3gp)
+
+    kind = filetype.guess(data)
+    if kind is not None:
+        fmt = kind.extension
+        if fmt in ("mp4", "mpg", "mov", "avi", "flv", "webm", "wmv", "3gp"):
+            return cast(VideoFormat, fmt)
+    # Default to mp4 if format cannot be determined
+    return "mp4"
+
+
+def video(value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type video.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -53,7 +96,10 @@ def video(value: str) -> str:
         {{ "https://example.com/video.mp4" | video }}
         ```
     """
-    if _is_url(value):
+    if isinstance(value, bytes):
+        video_format = _get_video_format_from_bytes(resolve_binary(value, as_base64=False))
+        input_video = InputVideo.from_bytes(value, video_format=video_format)
+    elif _is_url(value):
         video_format = _get_video_format_from_url(value)
         input_video = InputVideo.from_url(value, video_format)
     else:

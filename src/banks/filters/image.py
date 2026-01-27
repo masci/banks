@@ -22,7 +22,7 @@ def _is_url(string: str) -> bool:
     return True
 
 
-def image(value: str) -> str:
+def image(value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type image.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -38,7 +38,9 @@ def image(value: str) -> str:
         this filter marks the content to cache by surrounding it with `<content_block>` and
         `</content_block>`, so it's only useful when used within a `{% chat %}` block.
     """
-    if _is_url(value):
+    if isinstance(value, bytes):
+        image_url = ImageUrl.from_bytes(bytes_str=value)
+    elif _is_url(value):
         image_url = ImageUrl(url=value)
     else:
         image_url = ImageUrl.from_path(Path(value))

@@ -1,12 +1,15 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+import mimetypes
 import re
 from pathlib import Path
 from typing import cast
 from urllib.parse import urlparse
 
-from banks.types import ContentBlock, DocumentFormat, InputDocument
+import filetype  # type: ignore[import-untyped]
+
+from banks.types import ContentBlock, DocumentFormat, InputDocument, resolve_binary
 
 BASE64_DOCUMENT_REGEX = re.compile(r"(text|application)\/.*;base64,.*")
 
@@ -36,7 +39,7 @@ def _get_document_format_from_url(url: str) -> DocumentFormat:
     # text/css
     # text/plain
     # text/xml
-    # text/scv
+    # text/csv
     # text/rtf
     # text/javascript
     # application/json
@@ -68,13 +71,46 @@ def _get_document_format_from_url(url: str) -> DocumentFormat:
         "javascript",
         "json",
     ):
+        # Because Claude only supports pdf and text, and Gemini only supports a small subset of text formats,
+        # we can default to 'txt' for any text-based format that is not pdf. This allows the data to be sent to the llm
+        # in an acceptable format, but the LLM should still be able to understand the content: e.g., html, markdown,
+        # xml, etc.
         if path.endswith(f".{fmt}"):
+            if fmt == "pdf":
+                return cast(DocumentFormat, "pdf")
+            return "txt"
+    mime = mimetypes.guess_type(path)[0]
+    if mime is not None and mime.startswith("text/"):
+        return "txt"
+    # With urls, the likelihood seems sufficiently high that it's probably a pdf if not otherwise indicated
+    if mime is None:
+        return "pdf"
+    # Document type indicated to be other than pdf or text type
+    raise ValueError("Unsupported document format: " + path)
+
+
+def _get_document_format_from_bytes(data: bytes) -> DocumentFormat:
+    """Extract document format from bytes data using filetype library."""
+    # First check for pdf (only non text based format) and RTF formats (can be detected by file header)
+    kind = filetype.guess(data)
+    if kind is not None:
+        fmt = kind.extension
+        if fmt == "pdf":
             return cast(DocumentFormat, fmt)
-    # Default to pdf if format cannot be determined
-    return "pdf"
+
+    # filetype is good at detecting binary formats, but not text-based ones.
+    # So, this is a good indicator that it's text-based.
+    # Because Claude only supports pdf and text, and Gemini only supports a small subset of text formats,
+    # we can default to 'txt' for any text-based format that is not pdf. This allows the data to be sent to the llm in
+    # an acceptable format, but the LLM should still be able to understand the content: e.g., html, markdown, xml, etc.
+    # If detecting text types should become desirable, I recommend using something like Google magicka
+    if kind is None or kind.extension == "rtf":
+        return "txt"
+    # There are many common document types (like word, excel, powerpoint, etc.) that are not supported.
+    raise ValueError("Unsupported document format: " + kind.extension)
 
 
-def document(value: str) -> str:
+def document(value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type document.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -87,7 +123,10 @@ def document(value: str) -> str:
         {{ "https://example.com/document.pdf" | document }}
         ```
     """
-    if _is_url(value):
+    if isinstance(value, bytes):
+        document_format = _get_document_format_from_bytes(resolve_binary(value, as_base64=False))
+        input_document = InputDocument.from_bytes(value, document_format=document_format)
+    elif _is_url(value):
         document_format = _get_document_format_from_url(value)
         input_document = InputDocument.from_url(value, document_format)
     else:

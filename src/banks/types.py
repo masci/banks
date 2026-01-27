@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import base64
 import re
+from base64 import b64decode, b64encode
+from binascii import Error as BinasciiError
 from enum import Enum
 from inspect import Parameter, getdoc, signature
 from pathlib import Path
 from typing import Callable, Literal, Union, cast
 
+import filetype  # type: ignore[import-untyped]
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -17,6 +20,31 @@ from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
 CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>)[\s\S])*)")
+
+
+def resolve_binary(bytes_str: bytes, *, as_base64: bool = True) -> bytes:
+    """
+    Resolve binary data between base64 and raw bytes.
+
+    Args:
+        bytes_str: Bytes data
+        as_base64: Whether to return base64 encoded bytes or raw bytes
+
+    Returns:
+        b64 encoded bytes if input is not base64 encoded, else returns input as is.
+    """
+    # check if bytes_str is base64 encoded
+    try:
+        # Check if raw_bytes is already base64 encoded.
+        # b64decode() can succeed on random binary data, so we
+        # pass verify=True to make sure it's not a false positive
+        raw_bytes = base64.b64decode(bytes_str, validate=True)
+        b64_bytes = bytes_str
+    except BinasciiError:
+        # b64decode failed, leave as is
+        raw_bytes = bytes_str
+        b64_bytes = b64encode(bytes_str)
+    return b64_bytes if as_base64 else raw_bytes
 
 
 class ContentBlockType(str, Enum):
@@ -34,6 +62,14 @@ class CacheControl(BaseModel):
 class ImageUrl(BaseModel):
     url: str
 
+    @staticmethod
+    def _mimetype_from_bytes(raw_bytes: bytes) -> str:
+        kind = filetype.guess(raw_bytes)
+        if kind is not None:
+            return kind.mime
+        # Default to jpeg if format cannot be determined
+        return "image/jpeg"
+
     @classmethod
     def from_base64(cls, media_type: str, base64_str: str) -> Self:
         return cls(url=f"data:{media_type};base64,{base64_str}")
@@ -41,12 +77,31 @@ class ImageUrl(BaseModel):
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
         with open(file_path, "rb") as image_file:
-            return cls.from_base64("image/jpeg", base64.b64encode(image_file.read()).decode("utf-8"))
+            raw_bytes = image_file.read()
+            mimetype = cls._mimetype_from_bytes(raw_bytes)
+            return cls.from_base64(mimetype, base64.b64encode(raw_bytes).decode("utf-8"))
+
+    @classmethod
+    def from_bytes(cls, bytes_str: bytes) -> Self:
+        """Create ImageUrl from bytes
+        Args:
+            bytes_str: Bytes data
+        Returns:
+            ImageUrl instance with base64 encoded bytes as URL
+        """
+        b64_bytes = resolve_binary(bytes_str)
+        mimetype = cls._mimetype_from_bytes(b64decode(b64_bytes))
+        return cls.from_base64(mimetype, b64_bytes.decode("utf-8"))
 
 
 AudioFormat = Literal["mp3", "wav", "m4a", "webm", "ogg", "flac"]
-VideoFormat = Literal["mp4", "mpeg", "mov", "avi", "flv", "mpg", "webm", "wmv", "3gpp"]
-DocumentFormat = Literal["pdf", "html", "css", "plain", "xml", "csv", "rtf", "javascript", "json"]
+VideoFormat = Literal["mp4", "mpg", "mov", "avi", "flv", "webm", "wmv", "3gp", "3gpp"]
+# Because Claude only supports pdf and text, and Gemini only supports a small subset of text formats,
+# we can default to 'txt' for any text-based format that is not pdf. This allows the data to be sent to the llm
+# in an acceptable format, but the LLM should still be able to understand the content: e.g., html, markdown,
+# xml, etc.
+# If detecting text types should become desirable, I recommend using something like Google magicka
+DocumentFormat = Literal["pdf", "txt"]
 
 
 class InputAudio(BaseModel):
@@ -73,6 +128,21 @@ class InputAudio(BaseModel):
         """
         return cls(data=url, format=audio_format)
 
+    @classmethod
+    def from_bytes(cls, bytes_str: bytes, audio_format: AudioFormat) -> Self:
+        """Create InputAudio from bytes
+
+        Args:
+            bytes_str: Bytes data
+            audio_format: The audio format
+
+        Returns:
+            InputAudio instance with base64 encoded bytes as data
+        """
+        b64_bytes = resolve_binary(bytes_str)
+        encoded_str = b64_bytes.decode("utf-8")
+        return cls(data=encoded_str, format=audio_format)
+
 
 class InputVideo(BaseModel):
     data: str
@@ -98,6 +168,21 @@ class InputVideo(BaseModel):
         """
         return cls(data=url, format=video_format)
 
+    @classmethod
+    def from_bytes(cls, bytes_str: bytes, video_format: VideoFormat) -> Self:
+        """Create InputVideo from bytes
+
+        Args:
+            bytes_str: Bytes data
+            video_format: The video format
+
+        Returns:
+            InputVideo instance with base64 encoded bytes as data
+        """
+        b64_bytes = resolve_binary(bytes_str)
+        encoded_str = b64_bytes.decode("utf-8")
+        return cls(data=encoded_str, format=video_format)
+
 
 class InputDocument(BaseModel):
     data: str
@@ -122,6 +207,21 @@ class InputDocument(BaseModel):
             InputDocument instance with the URL as data
         """
         return cls(data=url, format=document_format)
+
+    @classmethod
+    def from_bytes(cls, bytes_str: bytes, document_format: DocumentFormat) -> Self:
+        """Create InputDocument from bytes
+
+        Args:
+            bytes_str: Bytes data
+            document_format: The document format
+
+        Returns:
+            InputDocument instance with base64 encoded bytes as data
+        """
+        b64_bytes = resolve_binary(bytes_str)
+        encoded_str = b64_bytes.decode("utf-8")
+        return cls(data=encoded_str, format=document_format)
 
 
 class ContentBlock(BaseModel):

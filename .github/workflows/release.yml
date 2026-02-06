@@ -1,9 +1,16 @@
 name: PyPI Release
 
 on:
-  push:
-    tags:
-      - "v[0-9].[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - MINOR
+          - BUGFIX
+        default: BUGFIX
 
 jobs:
   release:
@@ -14,6 +21,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Bump version
+        run: |
+          CURRENT=$(sed -n 's/^__version__ = "\([0-9.]*\).*/\1/p' src/banks/__about__.py)
+          IFS=. read -r major minor patch <<< "$CURRENT"
+          case "${{ github.event.inputs.bump }}" in
+            BUGFIX)
+              patch=$((patch + 1))
+              ;;
+            MINOR)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            *)
+              echo "Unexpected bump type: ${{ github.event.inputs.bump }}"
+              exit 1
+              ;;
+          esac
+          VERSION="${major}.${minor}.${patch}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "Bumped ${CURRENT} -> ${VERSION} (${{ github.event.inputs.bump }})"
+
+      - name: Update __about__.py on default branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          sed -i "s/^__version__ = .*$/__version__ = \"${VERSION}\"/" src/banks/__about__.py
+          git diff --quiet && exit 0
+          git add src/banks/__about__.py
+          git commit -m "chore: set __version__ to ${VERSION} [skip ci]"
+          git push origin "${{ github.event.repository.default_branch }}"
+
+      - name: Create and push tag
+        run: |
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
 
       - name: Install Hatch
         run: pip install hatch
@@ -29,5 +74,6 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
+          tag: v${{ env.VERSION }}
           artifacts: "dist/*"
           generateReleaseNotes: true

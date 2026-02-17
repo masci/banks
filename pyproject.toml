@@ -182,7 +182,7 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 
 [[tool.mypy.overrides]]
-module = ["litellm.*", "simplemma.*", "deprecated.*"]
+module = ["litellm.*", "simplemma.*", "deprecated.*", "griffe.*"]
 ignore_missing_imports = true
 
 

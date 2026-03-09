@@ -44,22 +44,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Hatch
-        run: pip install --upgrade hatch
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
 
       - if: matrix.python-version == '3.13'
         name: Lint
-        run: hatch run lint:all
+        run: uv run ruff format --check && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks
 
       - name: Run tests
-        run: hatch run cov -m"not e2e"
+        run: uv run pytest --cov --cov-report=xml -m"not e2e" tests
 
       - if: matrix.python-version == '3.13'
         name: End-to-end
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: hatch run test -m"e2e"
+        run: uv run pytest -m"e2e" tests
 
       - if: matrix.python-version == '3.13'
         name: Report Coveralls
@@ -82,11 +85,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Hatch
-        run: pip install --upgrade hatch
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
 
       - name: Run tests
-        run: hatch run test -m"not e2e"
+        run: uv run pytest -m"not e2e" tests
 
   windows:
     name: Python ${{ matrix.python-version }} on Windows
@@ -105,8 +111,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Hatch
-        run: pip install --upgrade hatch
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
 
       - name: Run tests
-        run: hatch run test -m"not e2e"
+        run: uv run pytest -m"not e2e" tests

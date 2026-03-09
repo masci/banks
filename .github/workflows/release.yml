@@ -60,16 +60,15 @@ jobs:
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
 
-      - name: Install Hatch
-        run: pip install hatch
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Publish on PyPi
         env:
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          hatch build
-          hatch publish -y
+          uv build
+          uv publish
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1

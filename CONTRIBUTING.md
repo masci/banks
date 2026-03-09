@@ -45,16 +45,10 @@ Banks tries to keep a high standard of coding conventions and uses [ruff](https:
 and format consistent. [Mypy](https://mypy-lang.org/) is used to static check that types are properly declared
 and used consistently across the codebase.
 
-To perform a comprehensive lint check just run:
+To auto-format and perform a comprehensive lint check just run:
 
 ```sh
-$ uv run ruff format --check && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks
-```
-
-To auto-format the code:
-
-```sh
-$ uv run ruff format
+$ uv run ruff format && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks
 ```
 
 > [!IMPORTANT]

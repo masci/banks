@@ -43,7 +43,7 @@ dev = [
     "mkdocs-material",
     "mkdocstrings[python]",
     "simplemma",
-    "eval-type-backport;python_version<'3.10'",
+
     "redis",
     "litellm",
     "mypy>=1.0.0",

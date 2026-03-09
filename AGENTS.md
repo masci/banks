@@ -24,7 +24,7 @@ uv run pytest tests/test_foo.py        # Run specific test file
 ### Testing
 - Run tests: `uv run pytest tests`
 - Run tests with coverage: `uv run pytest --cov --cov-report=xml tests`
-- Generate coverage report: `uv run pytest --cov --cov-report=xml tests && coverage combine && coverage report -m`
+- Generate coverage report: `uv run pytest --cov --cov-report=xml tests && uv run coverage combine && uv run coverage report -m`
 - Run specific test file: `uv run pytest tests/test_foo.py`
 - Run e2e tests: `uv run pytest tests/e2e/` (requires API keys)
 

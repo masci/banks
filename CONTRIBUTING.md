@@ -36,7 +36,7 @@ This command will use the virtual environment managed by `uv`, sync the required
 To see a recap of the test coverage and specifically which are the lines that are currently not tested, you can run:
 
 ```sh
-$ uv run pytest --cov --cov-report=xml tests && coverage combine && coverage report -m
+$ uv run pytest --cov --cov-report=xml tests && uv run coverage combine && uv run coverage report -m
 ```
 
 ## Lint the code

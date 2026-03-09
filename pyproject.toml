@@ -35,18 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = ["litellm", "redis"]
-
-[project.urls]
-Documentation = "https://github.com/masci/banks#readme"
-Issues = "https://github.com/masci/banks/issues"
-Source = "https://github.com/masci/banks"
-
-[tool.hatch.version]
-path = "src/banks/__about__.py"
-
-[tool.hatch.envs.default]
-installer = "uv"
-dependencies = [
+dev = [
     "coverage[toml]>=6.5",
     "pytest",
     "pytest-cov",
@@ -57,29 +46,18 @@ dependencies = [
     "eval-type-backport;python_version<'3.10'",
     "redis",
     "litellm",
+    "mypy>=1.0.0",
+    "ruff>=0.0.243",
+    "pylint",
 ]
 
-[tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "pytest --cov --cov-report=xml {args:tests}"
-cov-report = ["- coverage combine", "coverage report -m"]
-cov = ["test-cov", "cov-report"]
-docs = "mkdocs {args:build}"
+[project.urls]
+Documentation = "https://github.com/masci/banks#readme"
+Issues = "https://github.com/masci/banks/issues"
+Source = "https://github.com/masci/banks"
 
-[[tool.hatch.envs.all.matrix]]
-python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
-[tool.hatch.envs.lint]
-detached = false                                                              # Normally the linting env can be detached, but mypy doesn't install all the stubs we need
-dependencies = ["mypy>=1.0.0", "ruff>=0.0.243", "pylint", "redis", "litellm"]
-
-[tool.hatch.envs.lint.scripts]
-check = ["ruff format --check {args}", "ruff check {args:.}"]
-lint = "pylint {args:src/banks}"
-typing = "mypy --install-types --non-interactive {args:src/banks}"
-all = ["check", "typing", "lint"]
-fmt = "ruff format {args}"
-fix = "ruff check --fix {args}"
+[tool.hatch.version]
+path = "src/banks/__about__.py"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src/banks", "src/templates"]

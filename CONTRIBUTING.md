@@ -11,35 +11,32 @@ be very happy about:
 - Refer this project in your project's readme
 - Mention the project at local meetups and tell your friends/colleagues
 
-## Install Hatch
+## Setup
 
-Assuming you already have Python installed and it's at least on version 3.10, the first step is to install
-[Hatch](https://hatch.pypa.io/1.9/). We'll use Hatch to manage the virtual environments that are needed to build the
-project, the documentation and to run the tests. Depending on your operating system, there are different ways to
-install Hatch:
+Assuming you already have Python installed (version 3.10 or later), the recommended way to work on this project is
+with [uv](https://docs.astral.sh/uv/). Install `uv` following the
+[official instructions](https://docs.astral.sh/uv/getting-started/installation/), then install all development
+dependencies with:
 
-- `brew install hatch` on Mac
-- The [GUI installer](https://hatch.pypa.io/1.9/install/#gui-installer_1) on Windows
-- Or just `pip install hatch`
-
-The [official documentation for Hatch](https://hatch.pypa.io/1.9/install/) contains a thorough description of all the
-available installation methods.
+```sh
+$ uv sync --extra dev
+```
 
 ## Run the tests
 
-With Hatch installed, from the root of the repository running the tests is as simple as:
+With `uv` installed, from the root of the repository running the tests is as simple as:
 
 ```sh
-$ hatch run test
+$ uv run pytest tests
 ```
 
-This command will activate the proper virtual environment, sync the required dependencies and invoke
+This command will use the virtual environment managed by `uv`, sync the required dependencies and invoke
 [pytest](https://docs.pytest.org/en/stable/index.html).
 
 To see a recap of the test coverage and specifically which are the lines that are currently not tested, you can run:
 
 ```sh
-$ hatch run cov
+$ uv run pytest --cov --cov-report=xml tests && coverage combine && coverage report -m
 ```
 
 ## Lint the code
@@ -51,7 +48,13 @@ and used consistently across the codebase.
 To perform a comprehensive lint check just run:
 
 ```sh
-$ hatch run lint:all
+$ uv run ruff format --check && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks
+```
+
+To auto-format the code:
+
+```sh
+$ uv run ruff format
 ```
 
 > [!IMPORTANT]
@@ -64,7 +67,7 @@ Any contribution to the documentation is very welcome, whether it's a fix for a 
 new recipe in the cookbook. To preview the documentation locally, you can run:
 
 ```sh
-$ hatch run docs serve
+$ uv run mkdocs serve
 ```
 
 and open the browser at the URL `http://127.0.0.1:8000/`. The documentation is built with

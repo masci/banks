@@ -10,36 +10,39 @@ Banks is a Python prompt programming language and templating system for LLM appl
 
 ```bash
 # Most common commands
-hatch run test                    # Run unit tests
-hatch run lint:all                # Run all linting checks
-hatch run lint:fmt                # Auto-format code
-hatch run test tests/test_foo.py  # Run specific test file
+uv run pytest tests                    # Run unit tests
+uv run ruff format --check && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks  # Run all linting checks
+uv run ruff format                     # Auto-format code
+uv run pytest tests/test_foo.py        # Run specific test file
 ```
 
 ## Development Commands
 
+### Setup
+- Install dev dependencies: `uv sync --extra dev`
+
 ### Testing
-- Run tests: `hatch run test`
-- Run tests with coverage: `hatch run test-cov`
-- Generate coverage report: `hatch run cov`
-- Run specific test file: `hatch run test tests/test_foo.py`
-- Run e2e tests: `hatch run test tests/e2e/` (requires API keys)
+- Run tests: `uv run pytest tests`
+- Run tests with coverage: `uv run pytest --cov --cov-report=xml tests`
+- Generate coverage report: `uv run pytest --cov --cov-report=xml tests && coverage combine && coverage report -m`
+- Run specific test file: `uv run pytest tests/test_foo.py`
+- Run e2e tests: `uv run pytest tests/e2e/` (requires API keys)
 
 ### Linting and Type Checking
-- Format code: `hatch run lint:fmt`
-- Auto-fix lint issues: `hatch run lint:fix`
-- Check formatting: `hatch run lint:check`
-- Run type checking: `hatch run lint:typing`
-- Run pylint: `hatch run lint:lint`
-- Run all lint checks: `hatch run lint:all`
+- Format code: `uv run ruff format`
+- Auto-fix lint issues: `uv run ruff check --fix`
+- Check formatting: `uv run ruff format --check && uv run ruff check .`
+- Run type checking: `uv run mypy --install-types --non-interactive src/banks`
+- Run pylint: `uv run pylint src/banks`
+- Run all lint checks: `uv run ruff format --check && uv run ruff check . && uv run mypy --install-types --non-interactive src/banks && uv run pylint src/banks`
 
 ### Documentation
-- Build docs: `hatch run docs build`
-- Serve docs locally: `hatch run docs serve` (available at http://127.0.0.1:8000/)
+- Build docs: `uv run mkdocs build`
+- Serve docs locally: `uv run mkdocs serve` (available at http://127.0.0.1:8000/)
 
 ### Environment Management
-- All commands use Hatch environments with automatic dependency management
-- Uses `uv` as the installer for faster dependency resolution
+- Uses `uv` for dependency management and running tools
+- Install all dev dependencies: `uv sync --extra dev`
 - Python 3.9+ supported (tested on 3.10-3.14)
 
 ## Architecture Overview
@@ -157,9 +160,9 @@ hatch run test tests/test_foo.py  # Run specific test file
 
 ### Running Specific Tests
 ```bash
-hatch run test tests/test_image.py        # Single file
-hatch run test tests/test_image.py::test_name  # Single test
-hatch run test -k "image"                 # Tests matching pattern
+uv run pytest tests/test_image.py        # Single file
+uv run pytest tests/test_image.py::test_name  # Single test
+uv run pytest -k "image"                 # Tests matching pattern
 ```
 
 ## Code Style

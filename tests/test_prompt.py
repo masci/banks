@@ -128,3 +128,10 @@ def test_variables():
     prompt_text = "This is a {{ first_variable.content }} and this is {{ another_variable }}"
     p = Prompt(text=prompt_text)
     assert p.variables == {"another_variable", "first_variable"}
+
+
+def test_ssti_blocked():
+    payload = "{{ self.__init__.__globals__.__builtins__.__import__('os').popen('id').read() }}"
+    p = Prompt(payload)
+    with pytest.raises(Exception):
+        p.text()

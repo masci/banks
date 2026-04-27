@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2023-present Massimiliano Pippi <mpippi@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-from jinja2 import Environment, select_autoescape
+from jinja2 import select_autoescape
+from jinja2.sandbox import SandboxedEnvironment as Environment
 
 from .config import config
 from .filters import audio, cache_control, document, image, lemmatize, tool, video, xml

@@ -1,3 +1,9 @@
+!!! warning "Templates are trusted code"
+    Banks renders templates using Jinja2's `SandboxedEnvironment`. This helps mitigate SSTI risk, but
+    it should not be treated as a hard security boundary. Never construct a `Prompt` from
+    user-supplied strings — use template variables for user input instead. See the
+    [Security](index.md#security) section for details.
+
 ## Filters
 
 Filters are Python functions that are called during the rendering of a certain tag. For example, if a prompt template

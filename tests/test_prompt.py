@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 import regex as re
 from jinja2 import Environment
+from jinja2.exceptions import SecurityError
 
 from banks import AsyncPrompt, Prompt
 from banks.cache import DefaultCache
@@ -128,3 +129,9 @@ def test_variables():
     prompt_text = "This is a {{ first_variable.content }} and this is {{ another_variable }}"
     p = Prompt(text=prompt_text)
     assert p.variables == {"another_variable", "first_variable"}
+
+
+def test_ssti_blocked():
+    payload = "{{ self.__init__.__globals__.__builtins__.__import__('os').popen('id').read() }}"
+    with pytest.raises(SecurityError):
+        Prompt(payload).text()

@@ -53,6 +53,27 @@ If you like to jump straight to the code:
   - :blue_book: [Prompt caching with Anthropic](https://github.com/masci/banks/blob/main/cookbook/Prompt_Caching_with_Anthropic.ipynb)
   - :blue_book: [Prompt versioning](https://github.com/masci/banks/blob/main/cookbook/Prompt_Versioning.ipynb)
 
+## Security
+
+Banks uses [Jinja2](https://jinja.palletsprojects.com/) to render prompt templates through a sandboxed environment to help reduce server-side template injection (SSTI) risk.
+
+However, do not pass untrusted user input as template text. User-controlled templates are still unsafe, and the sandbox is not a guaranteed security boundary. The following pattern is unsafe because it allows users to control the template itself:
+
+```python
+# UNSAFE: never pass user-controlled strings as the template
+user_input = request.json["template"]
+p = Prompt(user_input)
+result = p.text()
+```
+
+If your application lets users influence the content of prompts, use template variables instead:
+
+```python
+# SAFE: user input goes into the rendering context, not the template
+p = Prompt("Write a blog post about {{ topic }}.")
+result = p.text({"topic": user_input})
+```
+
 ## License
 
 `banks` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

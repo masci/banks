@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 import regex as re
 from jinja2 import Environment
+from jinja2.exceptions import SecurityError
 
 from banks import AsyncPrompt, Prompt
 from banks.cache import DefaultCache
@@ -132,6 +133,5 @@ def test_variables():
 
 def test_ssti_blocked():
     payload = "{{ self.__init__.__globals__.__builtins__.__import__('os').popen('id').read() }}"
-    p = Prompt(payload)
-    with pytest.raises(Exception):
-        p.text()
+    with pytest.raises(SecurityError):
+        Prompt(payload).text()

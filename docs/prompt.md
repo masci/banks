@@ -1,3 +1,8 @@
+!!! warning "Templates are trusted code"
+    Banks renders templates using an unsandboxed Jinja2 environment. Never construct a `Prompt` from
+    user-supplied strings — use template variables for user input instead. See the
+    [Security](index.md#security) section for details.
+
 ## Filters
 
 Filters are Python functions that are called during the rendering of a certain tag. For example, if a prompt template

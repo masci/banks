@@ -55,9 +55,9 @@ If you like to jump straight to the code:
 
 ## Security
 
-Banks uses [Jinja2](https://jinja.palletsprojects.com/) to render prompt templates. **Prompt templates are treated as trusted code** — they have the same level of trust as any other Python code in your application.
+Banks uses [Jinja2](https://jinja.palletsprojects.com/) to render prompt templates through a sandboxed environment to help reduce server-side template injection (SSTI) risk.
 
-Do not pass untrusted user input as template text. The following pattern is unsafe and allows arbitrary code execution:
+However, do not pass untrusted user input as template text. User-controlled templates are still unsafe, and the sandbox is not a guaranteed security boundary. The following pattern is unsafe because it allows users to control the template itself:
 
 ```python
 # UNSAFE: never pass user-controlled strings as the template

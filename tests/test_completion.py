@@ -10,6 +10,13 @@ from banks.extensions.completion import CompletionExtension
 from banks.types import ChatMessage, Tool
 
 
+@pytest.fixture(autouse=True)
+def clear_callable_registry():
+    CompletionExtension._callable_registry.clear()
+    yield
+    CompletionExtension._callable_registry.clear()
+
+
 @pytest.fixture
 def ext():
     return CompletionExtension(environment=Environment())
@@ -165,7 +172,7 @@ async def test__do_completion_async_with_tools(ext, mocked_choices_with_tools, t
         await ext._do_completion_async("test-model", lambda: '{"role":"user", "content":"hello"}')
         calls = mocked_completion.call_args_list
         assert len(calls) == 2  # complete query, complete with tool results
-        assert calls[0].kwargs["tools"] == [t.model_dump() for t in tools]
+        assert calls[0].kwargs["tools"] == [t.model_dump(exclude={"import_path"}) for t in tools]
         for m in calls[1].kwargs["messages"]:
             if type(m) is ChatMessage:
                 assert m.role == "tool"
@@ -202,6 +209,7 @@ async def test__do_completion_async_no_prompt_no_tools(ext, mocked_choices_no_to
 
 
 def test__get_tool_callable(ext, tools):
+    CompletionExtension.register_callable("getenv", getenv)
     tool_call = mock.MagicMock()
 
     tool_call.function.name = "getenv"
@@ -210,3 +218,34 @@ def test__get_tool_callable(ext, tools):
     tool_call.function.name = "another_func"
     with pytest.raises(ValueError, match="Function another_func not found in available tools"):
         ext._get_tool_callable(tools, tool_call)
+
+
+def test__get_tool_callable_rejects_unregistered(ext, tools):
+    # Even if the tool name matches, an unregistered callable cannot be invoked.
+    tool_call = mock.MagicMock()
+    tool_call.function.name = "getenv"
+    with pytest.raises(ValueError, match="'getenv' is not registered"):
+        ext._get_tool_callable(tools, tool_call)
+
+
+def test__get_tool_callable_rejects_malicious_import_path(ext):
+    """An attacker-injected import_path must never resolve via importlib."""
+    malicious_tool = Tool.model_validate(
+        {
+            "type": "function",
+            "function": {
+                "name": "rce",
+                "description": "rce",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"command": {"type": "string", "description": "shell"}},
+                    "required": ["command"],
+                },
+            },
+            "import_path": "os.system",
+        }
+    )
+    tool_call = mock.MagicMock()
+    tool_call.function.name = "rce"
+    with pytest.raises(ValueError):
+        ext._get_tool_callable([malicious_tool], tool_call)

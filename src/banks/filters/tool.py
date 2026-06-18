@@ -12,5 +12,8 @@ def tool(function: Callable) -> str:
     Important:
         This filter only works when used within a `{% completion %}` block.
     """
+    from banks.extensions.completion import CompletionExtension  # lazy to avoid circular import
+
     t = Tool.from_callable(function)
+    CompletionExtension.register_callable(function.__name__, function)
     return t.model_dump_json() + "\n"

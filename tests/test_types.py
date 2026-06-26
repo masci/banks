@@ -47,6 +47,23 @@ def test_image_url_from_path_outside_cwd():
         ImageUrl.from_path(Path("/etc/hosts"))
 
 
+def test_image_url_from_path_with_media_root(tmp_path, monkeypatch):
+    """Test that BANKS_MEDIA_ROOT is used when set"""
+    monkeypatch.setenv("BANKS_MEDIA_ROOT", str(tmp_path))
+    test_image = tmp_path / "test_image.jpg"
+    test_image.write_bytes(b"fake image content")
+
+    image_url = ImageUrl.from_path(test_image)
+    assert image_url.url.startswith("data:image/jpeg;base64,")
+
+
+def test_image_url_from_path_outside_media_root(tmp_path, monkeypatch):
+    """Test that paths outside BANKS_MEDIA_ROOT are rejected"""
+    monkeypatch.setenv("BANKS_MEDIA_ROOT", str(tmp_path))
+    with pytest.raises(ValueError, match="Access denied"):
+        ImageUrl.from_path(Path("/etc/hosts"))
+
+
 def test_input_audio_from_path(tmp_path, monkeypatch):
     """Test creating InputAudio from a file path"""
     monkeypatch.chdir(tmp_path)

@@ -24,17 +24,21 @@ CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^
 
 
 def _safe_resolve_path(file_path: Path) -> Path:
-    """Resolve a media file path and ensure it stays within the current working directory.
+    """Resolve a media file path and ensure it stays within the allowed root directory.
 
-    Raises ValueError for paths that escape the CWD (absolute paths to sensitive locations,
-    path traversal via '..', or symlinks pointing outside CWD).
+    The allowed root is taken from the BANKS_MEDIA_ROOT environment variable when set;
+    otherwise it falls back to the current working directory.
+
+    Raises ValueError for paths that resolve outside the allowed root (absolute paths
+    to sensitive locations, path traversal via '..', or symlinks pointing outside).
     """
-    cwd = Path(os.getcwd()).resolve()
-    resolved = (cwd / file_path).resolve() if not file_path.is_absolute() else file_path.resolve()
+    root_env = os.environ.get("BANKS_MEDIA_ROOT")
+    root = Path(root_env).resolve() if root_env else Path(os.getcwd()).resolve()
+    resolved = (root / file_path).resolve() if not file_path.is_absolute() else file_path.resolve()
     try:
-        resolved.relative_to(cwd)
+        resolved.relative_to(root)
     except ValueError:
-        msg = f"Access denied: '{file_path}' resolves outside the current working directory"
+        msg = f"Access denied: '{file_path}' resolves outside the allowed media root (set BANKS_MEDIA_ROOT to configure)"
         raise ValueError(msg) from None
     return resolved
 

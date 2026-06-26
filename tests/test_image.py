@@ -37,10 +37,10 @@ def test_image_with_url():
     assert content_block["image_url"]["url"] == url
 
 
-def test_image_with_file_path(tmp_path):
+def test_image_with_file_path(tmp_path, monkeypatch):
     """Test image filter with a file path input"""
-    # Create a temporary test image file
-    test_image = tmp_path / "test_image.jpg"
+    monkeypatch.chdir(tmp_path)
+    test_image = Path("test_image.jpg")
     test_content = b"fake image content"
     test_image.write_bytes(test_content)
 
@@ -56,6 +56,12 @@ def test_image_with_file_path(tmp_path):
 
     assert content_block["type"] == "image_url"
     assert content_block["image_url"]["url"].startswith("data:image/jpeg;base64,")
+
+
+def test_image_path_traversal_blocked():
+    """Test that path traversal is blocked"""
+    with pytest.raises(ValueError, match="Access denied"):
+        image("/etc/hosts")
 
 
 def test_image_base64(tmp_path):

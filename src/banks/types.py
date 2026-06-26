@@ -37,7 +37,9 @@ def _safe_resolve_path(file_path: Path) -> Path:
     try:
         resolved.relative_to(root)
     except ValueError:
-        msg = f"Access denied: '{file_path}' resolves outside the allowed media root (set BANKS_MEDIA_ROOT to configure)"
+        msg = (
+            f"Access denied: '{file_path}' resolves outside the allowed media root (set BANKS_MEDIA_ROOT to configure)"
+        )
         raise ValueError(msg) from None
     return resolved
 

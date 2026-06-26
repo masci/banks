@@ -16,11 +16,11 @@ def _unwrap_optional(t: Any) -> Any:
     """Return the inner type of Optional[X] / X | None, or t unchanged."""
     origin = getattr(t, "__origin__", None)
     if origin is typing.Union:
-        args = [a for a in t.__args__ if a is not type(None)]
+        args = [a for a in t.__args__ if a is not None.__class__]
         if len(args) == 1:
             return args[0]
     if isinstance(t, _types.UnionType):
-        args = [a for a in t.__args__ if a is not type(None)]
+        args = [a for a in t.__args__ if a is not None.__class__]
         if len(args) == 1:
             return args[0]
     return t

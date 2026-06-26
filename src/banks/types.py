@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import base64
-import os
 import re
 from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
@@ -17,6 +16,7 @@ import filetype  # type: ignore[import-untyped]
 from pydantic import BaseModel
 from typing_extensions import Self
 
+from .config import config
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
@@ -32,8 +32,7 @@ def _safe_resolve_path(file_path: Path) -> Path:
     Raises ValueError for paths that resolve outside the allowed root (absolute paths
     to sensitive locations, path traversal via '..', or symlinks pointing outside).
     """
-    root_env = os.environ.get("BANKS_MEDIA_ROOT")
-    root = Path(root_env).resolve() if root_env else Path(os.getcwd()).resolve()
+    root = config.MEDIA_ROOT.resolve() if config.MEDIA_ROOT else Path.cwd().resolve()
     resolved = (root / file_path).resolve() if not file_path.is_absolute() else file_path.resolve()
     try:
         resolved.relative_to(root)

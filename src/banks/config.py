@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 import os
+import types as _types
+import typing
 from pathlib import Path
 from typing import Any
 
@@ -10,9 +12,24 @@ from platformdirs import user_data_path
 from .utils import strtobool
 
 
+def _unwrap_optional(t: Any) -> Any:
+    """Return the inner type of Optional[X] / X | None, or t unchanged."""
+    origin = getattr(t, "__origin__", None)
+    if origin is typing.Union:
+        args = [a for a in t.__args__ if a is not type(None)]
+        if len(args) == 1:
+            return args[0]
+    if isinstance(t, _types.UnionType):
+        args = [a for a in t.__args__ if a is not type(None)]
+        if len(args) == 1:
+            return args[0]
+    return t
+
+
 class _BanksConfig:
     ASYNC_ENABLED: bool = False
     USER_DATA_PATH: Path = user_data_path("banks")
+    MEDIA_ROOT: Path | None = None
 
     def __init__(self, env_var_prefix: str = "BANKS_"):
         self._env_var_prefix = env_var_prefix
@@ -29,7 +46,7 @@ class _BanksConfig:
 
         # Convert string from env var to the actual type
         annotations = getattr(type(self), "__annotations__", {})
-        t = annotations.get(name, type(original_value))
+        t = _unwrap_optional(annotations.get(name, type(original_value)))
         if t is bool:
             return strtobool(read_value)
         if t is Any:

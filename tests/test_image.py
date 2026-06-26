@@ -59,9 +59,11 @@ def test_image_with_file_path(tmp_path, monkeypatch):
 
 
 def test_image_path_traversal_blocked():
-    """Test that path traversal is blocked"""
+    """Test that absolute paths and traversal sequences outside CWD are blocked"""
     with pytest.raises(ValueError, match="Access denied"):
         image("/etc/hosts")
+    with pytest.raises(ValueError, match="Access denied"):
+        image("../../../etc/hosts")
 
 
 def test_image_base64(tmp_path):

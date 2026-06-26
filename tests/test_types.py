@@ -17,10 +17,10 @@ def test_image_url_from_base64():
     assert image_url.url == expected_url
 
 
-def test_image_url_from_path(tmp_path):
+def test_image_url_from_path(tmp_path, monkeypatch):
     """Test creating ImageUrl from a file path"""
-    # Create a temporary test image file
-    test_image = tmp_path / "test_image.jpg"
+    monkeypatch.chdir(tmp_path)
+    test_image = Path("test_image.jpg")
     test_content = b"fake image content"
     test_image.write_bytes(test_content)
 
@@ -41,10 +41,33 @@ def test_image_url_from_path_nonexistent():
         ImageUrl.from_path(Path("nonexistent.jpg"))
 
 
-def test_input_audio_from_path(tmp_path):
+def test_image_url_from_path_outside_cwd():
+    """Test that paths outside CWD are rejected"""
+    with pytest.raises(ValueError, match="Access denied"):
+        ImageUrl.from_path(Path("/etc/hosts"))
+
+
+def test_image_url_from_path_with_media_root(tmp_path, monkeypatch):
+    """Test that BANKS_MEDIA_ROOT is used when set"""
+    monkeypatch.setenv("BANKS_MEDIA_ROOT", str(tmp_path))
+    test_image = tmp_path / "test_image.jpg"
+    test_image.write_bytes(b"fake image content")
+
+    image_url = ImageUrl.from_path(test_image)
+    assert image_url.url.startswith("data:image/jpeg;base64,")
+
+
+def test_image_url_from_path_outside_media_root(tmp_path, monkeypatch):
+    """Test that paths outside BANKS_MEDIA_ROOT are rejected"""
+    monkeypatch.setenv("BANKS_MEDIA_ROOT", str(tmp_path))
+    with pytest.raises(ValueError, match="Access denied"):
+        ImageUrl.from_path(Path("/etc/hosts"))
+
+
+def test_input_audio_from_path(tmp_path, monkeypatch):
     """Test creating InputAudio from a file path"""
-    # Create a temporary test image file
-    test_audio = tmp_path / "test_audio.wav"
+    monkeypatch.chdir(tmp_path)
+    test_audio = Path("test_audio.wav")
     test_content = b"fake audio data"
     test_audio.write_bytes(test_content)
 
@@ -59,3 +82,9 @@ def test_input_audio_from_path_nonexistent():
     """Test creating ImageUrl from a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
         InputAudio.from_path(Path("nonexistent.wav"))
+
+
+def test_input_audio_from_path_outside_cwd():
+    """Test that paths outside CWD are rejected"""
+    with pytest.raises(ValueError, match="Access denied"):
+        InputAudio.from_path(Path("/etc/hosts"))

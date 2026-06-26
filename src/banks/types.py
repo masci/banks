@@ -16,10 +16,32 @@ import filetype  # type: ignore[import-untyped]
 from pydantic import BaseModel
 from typing_extensions import Self
 
+from .config import config
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
 CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>)[\s\S])*)")
+
+
+def _safe_resolve_path(file_path: Path) -> Path:
+    """Resolve a media file path and ensure it stays within the allowed root directory.
+
+    The allowed root is taken from the BANKS_MEDIA_ROOT environment variable when set;
+    otherwise it falls back to the current working directory.
+
+    Raises ValueError for paths that resolve outside the allowed root (absolute paths
+    to sensitive locations, path traversal via '..', or symlinks pointing outside).
+    """
+    root = config.MEDIA_ROOT.resolve() if config.MEDIA_ROOT else Path.cwd().resolve()
+    resolved = (root / file_path).resolve() if not file_path.is_absolute() else file_path.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        msg = (
+            f"Access denied: '{file_path}' resolves outside the allowed media root (set BANKS_MEDIA_ROOT to configure)"
+        )
+        raise ValueError(msg) from None
+    return resolved
 
 
 def resolve_binary(bytes_str: bytes, *, as_base64: bool = True) -> bytes:
@@ -76,7 +98,7 @@ class ImageUrl(BaseModel):
 
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
-        with open(file_path, "rb") as image_file:
+        with open(_safe_resolve_path(file_path), "rb") as image_file:
             raw_bytes = image_file.read()
             mimetype = cls._mimetype_from_bytes(raw_bytes)
             return cls.from_base64(mimetype, base64.b64encode(raw_bytes).decode("utf-8"))
@@ -110,7 +132,8 @@ class InputAudio(BaseModel):
 
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
-        with open(file_path, "rb") as audio_file:
+        safe_path = _safe_resolve_path(file_path)
+        with open(safe_path, "rb") as audio_file:
             encoded_str = base64.b64encode(audio_file.read()).decode("utf-8")
             file_format = cast(AudioFormat, file_path.suffix[1:])
             return cls(data=encoded_str, format=file_format)
@@ -150,7 +173,8 @@ class InputVideo(BaseModel):
 
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
-        with open(file_path, "rb") as video_file:
+        safe_path = _safe_resolve_path(file_path)
+        with open(safe_path, "rb") as video_file:
             encoded_str = base64.b64encode(video_file.read()).decode("utf-8")
             file_format = cast(VideoFormat, file_path.suffix[1:])
             return cls(data=encoded_str, format=file_format)
@@ -190,7 +214,8 @@ class InputDocument(BaseModel):
 
     @classmethod
     def from_path(cls, file_path: Path) -> Self:
-        with open(file_path, "rb") as document_file:
+        safe_path = _safe_resolve_path(file_path)
+        with open(safe_path, "rb") as document_file:
             encoded_str = base64.b64encode(document_file.read()).decode("utf-8")
             file_format = cast(DocumentFormat, file_path.suffix[1:])
             return cls(data=encoded_str, format=file_format)

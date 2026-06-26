@@ -74,6 +74,16 @@ p = Prompt("Write a blog post about {{ topic }}.")
 result = p.text({"topic": user_input})
 ```
 
+### Media filters and file access
+
+The `image`, `audio`, `video`, and `document` filters can read local files when given a file path. To prevent untrusted input from reading arbitrary files, these filters only open paths that resolve within an allowed root directory. By default the root is the current working directory; set the `BANKS_MEDIA_ROOT` environment variable to restrict reads to a specific directory:
+
+```bash
+BANKS_MEDIA_ROOT=/var/myapp/assets uvicorn app:app
+```
+
+Any path that resolves outside the configured root raises a `ValueError`. Passing bytes or a URL instead of a file path is always allowed and is the safest option when the value comes from user input.
+
 ## License
 
 `banks` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

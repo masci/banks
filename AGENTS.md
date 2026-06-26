@@ -116,6 +116,7 @@ hatch run test tests/test_foo.py  # Run specific test file
 - Environment variable-based configuration with `BANKS_` prefix
 - `BANKS_ASYNC_ENABLED`: Enable async template rendering (must be set before import)
 - `BANKS_USER_DATA_PATH`: Custom user data directory
+- `BANKS_MEDIA_ROOT`: Restrict media filter file reads to this directory (defaults to CWD)
 
 ## Key Development Patterns
 

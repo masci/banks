@@ -32,6 +32,13 @@ def _resolve_prompt_file(registry_root: Path, name: str, version: str) -> Path:
     if Path(version).is_absolute():
         msg = f"Invalid prompt version: {version!r}"
         raise InvalidPromptError(msg)
+    if "/" in version or "\\" in version or version in (".", ".."):
+        msg = f"Invalid prompt version: {version!r}"
+        raise InvalidPromptError(msg)
+    for part in Path(name).parts:
+        if part in (".", ".."):
+            msg = f"Invalid prompt name: {name!r}"
+            raise InvalidPromptError(msg)
 
     root = registry_root.resolve()
     candidate = (registry_root / f"{name}.{version}.jinja").resolve()

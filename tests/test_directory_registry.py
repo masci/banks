@@ -97,3 +97,58 @@ def test_update_meta(registry: DirectoryPromptRegistry):
     # reload prompt
     p = registry.get(name="new", version="3")
     assert p.metadata == {"accuracy": 94.3, "created_at": created_time}
+
+
+@pytest.mark.parametrize(
+    ("name", "version"),
+    [
+        ("../victim/pwned", "0"),
+        ("/etc/passwd", "0"),
+        ("okay", "../../../evil"),
+        ("team/../nested", "0"),
+    ],
+)
+def test_set_rejects_path_escape(tmp_path: Path, name: str, version: str):
+    registry_dir = tmp_path / "registry"
+    registry_dir.mkdir()
+    victim = tmp_path / "victim"
+    victim.mkdir()
+    reg = DirectoryPromptRegistry(registry_dir, force_reindex=True)
+
+    with pytest.raises(InvalidPromptError):
+        reg.set(prompt=Prompt("pwn", name=name, version=version))
+
+    assert list(victim.iterdir()) == []
+    assert not (tmp_path / "evil.jinja").exists()
+
+
+def test_set_rejects_dot_segment_overwrite_bypass(tmp_path: Path):
+    registry_dir = tmp_path / "registry"
+    registry_dir.mkdir()
+    reg = DirectoryPromptRegistry(registry_dir, force_reindex=True)
+    (registry_dir / "team").mkdir()
+
+    reg.set(prompt=Prompt("original", name="team/nested", version="1"))
+
+    with pytest.raises(InvalidPromptError):
+        reg.set(prompt=Prompt("bypass", name="team/../nested", version="1"))
+
+    assert (registry_dir / "team" / "nested.1.jinja").read_text() == "original"
+
+
+def test_set_allows_nested_name(tmp_path: Path):
+    registry_dir = tmp_path / "registry"
+    registry_dir.mkdir()
+    reg = DirectoryPromptRegistry(registry_dir, force_reindex=True)
+    (registry_dir / "team").mkdir()
+
+    reg.set(prompt=Prompt("nested prompt", name="team/nested", version="1"))
+    assert (registry_dir / "team" / "nested.1.jinja").read_text() == "nested prompt"
+
+
+def test_load_rejects_poisoned_index(tmp_path: Path):
+    (tmp_path / DEFAULT_INDEX_NAME).write_text(
+        '{"files":[{"text":"pwn","name":"../evil","version":"0","metadata":{}}]}'
+    )
+    with pytest.raises(InvalidPromptError):
+        DirectoryPromptRegistry(tmp_path)

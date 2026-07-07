@@ -24,6 +24,23 @@ from banks.prompt import DEFAULT_VERSION, PromptModel
 DEFAULT_INDEX_NAME = "index.json"
 
 
+def _resolve_prompt_file(registry_root: Path, name: str, version: str) -> Path:
+    """Resolve the on-disk path for a prompt file, ensuring it stays within ``registry_root``."""
+    if Path(name).is_absolute():
+        msg = f"Invalid prompt name: {name!r}"
+        raise InvalidPromptError(msg)
+    if Path(version).is_absolute():
+        msg = f"Invalid prompt version: {version!r}"
+        raise InvalidPromptError(msg)
+
+    root = registry_root.resolve()
+    candidate = (registry_root / f"{name}.{version}.jinja").resolve()
+    if not candidate.is_relative_to(root):
+        msg = f"Prompt path escapes registry root: {candidate}"
+        raise InvalidPromptError(msg)
+    return candidate
+
+
 class PromptFile(PromptModel):
     """Model representing a prompt file stored on disk."""
 
@@ -41,7 +58,8 @@ class PromptFile(PromptModel):
         Returns:
             A new PromptFile instance
         """
-        prompt_file = path / f"{prompt.name}.{prompt.version}.jinja"
+        version = prompt.version or DEFAULT_VERSION
+        prompt_file = _resolve_prompt_file(path, prompt.name, version)
         prompt_file.write_text(prompt.raw)
         return cls(
             text=prompt.raw, name=prompt.name, version=prompt.version, metadata=prompt.metadata, path=prompt_file
@@ -137,8 +155,8 @@ class DirectoryPromptRegistry:
         self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
         # Reconstruct the file paths since they're excluded from serialization
         for pf in self._index.files:
-            if pf.path is None:
-                pf.path = self._path / f"{pf.name}.{pf.version}.jinja"
+            version = pf.version or DEFAULT_VERSION
+            pf.path = _resolve_prompt_file(self._path, pf.name, version)
 
     def _save(self):
         """Save the prompt index to disk."""

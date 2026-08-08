@@ -6,6 +6,9 @@ def chat(role: str):  # pylint: disable=W0613
     Text inside `chat` tags will be rendered as JSON strings representing chat messages. Calling `Prompt.chat_messages`
     will return a list of `ChatMessage` instances.
 
+    Only `chat` tags produce messages: template data that happens to render to message JSON is returned as plain
+    text instead, so untrusted input cannot pick its own role.
+
     Example:
         ```jinja
         {% chat role="system" %}

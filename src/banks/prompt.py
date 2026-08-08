@@ -19,7 +19,7 @@ from .config import config
 from .env import env
 from .errors import AsyncError
 from .types import ChatMessage, chat_message_from_text
-from .utils import generate_canary_word
+from .utils import SENTINEL_VAR, generate_canary_word, generate_sentinel
 
 DEFAULT_VERSION = "0"
 
@@ -55,7 +55,10 @@ class BasePrompt:
         self._template = env.from_string(text)
         self._version = version or DEFAULT_VERSION
 
-        self.defaults = {"canary_word": canary_word or generate_canary_word()}
+        # The sentinel is per-instance rather than per-render on purpose: the render cache
+        # keys on the context, so a sentinel that changed between renders would make cached
+        # text unparseable by the sentinel in use at parse time.
+        self.defaults = {"canary_word": canary_word or generate_canary_word(), SENTINEL_VAR: generate_sentinel()}
 
     def _get_context(self, data: dict | None) -> dict:
         if data is None:
@@ -97,6 +100,14 @@ class BasePrompt:
         """Returns whether the canary word is present in `text`, signalling the prompt might have leaked."""
         return self.defaults["canary_word"] in text
 
+    def _strip_sentinel(self, rendered: str) -> str:
+        """Remove the internal marker from text handed back to the caller.
+
+        Keeping the sentinel out of the returned text means it can't leak to whoever reads the
+        rendered prompt, and leaves the markers looking exactly as they did before it existed.
+        """
+        return rendered.replace(self.defaults[SENTINEL_VAR], "")
+
 
 class Prompt(BasePrompt):
     """
@@ -125,11 +136,11 @@ class Prompt(BasePrompt):
         data = self._get_context(data)
         cached = self._render_cache.get(data)
         if cached:
-            return cached
+            return self._strip_sentinel(cached)
 
         rendered: str = self._template.render(data)
         self._render_cache.set(data, rendered)
-        return rendered
+        return self._strip_sentinel(rendered)
 
     def chat_messages(self, data: dict[str, Any] | None = None) -> list[ChatMessage]:
         """
@@ -144,10 +155,19 @@ class Prompt(BasePrompt):
             rendered = self._template.render(data)
             self._render_cache.set(data, rendered)
 
+        sentinel = self.defaults[SENTINEL_VAR]
+
         messages: list[ChatMessage] = []
         for line in rendered.strip().split("\n"):
+            # Indentation is matched past rather than rejected, since the JSON parser used to
+            # tolerate it and a `chat` tag can sit inside an indented block.
+            stripped = line.lstrip()
+            if not stripped.startswith(sentinel):
+                # Only the `chat` extension can emit messages: an unmarked line is template
+                # data, and parsing it would let it choose its own role.
+                continue
             try:
-                messages.append(ChatMessage.model_validate_json(line))
+                messages.append(ChatMessage.model_validate_json(stripped.removeprefix(sentinel)))
             except ValidationError:
                 # Ignore lines that are not a message
                 pass
@@ -155,7 +175,7 @@ class Prompt(BasePrompt):
         if not messages:
             # fallback, if there was no {% chat %} block in the template,
             # try to build a list of messages for the role "user"
-            messages.append(chat_message_from_text(role="user", content=rendered))
+            messages.append(chat_message_from_text(role="user", content=rendered, sentinel=sentinel))
 
         return messages
 
@@ -232,11 +252,11 @@ class AsyncPrompt(BasePrompt):
         data = self._get_context(data)
         cached = self._render_cache.get(data)
         if cached:
-            return cached
+            return self._strip_sentinel(cached)
 
         rendered: str = await self._template.render_async(data)
         self._render_cache.set(data, rendered)
-        return rendered
+        return self._strip_sentinel(rendered)
 
 
 class PromptRegistry(Protocol):  # pragma: no cover

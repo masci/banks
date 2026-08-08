@@ -26,6 +26,31 @@ def generate_canary_word(prefix: str = "BANKS[", suffix: str = "]", token_length
     return f"{prefix}{secrets.token_hex(token_length // 2)}{suffix}"
 
 
+# Name of the context variable holding the secret marker that authenticates
+# extension- and filter-generated markup in rendered output. Template data cannot
+# override it: `BasePrompt._get_context` merges the defaults last.
+SENTINEL_VAR = "_banks_sentinel"
+
+
+def generate_sentinel() -> str:
+    return secrets.token_hex(16)
+
+
+def sentinel_from_context(context) -> str:
+    """Return the render sentinel stored in a Jinja context, or an empty string if absent."""
+    value = context.resolve(SENTINEL_VAR)
+    return value if isinstance(value, str) else ""
+
+
+def ensure_environment_sentinel(environment) -> None:
+    """Give a Jinja environment a sentinel unless it already has one.
+
+    Extensions call this so that they still mark their output when added to an environment
+    built by hand rather than the one banks configures.
+    """
+    environment.globals.setdefault(SENTINEL_VAR, generate_sentinel())
+
+
 def python_type_to_jsonschema(python_type: type) -> str:
     """Given a Python type, returns the jsonschema string describing it."""
     if python_type is str:

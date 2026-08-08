@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from banks.errors import InvalidPromptError, LLMError
 from banks.types import ChatMessage, Tool
+from banks.utils import ensure_environment_sentinel, sentinel_from_context
 
 if TYPE_CHECKING:
     from litellm.types.utils import ChatCompletionMessageToolCall
@@ -44,6 +45,10 @@ class CompletionExtension(Extension):
     # Resolution never goes through importlib — only callables registered here are invocable.
     _callable_registry: ClassVar[dict[str, Callable[..., Any]]] = {}
 
+    def __init__(self, environment):
+        super().__init__(environment)
+        ensure_environment_sentinel(environment)
+
     @classmethod
     def register_callable(cls, name: str, func: Callable[..., Any]) -> None:
         cls._callable_registry[name] = func
@@ -72,8 +77,8 @@ class CompletionExtension(Extension):
         if attr_name.value not in SUPPORTED_KWARGS or attr_assign.value != "=":
             raise TemplateSyntaxError(error_msg, lineno)
 
-        # Pass the role name to the CallBlock node
-        args: list[nodes.Expr] = [nodes.Const(attr_value.value)]
+        # Pass the render context and the model name to the CallBlock node
+        args: list[nodes.Expr] = [nodes.ContextReference(), nodes.Const(attr_value.value)]
 
         # Message body
         body = parser.parse_statements(("name:endcompletion",), drop_needle=True)
@@ -105,7 +110,7 @@ class CompletionExtension(Extension):
             raise ValueError(msg)
         return self._callable_registry[name]
 
-    def _do_completion(self, model_name, caller):
+    def _do_completion(self, context, model_name, caller):
         """
         Helper callback.
         """
@@ -115,7 +120,7 @@ class CompletionExtension(Extension):
         except ImportError as e:
             raise ImportError(LITELLM_INSTALL_MSG) from e
 
-        messages, tools = self._body_to_messages(caller())
+        messages, tools = self._body_to_messages(caller(), sentinel_from_context(context))
         message_dicts = [m.model_dump() for m in messages]
         tool_dicts = [t.model_dump(exclude={"import_path"}) for t in tools] or None
 
@@ -145,7 +150,7 @@ class CompletionExtension(Extension):
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
 
-    async def _do_completion_async(self, model_name, caller):
+    async def _do_completion_async(self, context, model_name, caller):
         """
         Helper callback.
         """
@@ -155,7 +160,7 @@ class CompletionExtension(Extension):
         except ImportError as e:
             raise ImportError(LITELLM_INSTALL_MSG) from e
 
-        messages, tools = self._body_to_messages(caller())
+        messages, tools = self._body_to_messages(caller(), sentinel_from_context(context))
         message_dicts = [m.model_dump() for m in messages]
         tool_dicts = [t.model_dump(exclude={"import_path"}) for t in tools] or None
 
@@ -186,19 +191,30 @@ class CompletionExtension(Extension):
         choices = cast(list[Choices], response.choices)
         return choices[0].message.content
 
-    def _body_to_messages(self, body: str) -> tuple[list[ChatMessage], list[Tool]]:
-        """Converts each line in the body of a block into a chat message."""
+    def _body_to_messages(self, body: str, sentinel: str) -> tuple[list[ChatMessage], list[Tool]]:
+        """Converts each line in the body of a block into a chat message.
+
+        Only lines marked with the render sentinel are parsed: they are the ones the `chat`
+        tag and the `tool` filter produced. Unmarked lines are template data, which must not
+        be able to declare its own message role or register a tool.
+        """
         body = body.strip()
         messages = []
         tools = []
         for line in body.split("\n"):
+            # Templates commonly indent the tags and filters inside a completion block, and
+            # only block tags get their indentation trimmed, so match past any leading space.
+            stripped = line.lstrip()
+            if not stripped.startswith(sentinel):
+                continue
+            payload = stripped.removeprefix(sentinel)
             try:
                 # Try to parse a chat message
-                messages.append(ChatMessage.model_validate_json(line))
+                messages.append(ChatMessage.model_validate_json(payload))
             except ValidationError:  # pylint: disable=R0801
                 try:
                     # If not a chat message, try to parse a tool
-                    tools.append(Tool.model_validate_json(line))
+                    tools.append(Tool.model_validate_json(payload))
                 except ValidationError:
                     # Give up
                     pass

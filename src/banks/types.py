@@ -8,6 +8,7 @@ import re
 from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
 from enum import Enum
+from functools import lru_cache
 from inspect import Parameter, getdoc, signature
 from pathlib import Path
 from typing import Callable, Literal, Union, cast
@@ -20,7 +21,28 @@ from .config import config
 from .utils import parse_params_from_docstring, python_type_to_jsonschema
 
 # pylint: disable=invalid-name
-CONTENT_BLOCK_REGEX = re.compile(r"(<content_block>\{.*?\}<\/content_block>)|([^<](?:(?!<content_block>)[\s\S])*)")
+CONTENT_BLOCK_END = "</content_block>"
+
+
+def content_block_start(sentinel: str) -> str:
+    """Return the opening marker the media filters wrap content blocks in.
+
+    The sentinel sits after the tag so that removing it from rendered text leaves the plain
+    `<content_block>` marker behind, which is what `Prompt.text()` exposes.
+    """
+    return f"<content_block>{sentinel}"
+
+
+@lru_cache(maxsize=16)
+def _content_block_regex(sentinel: str) -> re.Pattern[str]:
+    """Build the pattern splitting a rendered message into content blocks and plain text.
+
+    The marker carries the render sentinel so that only filter output is parsed as a
+    structured block; anything else stays literal text.
+    """
+    start = re.escape(content_block_start(sentinel))
+    end = re.escape(CONTENT_BLOCK_END)
+    return re.compile(rf"({start}\{{.*?\}}{end})|((?:(?!{start})[\s\S])+)")
 
 
 def _safe_resolve_path(file_path: Path) -> Path:
@@ -348,20 +370,22 @@ class Tool(BaseModel):
         )
 
 
-def chat_message_from_text(role: str, content: str) -> ChatMessage:
+def chat_message_from_text(role: str, content: str, sentinel: str | None = None) -> ChatMessage:
     """
     Helper callback.
+
+    Without a `sentinel` no content block is recognized and the whole content is kept as
+    text, so that untrusted input can never be turned into a structured block.
     """
     content_blocks: list[ContentBlock] = []
+    block_start = content_block_start(sentinel) if sentinel else ""
 
     # Find all content block matches
-    matches = CONTENT_BLOCK_REGEX.finditer(content)
+    matches = _content_block_regex(sentinel).finditer(content) if sentinel else []
     for match in matches:
         if match.group(1):
             # content block match
-            content_block_json_str = (
-                match.group(1).strip().removeprefix("<content_block>").removesuffix("</content_block>")
-            )
+            content_block_json_str = match.group(1).strip().removeprefix(block_start).removesuffix(CONTENT_BLOCK_END)
             content_blocks.append(ContentBlock.model_validate_json(content_block_json_str))
         elif match.group(2):
             # plain-text match

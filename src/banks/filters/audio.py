@@ -9,8 +9,10 @@ from typing import cast
 from urllib.parse import urlparse
 
 import filetype  # type: ignore[import-untyped]
+from jinja2 import pass_context
 
-from banks.types import AudioFormat, ContentBlock, InputAudio, resolve_binary
+from banks.types import CONTENT_BLOCK_END, AudioFormat, ContentBlock, InputAudio, content_block_start, resolve_binary
+from banks.utils import sentinel_from_context
 
 BASE64_AUDIO_REGEX = re.compile(r"audio\/.*;base64,.*")
 
@@ -53,7 +55,8 @@ def _get_audio_format_from_bytes(data: bytes) -> AudioFormat:
     return "mp3"
 
 
-def audio(value: str | bytes) -> str:
+@pass_context
+def audio(context, value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type audio.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -75,4 +78,4 @@ def audio(value: str | bytes) -> str:
     else:
         input_audio = InputAudio.from_path(Path(value))
     block = ContentBlock.model_validate({"type": "audio", "input_audio": input_audio})
-    return f"<content_block>{block.model_dump_json()}</content_block>"
+    return f"{content_block_start(sentinel_from_context(context))}{block.model_dump_json()}{CONTENT_BLOCK_END}"

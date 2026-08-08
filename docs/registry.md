@@ -17,10 +17,7 @@ registry = DirectoryPromptRegistry(Path("./prompts"))
 
 # Create and store a prompt
 prompt = Prompt(
-    text="Write a blog post about {{topic}}",
-    name="blog_writer",
-    version="1.0",
-    metadata={"author": "John Doe"}
+    text="Write a blog post about {{topic}}", name="blog_writer", version="1.0", metadata={"author": "John Doe"}
 )
 registry.set(prompt=prompt)
 
@@ -36,7 +33,7 @@ The DirectoryPromptRegistry stores prompts as individual files in a directory. E
 # Initialize directory registry
 registry = DirectoryPromptRegistry(
     directory_path=Path("./prompts"),
-    force_reindex=False  # Set to True to rebuild the index
+    force_reindex=False,  # Set to True to rebuild the index
 )
 ```
 
@@ -47,10 +44,7 @@ The RedisPromptRegistry stores prompts in Redis using a key-value structure.
 ```python
 from banks.registries.redis import RedisPromptRegistry
 
-registry = RedisPromptRegistry(
-    redis_url="redis://localhost:6379",
-    prefix="banks:prompt:"
-)
+registry = RedisPromptRegistry(redis_url="redis://localhost:6379", prefix="banks:prompt:")
 ```
 
 ### Common Features

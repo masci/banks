@@ -6,6 +6,7 @@ from jinja2.sandbox import SandboxedEnvironment as Environment
 
 from .config import config
 from .filters import audio, cache_control, document, image, lemmatize, tool, video, xml
+from .utils import ensure_environment_sentinel
 
 
 def _add_extensions(_env):
@@ -42,5 +43,9 @@ env.filters["audio"] = audio
 env.filters["video"] = video
 env.filters["document"] = document
 env.filters["to_xml"] = xml
+
+# Fallback for templates rendered straight off `env` instead of through a `Prompt`,
+# which would otherwise carry no sentinel and produce no parseable messages.
+ensure_environment_sentinel(env)
 
 _add_extensions(env)

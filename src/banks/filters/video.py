@@ -10,8 +10,10 @@ from urllib.parse import urlparse
 
 import filetype  # type: ignore[import-untyped]
 from filetype.types.video import IsoBmff  # type: ignore[import-untyped]
+from jinja2 import pass_context
 
-from banks.types import ContentBlock, InputVideo, VideoFormat, resolve_binary
+from banks.types import CONTENT_BLOCK_END, ContentBlock, InputVideo, VideoFormat, content_block_start, resolve_binary
+from banks.utils import sentinel_from_context
 
 BASE64_VIDEO_REGEX = re.compile(r"video\/.*;base64,.*")
 
@@ -85,7 +87,8 @@ def _get_video_format_from_bytes(data: bytes) -> VideoFormat:
     return "mp4"
 
 
-def video(value: str | bytes) -> str:
+@pass_context
+def video(context, value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type video.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -107,4 +110,4 @@ def video(value: str | bytes) -> str:
     else:
         input_video = InputVideo.from_path(Path(value))
     block = ContentBlock.model_validate({"type": "video", "input_video": input_video})
-    return f"<content_block>{block.model_dump_json()}</content_block>"
+    return f"{content_block_start(sentinel_from_context(context))}{block.model_dump_json()}{CONTENT_BLOCK_END}"

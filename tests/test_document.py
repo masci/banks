@@ -14,38 +14,28 @@ def tiny_pdf():
     return here / "data" / "1x1.pdf"
 
 
-def test_document_with_file_path(tiny_pdf):
+def test_document_with_file_path(tiny_pdf, jinja_context, unwrap_content_block):
     """Test document filter with a file path input"""
-    result = document(str(tiny_pdf))
+    result = document(jinja_context, str(tiny_pdf))
 
-    # Verify the content block wrapper
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    # Parse the JSON content
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "document"
     assert content_block["input_document"]["format"].startswith("pdf")
 
 
-def test_document_with_nonexistent_file():
+def test_document_with_nonexistent_file(jinja_context):
     """Test document filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
-        document("nonexistent/document.pdf")
+        document(jinja_context, "nonexistent/document.pdf")
 
 
-def test_document_with_url():
+def test_document_with_url(jinja_context, unwrap_content_block):
     """Test document filter with a URL input (no filesystem access)."""
     url = "https://example.com/document.css"
-    result = document(url)
+    result = document(jinja_context, url)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     # All text types are treated as txt
     assert content_block["type"] == "document"
@@ -67,34 +57,26 @@ def test_get_document_format_from_url():
     assert _get_document_format_from_url("https://example.com/document") == "pdf"
 
 
-def test_get_document_from_bytes(tiny_pdf):
+def test_get_document_from_bytes(tiny_pdf, jinja_context, unwrap_content_block):
     # PDF file header bytes
     with open(tiny_pdf, "rb") as f:
         pdf_bytes = f.read()
-    result = document(pdf_bytes)
+    result = document(jinja_context, pdf_bytes)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "document"
     assert content_block["input_document"]["format"] == "pdf"
     assert content_block["input_document"]["data"] == b64encode(pdf_bytes).decode()
 
 
-def test_get_document_from_b64_bytes():
+def test_get_document_from_b64_bytes(jinja_context, unwrap_content_block):
     html_str = "<html><body><h1>Test Document</h1></body></html>"
     html_bytes = html_str.encode("utf-8")
     html_b64 = b64encode(html_bytes)
-    result = document(html_b64)
+    result = document(jinja_context, html_b64)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     # All non pdf documents are treated as txt
     assert content_block["type"] == "document"

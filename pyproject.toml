@@ -161,7 +161,6 @@ ban-relative-imports = "parents"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252", "E501"]
 
-
 [tool.coverage.run]
 source_pkgs = ["banks", "tests"]
 branch = true
@@ -180,11 +179,9 @@ banks = ["src/banks", "*/banks/src/banks"]
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
-
 [[tool.mypy.overrides]]
 module = ["litellm.*", "simplemma.*", "deprecated.*", "griffe.*"]
 ignore_missing_imports = true
-
 
 [tool.pylint]
 disable = [

@@ -14,38 +14,28 @@ def empty_mov():
     return here / "data" / "empty.mov"
 
 
-def test_video_with_file_path(empty_mov):
+def test_video_with_file_path(empty_mov, jinja_context, unwrap_content_block):
     """Test video filter with a file path input"""
-    result = video(str(empty_mov))
+    result = video(jinja_context, str(empty_mov))
 
-    # Verify the content block wrapper
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    # Parse the JSON content
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "video"
     assert content_block["input_video"]["format"].startswith("mov")
 
 
-def test_video_with_nonexistent_file():
+def test_video_with_nonexistent_file(jinja_context):
     """Test video filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
-        video("nonexistent/video.mov")
+        video(jinja_context, "nonexistent/video.mov")
 
 
-def test_video_with_url():
+def test_video_with_url(jinja_context, unwrap_content_block):
     """Test video filter with a URL input (no filesystem access)."""
     url = "https://example.com/video.webm"
-    result = video(url)
+    result = video(jinja_context, url)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "video"
     assert content_block["input_video"]["data"] == url
@@ -64,30 +54,22 @@ def test_get_video_format_from_url():
     assert _get_video_format_from_url("https://example.com/video") == "mp4"
 
 
-def test_get_video_from_bytes():
+def test_get_video_from_bytes(jinja_context, unwrap_content_block):
     mp4_bytes = b"\x00\x00\x00\x18ftypmp42"
-    result = video(mp4_bytes)
+    result = video(jinja_context, mp4_bytes)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "video"
     assert content_block["input_video"]["format"] == "mp4"
     assert content_block["input_video"]["data"] == b64encode(mp4_bytes).decode("utf-8")
 
 
-def test_get_video_from_b64_bytes():
+def test_get_video_from_b64_bytes(jinja_context, unwrap_content_block):
     webm_bytes = b"\x1a\x45\xdf\xa3\x42\x82\x84webm"
-    result = video(webm_bytes)
+    result = video(jinja_context, webm_bytes)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "video"
     assert content_block["input_video"]["format"] == "webm"

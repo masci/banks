@@ -7,7 +7,10 @@ import re
 from pathlib import Path
 from urllib.parse import urlparse
 
-from banks.types import ContentBlock, ImageUrl
+from jinja2 import pass_context
+
+from banks.types import CONTENT_BLOCK_END, ContentBlock, ImageUrl, content_block_start
+from banks.utils import sentinel_from_context
 
 BASE64_PATH_REGEX = re.compile(r"image\/.*;base64,.*")
 
@@ -24,7 +27,8 @@ def _is_url(string: str) -> bool:
     return True
 
 
-def image(value: str | bytes) -> str:
+@pass_context
+def image(context, value: str | bytes) -> str:
     """Wrap the filtered value into a ContentBlock of type image.
 
     The resulting ChatMessage will have the field `content` populated with a list of ContentBlock objects.
@@ -37,8 +41,8 @@ def image(value: str | bytes) -> str:
         ```
 
     Important:
-        this filter marks the content to cache by surrounding it with `<content_block>` and
-        `</content_block>`, so it's only useful when used within a `{% chat %}` block.
+        this filter marks the content to cache by surrounding it with content block markers,
+        so it's only useful when used within a `{% chat %}` block.
     """
     if isinstance(value, bytes):
         image_url = ImageUrl.from_bytes(bytes_str=value)
@@ -48,4 +52,4 @@ def image(value: str | bytes) -> str:
         image_url = ImageUrl.from_path(Path(value))
 
     block = ContentBlock.model_validate({"type": "image_url", "image_url": image_url})
-    return f"<content_block>{block.model_dump_json()}</content_block>"
+    return f"{content_block_start(sentinel_from_context(context))}{block.model_dump_json()}{CONTENT_BLOCK_END}"

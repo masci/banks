@@ -14,38 +14,28 @@ def empty_wav():
     return here / "data" / "empty.wav"
 
 
-def test_audio_with_file_path(empty_wav):
+def test_audio_with_file_path(empty_wav, jinja_context, unwrap_content_block):
     """Test audio filter with a file path input"""
-    result = audio(str(empty_wav))
+    result = audio(jinja_context, str(empty_wav))
 
-    # Verify the content block wrapper
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    # Parse the JSON content
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "audio"
     assert content_block["input_audio"]["format"].startswith("wav")
 
 
-def test_audio_with_nonexistent_file():
+def test_audio_with_nonexistent_file(jinja_context):
     """Test audio filter with a nonexistent file path"""
     with pytest.raises(FileNotFoundError):
-        audio("nonexistent/audio.wav")
+        audio(jinja_context, "nonexistent/audio.wav")
 
 
-def test_audio_with_url():
+def test_audio_with_url(jinja_context, unwrap_content_block):
     """Test audio filter with a URL input (no filesystem access)."""
     url = "https://example.com/sound.ogg"
-    result = audio(url)
+    result = audio(jinja_context, url)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
 
     assert content_block["type"] == "audio"
     assert content_block["input_audio"]["data"] == url
@@ -64,30 +54,22 @@ def test_get_audio_format_from_url():
     assert _get_audio_format_from_url("https://example.com/sound") == "mp3"
 
 
-def test_audio_from_bytes():
+def test_audio_from_bytes(jinja_context, unwrap_content_block):
     mp3 = b"\xff\xfb\x90\x64\x00\x0f\xff\xf3\xb4\x00\x00\x00\x00\x00\x00\x00"
-    result = audio(mp3)
+    result = audio(jinja_context, mp3)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
     assert content_block["type"] == "audio"
     assert content_block["input_audio"]["data"] == b64encode(mp3).decode("utf-8")
     assert content_block["input_audio"]["format"] == "mp3"
 
 
-def test_audio_from_b64_bytes():
+def test_audio_from_b64_bytes(jinja_context, unwrap_content_block):
     wav = b"RIFF$\x00\x00\x00WAVEfmt "
     b64_wav = b64encode(wav)
-    result = audio(b64_wav)
+    result = audio(jinja_context, b64_wav)
 
-    assert result.startswith("<content_block>")
-    assert result.endswith("</content_block>")
-
-    json_content = result[15:-16]  # Remove wrapper tags
-    content_block = json.loads(json_content)
+    content_block = json.loads(unwrap_content_block(result))
     assert content_block["type"] == "audio"
     assert content_block["input_audio"]["data"] == b64_wav.decode("utf-8")
     assert content_block["input_audio"]["format"] == "wav"

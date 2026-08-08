@@ -2,7 +2,7 @@ from banks.filters import tool
 from banks.types import Tool
 
 
-def test_tool():
+def test_tool(jinja_context, sentinel):
     def my_tool_function(myparam: str):
         """Description of the tool.
 
@@ -12,8 +12,9 @@ def test_tool():
         """
         pass
 
-    tool_dump = tool(my_tool_function)
-    t = Tool.model_validate_json(tool_dump)
+    tool_dump = tool(jinja_context, my_tool_function)
+    assert tool_dump.startswith(sentinel)
+    t = Tool.model_validate_json(tool_dump.removeprefix(sentinel))
     assert t.model_dump() == {
         "type": "function",
         "function": {
@@ -29,7 +30,7 @@ def test_tool():
     }
 
 
-def test_tool_with_defaults():
+def test_tool_with_defaults(jinja_context, sentinel):
     def my_tool_function(myparam: str = ""):
         """Description of the tool.
 
@@ -39,8 +40,9 @@ def test_tool_with_defaults():
         """
         pass
 
-    tool_dump = tool(my_tool_function)
-    t = Tool.model_validate_json(tool_dump)
+    tool_dump = tool(jinja_context, my_tool_function)
+    assert tool_dump.startswith(sentinel)
+    t = Tool.model_validate_json(tool_dump.removeprefix(sentinel))
     assert t.model_dump() == {
         "type": "function",
         "function": {

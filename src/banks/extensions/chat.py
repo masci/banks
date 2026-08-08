@@ -6,6 +6,7 @@ from jinja2 import TemplateSyntaxError, nodes
 from jinja2.ext import Extension
 
 from banks.types import chat_message_from_text
+from banks.utils import ensure_environment_sentinel, sentinel_from_context
 
 SUPPORTED_TYPES = ("system", "user", "assistant")
 
@@ -24,6 +25,10 @@ class ChatExtension(Extension):
 
     # a set of names that trigger the extension.
     tags = {"chat"}  # noqa
+
+    def __init__(self, environment):
+        super().__init__(environment)
+        ensure_environment_sentinel(environment)
 
     def parse(self, parser):
         # We get the line number of the first token for error reporting
@@ -54,8 +59,8 @@ class ChatExtension(Extension):
             msg = f"Unknown role type '{attr_value.value}', use one of ({types})"
             raise TemplateSyntaxError(msg, lineno)
 
-        # Pass the role name to the CallBlock node
-        args: list[nodes.Expr] = [nodes.Const(attr_value.value)]
+        # Pass the render context and the role name to the CallBlock node
+        args: list[nodes.Expr] = [nodes.ContextReference(), nodes.Const(attr_value.value)]
 
         # Message body
         body = parser.parse_statements(("name:endchat",), drop_needle=True)
@@ -63,9 +68,13 @@ class ChatExtension(Extension):
         # Build messages list
         return nodes.CallBlock(self.call_method("_store_chat_messages", args), [], [], body).set_lineno(lineno)
 
-    def _store_chat_messages(self, role, caller):
+    def _store_chat_messages(self, context, role, caller):
         """
         Helper callback.
         """
-        cm = chat_message_from_text(role=role, content=caller())
-        return cm.model_dump_json(exclude_none=True) + "\n"
+        sentinel = sentinel_from_context(context)
+        cm = chat_message_from_text(role=role, content=caller(), sentinel=sentinel)
+        # The sentinel marks this line as coming from a `chat` tag, so that template data
+        # rendering to a JSON message can't pick its own role. `model_dump_json` escapes
+        # newlines, so the content can't break out onto a line of its own either.
+        return sentinel + cm.model_dump_json(exclude_none=True) + "\n"

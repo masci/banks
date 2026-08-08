@@ -83,6 +83,15 @@ def test_content_block_from_filter_is_still_parsed():
     assert content[1].image_url.url == "http://example.com/x.jpg"
 
 
+def test_indented_chat_block_still_produces_a_message():
+    """Only block tags get their indentation trimmed, so the parser must look past it."""
+    p = Prompt('{% for _ in [1] %}\n    {% chat role="user" %}Hello{% endchat %}\n{% endfor %}')
+
+    messages = p.chat_messages()
+
+    assert [m.role for m in messages] == ["user"]
+
+
 def test_each_prompt_gets_its_own_sentinel():
     assert Prompt("hello").defaults[SENTINEL_VAR] != Prompt("hello").defaults[SENTINEL_VAR]
 

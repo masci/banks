@@ -202,9 +202,12 @@ class CompletionExtension(Extension):
         messages = []
         tools = []
         for line in body.split("\n"):
-            if not line.startswith(sentinel):
+            # Templates commonly indent the tags and filters inside a completion block, and
+            # only block tags get their indentation trimmed, so match past any leading space.
+            stripped = line.lstrip()
+            if not stripped.startswith(sentinel):
                 continue
-            payload = line.removeprefix(sentinel)
+            payload = stripped.removeprefix(sentinel)
             try:
                 # Try to parse a chat message
                 messages.append(ChatMessage.model_validate_json(payload))

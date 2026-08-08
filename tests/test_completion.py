@@ -106,6 +106,16 @@ def test__body_to_messages(ext, sentinel):
         ext._body_to_messages(" \nhello\n ", sentinel)
 
 
+def test__body_to_messages_accepts_indented_lines(ext, sentinel, tools):
+    """Tags and filters inside a completion block are usually indented in real templates."""
+    body = f'    {sentinel}{{"role":"user", "content":"hello"}}\n    {sentinel}{tools[0].model_dump_json()}'
+
+    messages, parsed_tools = ext._body_to_messages(body, sentinel)
+
+    assert messages == [ChatMessage(role="user", content="hello")]
+    assert [t.function.name for t in parsed_tools] == ["getenv"]
+
+
 def test__body_to_messages_ignores_unmarked_lines(ext, sentinel):
     # A well-formed message that isn't marked with the sentinel is template data, not a message.
     with pytest.raises(InvalidPromptError, match="Completion must contain at least one chat message"):

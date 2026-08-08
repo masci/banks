@@ -159,12 +159,15 @@ class Prompt(BasePrompt):
 
         messages: list[ChatMessage] = []
         for line in rendered.strip().split("\n"):
-            if not line.startswith(sentinel):
+            # Indentation is matched past rather than rejected, since the JSON parser used to
+            # tolerate it and a `chat` tag can sit inside an indented block.
+            stripped = line.lstrip()
+            if not stripped.startswith(sentinel):
                 # Only the `chat` extension can emit messages: an unmarked line is template
                 # data, and parsing it would let it choose its own role.
                 continue
             try:
-                messages.append(ChatMessage.model_validate_json(line.removeprefix(sentinel)))
+                messages.append(ChatMessage.model_validate_json(stripped.removeprefix(sentinel)))
             except ValidationError:
                 # Ignore lines that are not a message
                 pass

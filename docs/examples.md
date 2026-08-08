@@ -48,7 +48,7 @@ Blog post:
 {% endchat %}"""
 
 p = Prompt(prompt_text)
-print(p.chat_messages({"topic":"prompt engineering"}))
+print(p.chat_messages({"topic": "prompt engineering"}))
 ```
 
 This will output the following:
@@ -81,7 +81,7 @@ Summary:
 documents = [
     "A first paragraph talking about AI",
     "A second paragraph talking about climate change",
-    "A third paragraph talking about retrogaming"
+    "A third paragraph talking about retrogaming",
 ]
 
 p = Prompt(prompt_template)
@@ -155,6 +155,7 @@ Please extract the contact details from this user:
 Contact details:
 """
 
+
 class User(BaseModel):
     username: str
     account_id: str
@@ -163,7 +164,15 @@ class User(BaseModel):
     phone_number: str
     social_media_accounts: Dict[str, str]
 
-user = User(username="example", account_id="0000", registered_at="10-25-2024", email="example@email.com", phone_number="0123456789", social_media_accounts={"BlueSky": "@example.com"})
+
+user = User(
+    username="example",
+    account_id="0000",
+    registered_at="10-25-2024",
+    email="example@email.com",
+    phone_number="0123456789",
+    social_media_accounts={"BlueSky": "@example.com"},
+)
 
 p = Prompt(prompt_template)
 print(p.text({"data": user}))
@@ -283,7 +292,7 @@ What is the title of this book? Only output the title.
 """
 
 p = Prompt(prompt_template)
-print(p.chat_messages({"book":"This is a short book!"}))
+print(p.chat_messages({"book": "This is a short book!"}))
 
 # Output:
 # [
@@ -306,7 +315,7 @@ and the folder contains a file called `blog.jinja`. You can load the prompt temp
 ```py
 from banks.registries import directory
 
-populated_dir="./templates/"
+populated_dir = "./templates/"
 registry = directory.DirectoryTemplateRegistry(populated_dir)
 prompt = registry.get(name="blog")
 
@@ -323,10 +332,12 @@ Example:
 ```python
 from banks import AsyncPrompt
 
+
 async def main():
     p = AsyncPrompt("Write a blog article about the topic {{ topic }}")
     result = await p.text({"topic": "AI frameworks"})
     print(result)
+
 
 asyncio.run(main())
 ```

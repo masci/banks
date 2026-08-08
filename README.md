@@ -93,11 +93,11 @@ print(p.chat_messages({"persona": "helpful assistant"}))
 # Output:
 # [
 #   ChatMessage(role='system', content=[
-#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='You are a helpful assistant.', 
+#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='You are a helpful assistant.',
 #                  image_url=None, input_audio=None, input_video=None, input_document=None)
-#   ], tool_call_id=None, name=None), 
+#   ], tool_call_id=None, name=None),
 #   ChatMessage(role='user', content=[
-#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='Hello, how are you?', 
+#      ContentBlock(type=<ContentBlockType.text: 'text'>, cache_control=None, text='Hello, how are you?',
 #                  image_url=None, input_audio=None, input_video=None, input_document=None)
 #   ], tool_call_id=None, name=None)
 # ]
@@ -236,7 +236,7 @@ What is the title of this book? Only output the title.
 """
 
 p = Prompt(prompt_template)
-print(p.chat_messages({"book":"This is a short book!"}))
+print(p.chat_messages({"book": "This is a short book!"}))
 
 # Output:
 # [
@@ -278,10 +278,12 @@ Example:
 ```python
 from banks import AsyncPrompt
 
+
 async def main():
     p = AsyncPrompt("Write a blog article about the topic {{ topic }}")
     result = await p.text({"topic": "AI frameworks"})
     print(result)
+
 
 asyncio.run(main())
 ```

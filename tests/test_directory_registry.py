@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -6,6 +7,8 @@ import pytest
 from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
 from banks.registries.directory import DEFAULT_INDEX_NAME, DirectoryPromptRegistry, PromptFileIndex
+
+needs_symlink = pytest.mark.skipif(sys.platform == "win32", reason="Symlink support on Windows requires Developer Mode")
 
 
 @pytest.fixture
@@ -154,6 +157,7 @@ def test_load_rejects_poisoned_index(tmp_path: Path):
         DirectoryPromptRegistry(tmp_path)
 
 
+@needs_symlink
 def test_scan_rejects_symlink_outside_root(tmp_path: Path):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
@@ -167,6 +171,7 @@ def test_scan_rejects_symlink_outside_root(tmp_path: Path):
         DirectoryPromptRegistry(reg_dir, force_reindex=True)
 
 
+@needs_symlink
 def test_scan_rejects_symlink_inside_root(tmp_path: Path):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
@@ -180,6 +185,7 @@ def test_scan_rejects_symlink_inside_root(tmp_path: Path):
         DirectoryPromptRegistry(reg_dir, force_reindex=True)
 
 
+@needs_symlink
 def test_save_rejects_symlink_index_file(tmp_path: Path):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
@@ -197,6 +203,7 @@ def test_save_rejects_symlink_index_file(tmp_path: Path):
     assert target_config.read_text() == "ORIGINAL_CONFIG"
 
 
+@needs_symlink
 def test_load_rejects_symlink_index_file(tmp_path: Path):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
@@ -209,6 +216,7 @@ def test_load_rejects_symlink_index_file(tmp_path: Path):
         DirectoryPromptRegistry(reg_dir)
 
 
+@needs_symlink
 def test_set_rejects_symlink_prompt_file(tmp_path: Path):
     reg_dir = tmp_path / "registry"
     reg_dir.mkdir()
@@ -220,7 +228,7 @@ def test_set_rejects_symlink_prompt_file(tmp_path: Path):
     symlink_prompt = reg_dir / "foo.1.jinja"
     os.symlink(victim_file, symlink_prompt)
 
-    with pytest.raises(InvalidPromptError, match="Prompt file cannot be a symbolic link"):
+    with pytest.raises(InvalidPromptError, match="symbolic link"):
         reg.set(prompt=Prompt("evil", name="foo", version="1"))
 
     assert victim_file.read_text() == "VICTIM_CONTENT"

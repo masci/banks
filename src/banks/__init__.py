@@ -3,6 +3,18 @@
 # SPDX-License-Identifier: MIT
 from __future__ import annotations
 
+import sys
+
+# Python < 3.11 does not have typing.NotRequired.
+# Some third-party packages in our dependency tree import it from typing
+# unconditionally. Patch it in early to prevent ImportError.
+if sys.version_info < (3, 11):  # pylint: disable=wrong-import-position
+    import typing
+
+    import typing_extensions
+
+    typing.NotRequired = typing_extensions.NotRequired
+
 from .config import config
 from .env import env
 from .prompt import AsyncPrompt, Prompt

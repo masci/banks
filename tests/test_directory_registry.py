@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -6,6 +7,8 @@ import pytest
 from banks.errors import InvalidPromptError, PromptNotFoundError
 from banks.prompt import Prompt
 from banks.registries.directory import DEFAULT_INDEX_NAME, DirectoryPromptRegistry, PromptFileIndex
+
+needs_symlink = pytest.mark.skipif(sys.platform == "win32", reason="Symlink support on Windows requires Developer Mode")
 
 
 @pytest.fixture
@@ -152,3 +155,124 @@ def test_load_rejects_poisoned_index(tmp_path: Path):
     )
     with pytest.raises(InvalidPromptError):
         DirectoryPromptRegistry(tmp_path)
+
+
+@needs_symlink
+def test_scan_rejects_symlink_outside_root(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    secret = tmp_path / "secret.txt"
+    secret.write_text("SUPER_SECRET_DATA")
+
+    symlink = reg_dir / "leaked.0.jinja"
+    os.symlink(secret, symlink)
+
+    with pytest.raises(InvalidPromptError, match="Symbolic links are not allowed"):
+        DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+
+@needs_symlink
+def test_scan_rejects_symlink_inside_root(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    real_file = reg_dir / "real.0.jinja"
+    real_file.write_text("real content")
+
+    symlink = reg_dir / "alias.0.jinja"
+    os.symlink(real_file, symlink)
+
+    with pytest.raises(InvalidPromptError, match="Symbolic links are not allowed"):
+        DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+
+@needs_symlink
+def test_save_rejects_symlink_index_file(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    reg = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+    target_config = tmp_path / "app.conf"
+    target_config.write_text("ORIGINAL_CONFIG")
+
+    (reg_dir / DEFAULT_INDEX_NAME).unlink()
+    os.symlink(target_config, reg_dir / DEFAULT_INDEX_NAME)
+
+    with pytest.raises(InvalidPromptError, match="Index file cannot be a symbolic link"):
+        reg.set(prompt=Prompt("pwn", name="attack", version="1"))
+
+    assert target_config.read_text() == "ORIGINAL_CONFIG"
+
+
+@needs_symlink
+def test_load_rejects_symlink_index_file(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    target = tmp_path / "target.json"
+    target.write_text('{"files": []}')
+
+    os.symlink(target, reg_dir / DEFAULT_INDEX_NAME)
+
+    with pytest.raises(InvalidPromptError, match="Index file cannot be a symbolic link"):
+        DirectoryPromptRegistry(reg_dir)
+
+
+@needs_symlink
+def test_set_rejects_symlink_prompt_file(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    reg = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+    victim_file = tmp_path / "victim.txt"
+    victim_file.write_text("VICTIM_CONTENT")
+
+    symlink_prompt = reg_dir / "foo.1.jinja"
+    os.symlink(victim_file, symlink_prompt)
+
+    with pytest.raises(InvalidPromptError, match="symbolic link"):
+        reg.set(prompt=Prompt("evil", name="foo", version="1"))
+
+    assert victim_file.read_text() == "VICTIM_CONTENT"
+
+
+def test_set_automatically_creates_nested_directories(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    reg = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+    assert not (reg_dir / "dept" / "subdept").exists()
+
+    reg.set(prompt=Prompt("nested template", name="dept/subdept/prompt", version="1"))
+    assert (reg_dir / "dept" / "subdept" / "prompt.1.jinja").read_text() == "nested template"
+    assert reg.get(name="dept/subdept/prompt", version="1").raw == "nested template"
+
+
+def test_reindex_preserves_nested_prompts(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    reg = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+    reg.set(prompt=Prompt("team prompt", name="team/nested", version="1"))
+    reg.set(prompt=Prompt("engineering prompt", name="eng/backend/deploy", version="2"))
+
+    reg_reindexed = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+
+    p1 = reg_reindexed.get(name="team/nested", version="1")
+    assert p1.raw == "team prompt"
+
+    p2 = reg_reindexed.get(name="eng/backend/deploy", version="2")
+    assert p2.raw == "engineering prompt"
+
+
+def test_load_preserves_unversioned_and_versioned_prompts(tmp_path: Path):
+    reg_dir = tmp_path / "registry"
+    reg_dir.mkdir()
+    (reg_dir / "blog.jinja").write_text("blog content")
+    (reg_dir / "custom.2.jinja").write_text("custom content")
+
+    reg1 = DirectoryPromptRegistry(reg_dir, force_reindex=True)
+    assert reg1.get(name="blog").raw == "blog content"
+    assert reg1.get(name="custom", version="2").raw == "custom content"
+
+    reg2 = DirectoryPromptRegistry(reg_dir, force_reindex=False)
+    assert reg2.get(name="blog").raw == "blog content"
+    assert reg2.get(name="custom", version="2").raw == "custom content"

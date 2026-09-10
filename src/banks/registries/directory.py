@@ -7,6 +7,7 @@ Directory-based prompt registry implementation that stores prompts as files.
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -22,6 +23,23 @@ from banks.prompt import DEFAULT_VERSION, PromptModel
 
 # Constants
 DEFAULT_INDEX_NAME = "index.json"
+
+
+def _write_file_no_follow(path: Path, content: str) -> None:
+    """Write content to a file, strictly refusing to follow symbolic links."""
+    no_follow = getattr(os, "O_NOFOLLOW", None)
+    if no_follow is not None:
+        try:
+            fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC | no_follow)
+        except OSError as exc:
+            msg = f"Path is a symbolic link or cannot be opened: {path}"
+            raise InvalidPromptError(msg) from exc
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+    else:
+        # Platform does not support O_NOFOLLOW (e.g. Windows);
+        # rely on earlier symlink checks in _resolve_prompt_file and _validate_index_path.
+        path.write_text(content, encoding="utf-8")
 
 
 def _resolve_prompt_file(registry_root: Path, name: str, version: str) -> Path:
@@ -41,10 +59,22 @@ def _resolve_prompt_file(registry_root: Path, name: str, version: str) -> Path:
             raise InvalidPromptError(msg)
 
     root = registry_root.resolve()
-    candidate = (registry_root / f"{name}.{version}.jinja").resolve()
-    if not candidate.is_relative_to(root):
-        msg = f"Prompt path escapes registry root: {candidate}"
+    candidate = registry_root / f"{name}.{version}.jinja"
+    if candidate.is_symlink():
+        msg = f"Prompt path is a symbolic link: {candidate}"
         raise InvalidPromptError(msg)
+    resolved = candidate.resolve()
+    if not resolved.is_relative_to(root):
+        msg = f"Prompt path escapes registry root: {resolved}"
+        raise InvalidPromptError(msg)
+    if version == DEFAULT_VERSION and not resolved.exists():
+        alt_raw = registry_root / f"{name}.jinja"
+        if alt_raw.is_symlink():
+            msg = f"Prompt path is a symbolic link: {alt_raw}"
+            raise InvalidPromptError(msg)
+        alt = alt_raw.resolve()
+        if alt.exists() and alt.is_relative_to(root):
+            return alt_raw
     return candidate
 
 
@@ -67,7 +97,8 @@ class PromptFile(PromptModel):
         """
         version = prompt.version or DEFAULT_VERSION
         prompt_file = _resolve_prompt_file(path, prompt.name, version)
-        prompt_file.write_text(prompt.raw)
+        prompt_file.parent.mkdir(parents=True, exist_ok=True)
+        _write_file_no_follow(prompt_file, prompt.raw)
         return cls(
             text=prompt.raw, name=prompt.name, version=prompt.version, metadata=prompt.metadata, path=prompt_file
         )
@@ -82,7 +113,7 @@ class PromptFileIndex(BaseModel):
 class DirectoryPromptRegistry:
     """Registry that stores prompts as files in a directory structure."""
 
-    def __init__(self, directory_path: str, *, force_reindex: bool = False):
+    def __init__(self, directory_path: str | Path, *, force_reindex: bool = False):
         """
         Initialize the directory prompt registry.
 
@@ -95,7 +126,7 @@ class DirectoryPromptRegistry:
         """
         dir_path = Path(directory_path)
         if not dir_path.is_dir():
-            msg = "{directory_path} must be a directory."
+            msg = f"{directory_path} must be a directory."
             raise ValueError(msg)
 
         self._path = dir_path
@@ -104,6 +135,14 @@ class DirectoryPromptRegistry:
             self._scan()
         else:
             self._load()
+
+    def _validate_index_path(self):
+        if self._index_path.is_symlink():
+            msg = f"Index file cannot be a symbolic link: {self._index_path}"
+            raise InvalidPromptError(msg)
+        if self._index_path.exists() and not self._index_path.resolve().is_relative_to(self._path.resolve()):
+            msg = f"Index file escapes registry root: {self._index_path}"
+            raise InvalidPromptError(msg)
 
     @property
     def path(self) -> Path:
@@ -159,7 +198,8 @@ class DirectoryPromptRegistry:
 
     def _load(self):
         """Load the prompt index from disk."""
-        self._index = PromptFileIndex.model_validate_json(self._index_path.read_text())
+        self._validate_index_path()
+        self._index = PromptFileIndex.model_validate_json(self._index_path.read_text(encoding="utf-8"))
         # Reconstruct the file paths since they're excluded from serialization
         for pf in self._index.files:
             version = pf.version or DEFAULT_VERSION
@@ -167,17 +207,34 @@ class DirectoryPromptRegistry:
 
     def _save(self):
         """Save the prompt index to disk."""
-        self._index_path.write_text(self._index.model_dump_json())
+        self._validate_index_path()
+        _write_file_no_follow(self._index_path, self._index.model_dump_json())
 
     def _scan(self):
         """Scan directory for prompt files and build the index."""
-        self._index: PromptFileIndex = PromptFileIndex()
-        for path in self._path.glob("*.jinja*"):
-            name, version = path.stem.rsplit(".", 1) if "." in path.stem else (path.stem, DEFAULT_VERSION)
-            with path.open("r") as f:
-                pf = PromptFile(text=f.read(), name=name, version=version, path=path, metadata={})
+        self._validate_index_path()
+        self._index = PromptFileIndex()
+        root = self._path.resolve()
+        for path in sorted(self._path.rglob("*.jinja")):
+            if not path.is_file():
+                continue
+            if path.is_symlink():
+                msg = f"Symbolic links are not allowed in prompt registry: {path}"
+                raise InvalidPromptError(msg)
+            resolved = path.resolve()
+            if not resolved.is_relative_to(root):
+                msg = f"Prompt path escapes registry root: {path}"
+                raise InvalidPromptError(msg)
+
+            rel = path.relative_to(self._path)
+            stem = rel.stem
+            name_part, version = stem.rsplit(".", 1) if "." in stem else (stem, DEFAULT_VERSION)
+            full_name = f"{rel.parent.as_posix()}/{name_part}" if str(rel.parent) != "." else name_part
+
+            with path.open("r", encoding="utf-8") as f:
+                pf = PromptFile(text=f.read(), name=full_name, version=version, path=path, metadata={})
                 self._index.files.append(pf)
-        self._index_path.write_text(self._index.model_dump_json())
+        self._save()
 
     def _get_prompt_file(self, *, name: str | None, version: str) -> tuple[int, PromptFile]:
         """
